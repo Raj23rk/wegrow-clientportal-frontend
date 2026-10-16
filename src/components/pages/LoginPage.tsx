@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePortal } from '../../context/PortalContext';
 import { WeGrowLogo } from '../common/Icons';
@@ -12,6 +12,53 @@ export const LoginPage: React.FC<{ onForgotPw: () => void }> = ({ onForgotPw }) 
   const [password, setPassword] = useState('demo123');
   const [remember, setRemember] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // SVG Animation Refs for comets
+  const purplePathRef = useRef<SVGPathElement>(null);
+  const tealPathRef = useRef<SVGPathElement>(null);
+  const purpleCometRef = useRef<SVGGElement>(null);
+  const tealCometRef = useRef<SVGGElement>(null);
+
+  useEffect(() => {
+    let animId: number;
+    const speedPurple = 4200; // 4.2 seconds cycle
+    const speedTeal = 3600;   // 3.6 seconds cycle
+    let start: number | null = null;
+
+    const animateLoop = (timestamp: number) => {
+      if (!start) start = timestamp;
+      const elapsed = timestamp - start;
+
+      // Move purple comet along purple line
+      if (purplePathRef.current && purpleCometRef.current) {
+        try {
+          const len = purplePathRef.current.getTotalLength();
+          const progress = (elapsed % speedPurple) / speedPurple;
+          const pt = purplePathRef.current.getPointAtLength(progress * len);
+          purpleCometRef.current.setAttribute('transform', `translate(${pt.x}, ${pt.y})`);
+        } catch {
+          // ignore before SVG mount
+        }
+      }
+
+      // Move teal comet along teal line (with offset)
+      if (tealPathRef.current && tealCometRef.current) {
+        try {
+          const len = tealPathRef.current.getTotalLength();
+          const progress = ((elapsed + 1800) % speedTeal) / speedTeal;
+          const pt = tealPathRef.current.getPointAtLength(progress * len);
+          tealCometRef.current.setAttribute('transform', `translate(${pt.x}, ${pt.y})`);
+        } catch {
+          // ignore
+        }
+      }
+
+      animId = requestAnimationFrame(animateLoop);
+    };
+
+    animId = requestAnimationFrame(animateLoop);
+    return () => cancelAnimationFrame(animId);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,53 +88,41 @@ export const LoginPage: React.FC<{ onForgotPw: () => void }> = ({ onForgotPw }) 
   return (
     <div className="login">
       <section className="login-art">
+        {/* Soft Ambient Floating Light Blobs in background */}
+        <div className="ambient-blob blob-purple-top" />
+        <div className="ambient-blob blob-teal-mid" />
+        <div className="ambient-blob blob-violet-bottom" />
+
         {/* Animated dynamic SVG background */}
         <svg className="bg" viewBox="0 0 600 800" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
           <defs>
             {/* Vibrant Line Gradients */}
             <linearGradient id="purpleLineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#6E44C4" />
-              <stop offset="50%" stopColor="#A875FF" />
-              <stop offset="100%" stopColor="#7E4CE8" />
+              <stop offset="0%" stopColor="#7B42E8" />
+              <stop offset="50%" stopColor="#AF7DFF" />
+              <stop offset="100%" stopColor="#8751F2" />
             </linearGradient>
             <linearGradient id="tealLineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#25A5A1" />
-              <stop offset="50%" stopColor="#48F1EB" />
-              <stop offset="100%" stopColor="#3CC3BF" />
+              <stop offset="0%" stopColor="#1EB5AF" />
+              <stop offset="50%" stopColor="#4FFCF5" />
+              <stop offset="100%" stopColor="#25CCC5" />
             </linearGradient>
 
             {/* Glowing Flow Dash Gradients */}
             <linearGradient id="tealPulseGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#3CC3BF" stopOpacity="0" />
-              <stop offset="60%" stopColor="#48F1EB" stopOpacity="1" />
+              <stop offset="0%" stopColor="#3CC3BF" stopOpacity="0.1" />
+              <stop offset="60%" stopColor="#68FFF9" stopOpacity="1" />
               <stop offset="100%" stopColor="#ffffff" stopOpacity="1" />
             </linearGradient>
             <linearGradient id="purplePulseGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#7E4CE8" stopOpacity="0" />
-              <stop offset="60%" stopColor="#C49BFF" stopOpacity="1" />
+              <stop offset="0%" stopColor="#7E4CE8" stopOpacity="0.1" />
+              <stop offset="60%" stopColor="#CCA8FF" stopOpacity="1" />
               <stop offset="100%" stopColor="#ffffff" stopOpacity="1" />
             </linearGradient>
 
-            {/* Soft Ambient Background Orbs */}
-            <radialGradient id="orbGrad1" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#6A3FB8" stopOpacity="0.45" />
-              <stop offset="60%" stopColor="#3A2470" stopOpacity="0.25" />
-              <stop offset="100%" stopColor="#241448" stopOpacity="0" />
-            </radialGradient>
-            <radialGradient id="orbGrad2" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#4B2488" stopOpacity="0.5" />
-              <stop offset="70%" stopColor="#2E1B5E" stopOpacity="0.2" />
-              <stop offset="100%" stopColor="#241448" stopOpacity="0" />
-            </radialGradient>
-            <radialGradient id="orbGradTeal" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#3CC3BF" stopOpacity="0.32" />
-              <stop offset="50%" stopColor="#268A87" stopOpacity="0.1" />
-              <stop offset="100%" stopColor="#241448" stopOpacity="0" />
-            </radialGradient>
-
             {/* Area Fills under lines */}
             <linearGradient id="purpleAreaGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#8A56EB" stopOpacity="0.2" />
+              <stop offset="0%" stopColor="#8A56EB" stopOpacity="0.22" />
               <stop offset="100%" stopColor="#241448" stopOpacity="0" />
             </linearGradient>
             <linearGradient id="tealAreaGrad" x1="0" y1="0" x2="0" y2="1">
@@ -96,37 +131,34 @@ export const LoginPage: React.FC<{ onForgotPw: () => void }> = ({ onForgotPw }) 
             </linearGradient>
 
             {/* Glow Filters */}
-            <filter id="glowTeal" x="-40%" y="-40%" width="180%" height="180%">
-              <feGaussianBlur stdDeviation="4" result="coloredBlur" />
+            <filter id="glowTeal" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="5" result="coloredBlur" />
               <feMerge>
+                <feMergeNode in="coloredBlur" />
                 <feMergeNode in="coloredBlur" />
                 <feMergeNode in="SourceGraphic" />
               </feMerge>
             </filter>
-            <filter id="glowPurple" x="-40%" y="-40%" width="180%" height="180%">
-              <feGaussianBlur stdDeviation="4.5" result="coloredBlur" />
+            <filter id="glowPurple" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="5" result="coloredBlur" />
               <feMerge>
+                <feMergeNode in="coloredBlur" />
                 <feMergeNode in="coloredBlur" />
                 <feMergeNode in="SourceGraphic" />
               </feMerge>
             </filter>
           </defs>
 
-          {/* Background Animated Floating Orbs */}
-          <circle cx="560" cy="130" r="230" fill="url(#orbGrad1)" className="bg-orb orb-1" />
-          <circle cx="520" cy="690" r="270" fill="url(#orbGrad2)" className="bg-orb orb-2" />
-          <circle cx="280" cy="450" r="190" fill="url(#orbGradTeal)" className="bg-orb orb-3" />
-
-          {/* Twinkling ambient grid stars */}
+          {/* Twinkling ambient star particles */}
           <g className="bg-particles">
-            <circle cx="120" cy="180" r="1.8" fill="#A88BFF" className="twinkle-dot" />
-            <circle cx="380" cy="140" r="2.2" fill="#3CC3BF" className="twinkle-dot" />
-            <circle cx="220" cy="320" r="1.5" fill="#ffffff" className="twinkle-dot" />
-            <circle cx="490" cy="310" r="2" fill="#D2BDFF" className="twinkle-dot" />
-            <circle cx="80" cy="440" r="1.8" fill="#3CC3BF" className="twinkle-dot" />
-            <circle cx="530" cy="520" r="2" fill="#ffffff" className="twinkle-dot" />
-            <circle cx="160" cy="680" r="1.5" fill="#3CC3BF" className="twinkle-dot" />
-            <circle cx="420" cy="650" r="2.2" fill="#A88BFF" className="twinkle-dot" />
+            <circle cx="120" cy="180" r="2.2" fill="#AF8EFF" className="twinkle-dot dot-1" />
+            <circle cx="380" cy="140" r="2.8" fill="#4DFDF6" className="twinkle-dot dot-2" />
+            <circle cx="220" cy="320" r="1.8" fill="#ffffff" className="twinkle-dot dot-3" />
+            <circle cx="490" cy="310" r="2.4" fill="#D6C4FF" className="twinkle-dot dot-1" />
+            <circle cx="80" cy="440" r="2.2" fill="#3CC3BF" className="twinkle-dot dot-2" />
+            <circle cx="530" cy="520" r="2.6" fill="#ffffff" className="twinkle-dot dot-3" />
+            <circle cx="160" cy="680" r="1.8" fill="#4DFDF6" className="twinkle-dot dot-1" />
+            <circle cx="420" cy="650" r="2.4" fill="#AF8EFF" className="twinkle-dot dot-2" />
           </g>
 
           {/* Animated Line & Area Group */}
@@ -141,113 +173,120 @@ export const LoginPage: React.FC<{ onForgotPw: () => void }> = ({ onForgotPw }) 
               fill="url(#tealAreaGrad)"
             />
 
-            {/* Base Continuous Trend Lines */}
+            {/* Base Continuous Trend Lines with Ref for length calculation */}
             <path
+              ref={purplePathRef}
               d="M-20 620 L120 520 L220 580 L360 420 L480 470 L640 280"
               fill="none"
               stroke="url(#purpleLineGrad)"
-              strokeWidth="3.2"
+              strokeWidth="3.4"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
             <path
+              ref={tealPathRef}
               d="M-20 660 L120 560 L220 620 L360 460 L480 510 L640 320"
               fill="none"
               stroke="url(#tealLineGrad)"
-              strokeWidth="2.6"
+              strokeWidth="2.8"
               strokeLinecap="round"
               strokeLinejoin="round"
               opacity="0.9"
             />
 
-            {/* Dynamic Flowing Laser/Dash Trails */}
+            {/* Flowing Animated Neon Dash Streams */}
             <path
               d="M-20 620 L120 520 L220 580 L360 420 L480 470 L640 280"
               fill="none"
               stroke="url(#purplePulseGrad)"
-              strokeWidth="4"
+              strokeWidth="3.6"
               strokeLinecap="round"
               strokeLinejoin="round"
               filter="url(#glowPurple)"
-              className="flowing-dash-purple"
+              className="dash-stream-purple"
             />
             <path
               d="M-20 660 L120 560 L220 620 L360 460 L480 510 L640 320"
               fill="none"
               stroke="url(#tealPulseGrad)"
-              strokeWidth="3.4"
+              strokeWidth="3"
               strokeLinecap="round"
               strokeLinejoin="round"
               filter="url(#glowTeal)"
-              className="flowing-dash-teal"
+              className="dash-stream-teal"
             />
 
-            {/* Traveling Light Energy Comets */}
-            <circle r="4.5" fill="#ffffff" filter="url(#glowPurple)">
-              <animateMotion
-                path="M-20 620 L120 520 L220 580 L360 420 L480 470 L640 280"
-                dur="8s"
-                repeatCount="indefinite"
-              />
-            </circle>
-            <circle r="4" fill="#69FFF8" filter="url(#glowTeal)">
-              <animateMotion
-                path="M-20 660 L120 560 L220 620 L360 460 L480 510 L640 320"
-                dur="6.5s"
-                repeatCount="indefinite"
-              />
-            </circle>
+            {/* Traveling Light Energy Comets (Tracked along path) */}
+            <g ref={purpleCometRef} className="moving-comet purple-comet">
+              <circle r="14" fill="#A875FF" opacity="0.4" filter="url(#glowPurple)" />
+              <circle r="7.5" fill="#CCA8FF" opacity="0.9" />
+              <circle r="3.5" fill="#ffffff" />
+            </g>
 
-            {/* Glowing Milestone Data Nodes */}
-            <circle cx="360" cy="420" r="7" className="pulse-ripple ripple-1" stroke="#3CC3BF" fill="none" />
-            <circle cx="360" cy="420" r="7" className="pulse-ripple ripple-2" stroke="#3CC3BF" fill="none" />
+            <g ref={tealCometRef} className="moving-comet teal-comet">
+              <circle r="13" fill="#3CC3BF" opacity="0.45" filter="url(#glowTeal)" />
+              <circle r="7" fill="#68FFF9" opacity="0.9" />
+              <circle r="3" fill="#ffffff" />
+            </g>
+
+            {/* Glowing Milestone Data Nodes with expanding radar pings */}
+            {/* Milestone Node 1: Purple line peak at (360, 420) */}
+            <circle cx="360" cy="420" r="7" className="radar-ping teal-ping" fill="none" />
+            <circle cx="360" cy="420" r="7" className="radar-ping teal-ping delay-1" fill="none" />
             <circle cx="360" cy="420" r="7.5" fill="#3CC3BF" filter="url(#glowTeal)" />
             <circle cx="360" cy="420" r="3" fill="#ffffff" />
 
-            <circle cx="480" cy="470" r="5" className="pulse-ripple ripple-1" stroke="#ffffff" fill="none" />
-            <circle cx="480" cy="470" r="5.5" fill="#ffffff" filter="url(#glowPurple)" />
-            <circle cx="480" cy="470" r="2.2" fill="#3A1F73" />
+            {/* Milestone Node 2: Purple line dip at (480, 470) */}
+            <circle cx="480" cy="470" r="6" className="radar-ping purple-ping" fill="none" />
+            <circle cx="480" cy="470" r="6" className="radar-ping purple-ping delay-1" fill="none" />
+            <circle cx="480" cy="470" r="6" fill="#ffffff" filter="url(#glowPurple)" />
+            <circle cx="480" cy="470" r="2.5" fill="#4B1F8C" />
 
-            <circle cx="220" cy="620" r="4.5" fill="#3CC3BF" filter="url(#glowTeal)" />
-            <circle cx="220" cy="620" r="2" fill="#ffffff" />
+            {/* Milestone Node 3: Teal line dip at (220, 620) */}
+            <circle cx="220" cy="620" r="5" className="radar-ping teal-ping delay-1" fill="none" />
+            <circle cx="220" cy="620" r="5" fill="#3CC3BF" filter="url(#glowTeal)" />
+            <circle cx="220" cy="620" r="2.2" fill="#ffffff" />
 
+            {/* Milestone Node 4: Teal line dip at (480, 510) */}
             <circle cx="480" cy="510" r="4.5" fill="#3CC3BF" opacity="0.9" />
           </g>
         </svg>
 
-        <div className="brandrow">
-          <div className="hero-logo-badge">
-            <img src="/wegrow-logo.webp" alt="WeGrow B School" className="hero-logo-img" />
+        <div className="login-art-content">
+          <div className="brandrow">
+            <div className="hero-logo-badge">
+              <img src="/wegrow-logo.webp" alt="WeGrow B School" className="hero-logo-img" />
+            </div>
+            <div>
+              <div style={{ fontWeight: 800, fontSize: 19, letterSpacing: '-0.01em' }}>WeGrow B School</div>
+              <div style={{ fontSize: 13, color: '#C4B7EC' }}>Business Transformation &amp; Management Consulting</div>
+            </div>
           </div>
+
           <div>
-            <div style={{ fontWeight: 800, fontSize: 19, letterSpacing: '-0.01em' }}>WeGrow B School</div>
-            <div style={{ fontSize: 13, color: '#C4B7EC' }}>Business Transformation &amp; Management Consulting</div>
-          </div>
-        </div>
-
-        <div>
-          <h1>Every decision, session and milestone of your transformation in one place.</h1>
-          <p>
-            Your action plan, consulting sessions, reports and progress — shared openly between your leadership team and your WeGrow consultants.
-          </p>
-          <div className="stats">
-            <div>
-              <b>6-month</b>
-              <span>structured action plans</span>
-            </div>
-            <div>
-              <b>Live</b>
-              <span>progress tracking</span>
-            </div>
-            <div>
-              <b>Private</b>
-              <span>to your company only</span>
+            <h1>Every decision, session and milestone of your transformation in one place.</h1>
+            <p>
+              Your action plan, consulting sessions, reports and progress — shared openly between your leadership team and your WeGrow consultants.
+            </p>
+            <div className="stats">
+              <div>
+                <b>6-month</b>
+                <span>structured action plans</span>
+              </div>
+              <div>
+                <b>Live</b>
+                <span>progress tracking</span>
+              </div>
+              <div>
+                <b>Private</b>
+                <span>to your company only</span>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div style={{ position: 'relative', fontSize: 12, color: '#9C8FC8' }}>
-          © 2026 WeGrow B School
+          <div style={{ fontSize: 12, color: '#9C8FC8' }}>
+            © 2026 WeGrow B School
+          </div>
         </div>
       </section>
 
