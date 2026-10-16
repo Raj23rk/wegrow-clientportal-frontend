@@ -1,6 +1,6 @@
 import { User, ClientData, SessionFeedback, BusinessUpdate } from '../types';
 
-const API_BASE = '/api';
+const API_BASE = (import.meta as any).env?.VITE_API_URL || '/api';
 
 function getAuthHeader(): Record<string, string> {
   const token = localStorage.getItem('wg:token');
@@ -27,6 +27,88 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
   return response.json();
 }
 
+export function normalizeClient(raw: any): ClientData {
+  if (!raw) return raw;
+  const clientId = raw.clientId || raw.id || raw._id || '';
+  const id = clientId;
+
+  return {
+    ...raw,
+    id,
+    clientId,
+    actions: Array.isArray(raw.actions)
+      ? raw.actions.map((a: any) => ({
+          ...a,
+          id: a.actionId || a.id || a._id,
+          actionId: a.actionId || a.id || a._id,
+          comments: Array.isArray(a.comments) ? a.comments : [],
+          attachments: Array.isArray(a.attachments) ? a.attachments : []
+        }))
+      : [],
+    sessions: Array.isArray(raw.sessions)
+      ? raw.sessions.map((s: any) => ({
+          ...s,
+          id: s.sessionId || s.id || s._id,
+          sessionId: s.sessionId || s.id || s._id,
+          agenda: Array.isArray(s.agenda) ? s.agenda : [],
+          objectives: Array.isArray(s.objectives) ? s.objectives : [],
+          attachments: Array.isArray(s.attachments) ? s.attachments : []
+        }))
+      : [],
+    reports: Array.isArray(raw.reports)
+      ? raw.reports.map((r: any) => ({
+          ...r,
+          id: r.reportId || r.id || r._id,
+          reportId: r.reportId || r.id || r._id
+        }))
+      : [],
+    updates: Array.isArray(raw.updates)
+      ? raw.updates.map((u: any) => ({
+          ...u,
+          id: u.updateId || u.id || u._id,
+          updateId: u.updateId || u.id || u._id
+        }))
+      : [],
+    events: Array.isArray(raw.events)
+      ? raw.events.map((e: any) => ({
+          ...e,
+          id: e.eventId || e.id || e._id,
+          eventId: e.eventId || e.id || e._id,
+          agenda: Array.isArray(e.agenda) ? e.agenda : [],
+          speakers: Array.isArray(e.speakers) ? e.speakers : [],
+          registeredClientIds: Array.isArray(e.registeredClientIds) ? e.registeredClientIds : []
+        }))
+      : [],
+    photos: Array.isArray(raw.photos)
+      ? raw.photos.map((p: any) => ({
+          ...p,
+          id: p.photoId || p.id || p._id,
+          photoId: p.photoId || p.id || p._id
+        }))
+      : [],
+    documents: Array.isArray(raw.documents)
+      ? raw.documents.map((d: any) => ({
+          ...d,
+          id: d.docId || d.id || d._id,
+          docId: d.docId || d.id || d._id
+        }))
+      : [],
+    notifications: Array.isArray(raw.notifications)
+      ? raw.notifications.map((n: any) => ({
+          ...n,
+          id: n.notifId || n.id || n._id,
+          notifId: n.notifId || n.id || n._id
+        }))
+      : [],
+    feedback: Array.isArray(raw.feedback) ? raw.feedback : [],
+    months: Array.isArray(raw.months) ? raw.months : [],
+    areas: Array.isArray(raw.areas) ? raw.areas : [],
+    scoreHistory: Array.isArray(raw.scoreHistory) ? raw.scoreHistory : [],
+    dept: Array.isArray(raw.dept) ? raw.dept : [],
+    people: raw.people || {}
+  };
+}
+
 export const api = {
   auth: {
     async login(email: string, pass: string): Promise<{ access_token: string; user: User }> {
@@ -51,18 +133,21 @@ export const api = {
 
   clients: {
     async getAll(): Promise<ClientData[]> {
-      return request<ClientData[]>('/clients');
+      const list = await request<any[]>('/clients');
+      return Array.isArray(list) ? list.map(normalizeClient) : [];
     },
 
     async getById(id: string): Promise<ClientData> {
-      return request<ClientData>(`/clients/${id}`);
+      const data = await request<any>(`/clients/${id}`);
+      return normalizeClient(data);
     },
 
     async updateProfile(id: string, patch: Partial<ClientData>): Promise<ClientData> {
-      return request<ClientData>(`/clients/${id}`, {
+      const data = await request<any>(`/clients/${id}`, {
         method: 'PATCH',
         body: JSON.stringify(patch)
       });
+      return normalizeClient(data);
     }
   },
 

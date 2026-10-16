@@ -66,12 +66,23 @@ export const Icon: React.FC<{ name: string; className?: string; size?: number }>
   );
 };
 
-export const WeGrowLogo: React.FC<{ size?: number }> = ({ size = 36 }) => (
-  <svg width={size} height={size} viewBox="0 0 40 40" aria-label="WeGrow B School">
-    <rect width="40" height="40" rx="10" fill="#3A1F73" />
-    <path d="M9 27l5-9 5 6 5-10 7 13" fill="none" stroke="#fff" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" />
-    <circle cx="31" cy="12" r="3" fill="#3CC3BF" />
-  </svg>
+export const WeGrowLogo: React.FC<{ size?: number; className?: string }> = ({ size = 36, className = '' }) => (
+  <img
+    src="/wegrow-logo.webp"
+    alt="WeGrow B School"
+    className={`wegrow-logo-badge ${className}`}
+    style={{
+      height: size,
+      width: 'auto',
+      objectFit: 'contain',
+      display: 'inline-block',
+      background: '#ffffff',
+      padding: '3px 8px',
+      borderRadius: '8px',
+      boxShadow: '0 2px 6px rgba(0,0,0,0.08)',
+      verticalAlign: 'middle'
+    }}
+  />
 );
 
 export const ClientLogo: React.FC<{ client: ClientData; size?: number }> = ({ client, size = 36 }) => (

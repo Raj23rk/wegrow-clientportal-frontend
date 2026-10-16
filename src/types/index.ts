@@ -2,6 +2,7 @@ export type UserRole = 'client' | 'admin';
 
 export interface User {
   id?: string;
+  _id?: string;
   email: string;
   clientId: string | null;
   role: UserRole;
@@ -20,6 +21,8 @@ export interface ActionComment {
 
 export interface ActionItem {
   id: string;
+  actionId?: string;
+  _id?: string;
   month: number;
   title: string;
   desc: string;
@@ -54,6 +57,8 @@ export interface SessionSummary {
 
 export interface Session {
   id: string;
+  sessionId?: string;
+  _id?: string;
   date: string;
   title: string;
   mode: 'In person' | 'Online';
@@ -71,6 +76,8 @@ export interface Session {
 
 export interface ReportItem {
   id: string;
+  reportId?: string;
+  _id?: string;
   name: string;
   cat: string;
   date: string;
@@ -82,6 +89,8 @@ export type UpdateType = 'General Update' | 'Important Update' | 'Action Require
 
 export interface BusinessUpdate {
   id: string;
+  updateId?: string;
+  _id?: string;
   title: string;
   body: string;
   date: string;
@@ -91,6 +100,8 @@ export interface BusinessUpdate {
 
 export interface ClientEvent {
   id: string;
+  eventId?: string;
+  _id?: string;
   title: string;
   type: string;
   date: string;
@@ -102,10 +113,13 @@ export interface ClientEvent {
   participants: string;
   seats: number;
   hue: number;
+  registeredClientIds?: string[];
 }
 
 export interface ClientPhoto {
   id: string;
+  photoId?: string;
+  _id?: string;
   cat: string;
   title: string;
   date: string;
@@ -116,6 +130,8 @@ export interface ClientPhoto {
 
 export interface ClientDocument {
   id: string;
+  docId?: string;
+  _id?: string;
   name: string;
   cat: string;
   date: string;
@@ -126,6 +142,8 @@ export interface ClientDocument {
 
 export interface NotificationItem {
   id: string;
+  notifId?: string;
+  _id?: string;
   cat: 'Sessions' | 'Action Plan' | 'Reports' | 'Events' | 'Important';
   text: string;
   date: string;
@@ -140,7 +158,9 @@ export interface SessionFeedback {
   relevance: string;
   improve: string;
   comments: string;
-  date: string;
+  date?: string;
+  _id?: string;
+  clientId?: string;
 }
 
 export interface ScoreHistoryPoint {
@@ -156,6 +176,8 @@ export interface DeptPerformance {
 
 export interface ClientData {
   id: string;
+  clientId?: string;
+  _id?: string;
   company: string;
   short: string;
   color: string;
@@ -186,3 +208,4 @@ export interface ClientData {
   feedback: SessionFeedback[];
   readUpdates?: string[];
 }
+

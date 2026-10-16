@@ -10,11 +10,21 @@ export const FeedbackPage: React.FC<FeedbackPageProps> = ({ onGiveFeedback }) =>
   const { client } = usePortal();
   if (!client) return null;
 
+  const isSessionEvaluated = (s: any) =>
+    client.feedback.some(
+      (f) =>
+        f.session === s.id ||
+        (s.sessionId && f.session === s.sessionId) ||
+        (f.session && f.session.replace('S0', 'S') === s.id) ||
+        (s.sessionId && f.session.replace('S0', 'S') === s.sessionId) ||
+        (s._id && f.session === s._id)
+    );
+
   const pendingFeedbackList = client.sessions.filter(
-    (s) => s.status === 'Completed' && !client.feedback.some((f) => f.session === s.id)
+    (s) => s.status === 'Completed' && !isSessionEvaluated(s)
   );
 
-  const submittedFeedback = [...client.feedback].sort((a, b) => b.date.localeCompare(a.date));
+  const submittedFeedback = [...client.feedback].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
 
   return (
     <>
@@ -53,7 +63,13 @@ export const FeedbackPage: React.FC<FeedbackPageProps> = ({ onGiveFeedback }) =>
         </div>
         {submittedFeedback.length > 0 ? (
           submittedFeedback.map((f, idx) => {
-            const s = client.sessions.find((x) => x.id === f.session);
+            const s = client.sessions.find(
+              (x) =>
+                x.id === f.session ||
+                x.sessionId === f.session ||
+                (x.sessionId && x.sessionId === f.session.replace('S0', 'S')) ||
+                x._id === f.session
+            );
             return (
               <div key={idx} className="li" style={{ alignItems: 'flex-start' }}>
                 <div className="grow">

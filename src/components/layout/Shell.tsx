@@ -98,11 +98,10 @@ export const Shell: React.FC<ShellProps> = ({ children }) => {
       <div className={`app ${collapsed ? 'collapsed' : ''}`}>
         <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`} aria-label="Main navigation">
           <div className="sb-brand">
-            <WeGrowLogo size={34} />
-            <div className="wordmark">
-              WeGrow B School
-              <small>{showAdminNav ? 'Consultant console' : 'Client Portal'}</small>
+            <div className="sb-logo-card">
+              <img src="/wegrow-logo.webp" alt="WeGrow B School" className="sidebar-logo-img" />
             </div>
+            <span className="portal-badge-pill">{showAdminNav ? 'Consultant Console' : 'Client Portal'}</span>
           </div>
 
           <nav className="nav">
@@ -170,16 +169,13 @@ export const Shell: React.FC<ShellProps> = ({ children }) => {
             <div className="cobrand">
               {client ? (
                 <>
-                  <ClientLogo client={client} size={34} />
-                  <span className="x">×</span>
-                  <WeGrowLogo size={34} />
+                  <ClientLogo client={client} size={32} />
                   <span className="cname">{client.company}</span>
                 </>
               ) : (
-                <>
-                  <WeGrowLogo size={34} />
-                  <span className="cname">Consultant console</span>
-                </>
+                <span className="badge b-brand" style={{ fontWeight: 700, letterSpacing: '.02em' }}>
+                  Consultant Console
+                </span>
               )}
             </div>
 

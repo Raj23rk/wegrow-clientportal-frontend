@@ -30,8 +30,21 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
   onOpenPhoto,
   onGiveFeedback
 }) => {
-  const { client, showToast } = usePortal();
-  if (!client) return null;
+  const { client, user, showToast } = usePortal();
+  if (!client) {
+    return (
+      <div className="card" style={{ textAlign: 'center', padding: '60px 24px', margin: '40px auto', maxWidth: 560 }}>
+        <Icon name="building" size={48} className="muted" />
+        <h3 style={{ marginTop: 16 }}>No client record found</h3>
+        <p className="muted" style={{ maxWidth: '45ch', margin: '8px auto 20px' }}>
+          Could not find dossier records for {user?.clientId || 'your account'} on the server ({user?.email}).
+        </p>
+        <div className="small muted">
+          Please verify that the client data has been seeded into MongoDB on the live backend.
+        </div>
+      </div>
+    );
+  }
 
   // Derived metrics
   const actions = client.actions;
@@ -71,15 +84,29 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
   const nextSession = client.sessions.find((s) => s.date >= TODAY);
   const lastSession = [...client.sessions].reverse().find((s) => s.date < TODAY);
 
+  const isSessionEvaluated = (s: any) =>
+    client.feedback.some(
+      (f) =>
+        f.session === s.id ||
+        (s.sessionId && f.session === s.sessionId) ||
+        (f.session && f.session.replace('S0', 'S') === s.id) ||
+        (s.sessionId && f.session.replace('S0', 'S') === s.sessionId) ||
+        (s._id && f.session === s._id)
+    );
+
   const pendingFeedbackList = client.sessions.filter(
-    (s) => s.status === 'Completed' && !client.feedback.some((f) => f.session === s.id)
+    (s) => s.status === 'Completed' && !isSessionEvaluated(s)
   );
 
   const latestUpdate = [...client.updates].sort((a, b) => b.date.localeCompare(a.date))[0];
   const recommendationUpdate = client.updates.find((u) => u.type === 'Recommendation') || latestUpdate;
 
-  const scoreNow = client.scoreHistory[client.scoreHistory.length - 1].v;
-  const scorePrev = client.scoreHistory[client.scoreHistory.length - 2]?.v || scoreNow;
+  const scoreNow = client.scoreHistory?.length
+    ? client.scoreHistory[client.scoreHistory.length - 1].v
+    : 0;
+  const scorePrev = client.scoreHistory?.length && client.scoreHistory.length > 1
+    ? client.scoreHistory[client.scoreHistory.length - 2].v
+    : scoreNow;
 
   const donutParts = [
     { k: 'Completed', v: completedActions, c: 'var(--brand)' },

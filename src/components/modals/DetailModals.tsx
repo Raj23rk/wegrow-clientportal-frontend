@@ -34,7 +34,14 @@ export const SessionModal: React.FC<{
   const idx = client.sessions.indexOf(s);
   const prev = client.sessions[idx - 1];
   const sm = s.summary;
-  const f = client.feedback.find((x) => x.session === s.id);
+  const f = client.feedback.find(
+    (x) =>
+      x.session === s.id ||
+      (s.sessionId && x.session === s.sessionId) ||
+      (s.sessionId && x.session === s.sessionId.replace('S', 'S0')) ||
+      (s.sessionId && x.session.replace('S0', 'S') === s.sessionId) ||
+      (s as any)._id === x.session
+  );
 
   return (
     <ModalContainer onClose={onClose} wide>

@@ -207,8 +207,9 @@ export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     if (!client) return;
     try {
       const updated = await api.clients.updateProfile(client.id, patch);
-      setClient(updated);
-      setClients((prev) => ({ ...prev, [client.id]: updated }));
+      const merged = { ...client, ...updated };
+      setClient(merged);
+      setClients((prev) => ({ ...prev, [client.id]: merged }));
       showToast('Changes saved');
     } catch (err: any) {
       showToast(err.message || 'Failed to update profile');
@@ -251,7 +252,7 @@ export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         return {
           ...prev,
           notifications: prev.notifications.map((n) =>
-            n.id === id ? { ...n, read: true } : n
+            n.id === id || (n as any).notifId === id ? { ...n, read: true } : n
           )
         };
       });
@@ -290,9 +291,12 @@ export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const isRegisteredForEvent = (eventId: string): boolean => {
     if (!client) return false;
-    const event = client.events?.find((e) => e.id === eventId);
-    if (event && (event as any).registeredClientIds) {
-      return (event as any).registeredClientIds.includes(client.id);
+    const event = client.events?.find((e) => e.id === eventId || (e as any).eventId === eventId);
+    if (event && Array.isArray((event as any).registeredClientIds)) {
+      return (
+        (event as any).registeredClientIds.includes(client.id) ||
+        (event as any).registeredClientIds.includes((client as any).clientId)
+      );
     }
     try {
       const reg: string[] = JSON.parse(localStorage.getItem(`wg:reg:${client.id}`) || '[]');

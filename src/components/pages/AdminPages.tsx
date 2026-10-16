@@ -13,11 +13,11 @@ export const AdminClientsPage: React.FC<{ onNavigate: (page: string) => void }> 
   const score = (c: any) => c.scoreHistory[c.scoreHistory.length - 1].v;
   const delayedCount = (c: any) => c.actions.filter((a: any) => a.status === 'Delayed').length;
 
-  const avgProgress = Math.round(
-    clientList.reduce((s, c) => s + overallProgress(c), 0) / clientList.length
-  );
+  const avgProgress = clientList.length
+    ? Math.round(clientList.reduce((s, c) => s + overallProgress(c), 0) / clientList.length)
+    : 0;
   const totalDelayed = clientList.reduce((s, c) => s + delayedCount(c), 0);
-  const allFeedback = clientList.flatMap((c) => c.feedback);
+  const allFeedback = clientList.flatMap((c) => c.feedback || []);
   const avgRating = allFeedback.length
     ? (allFeedback.reduce((s, f) => s + f.rating, 0) / allFeedback.length).toFixed(1)
     : '0';
@@ -70,10 +70,20 @@ export const AdminClientsPage: React.FC<{ onNavigate: (page: string) => void }> 
               </tr>
             </thead>
             <tbody>
-              {clientList.map((c) => {
+              {clientList.length > 0 ? (
+                clientList.map((c) => {
                 const prog = overallProgress(c);
                 const pendingFb = c.sessions.filter(
-                  (s: any) => s.status === 'Completed' && !c.feedback.some((f: any) => f.session === s.id)
+                  (s: any) =>
+                    s.status === 'Completed' &&
+                    !c.feedback.some(
+                      (f: any) =>
+                        f.session === s.id ||
+                        (s.sessionId && f.session === s.sessionId) ||
+                        (f.session && f.session.replace('S0', 'S') === s.id) ||
+                        (s.sessionId && f.session.replace('S0', 'S') === s.sessionId) ||
+                        (s._id && f.session === s._id)
+                    )
                 ).length;
 
                 return (
@@ -115,7 +125,19 @@ export const AdminClientsPage: React.FC<{ onNavigate: (page: string) => void }> 
                     </td>
                   </tr>
                 );
-              })}
+              })
+            ) : (
+              <tr>
+                <td colSpan={7}>
+                  <div className="empty" style={{ padding: '36px 16px', textAlign: 'center' }}>
+                    <b>No client records found in the database</b>
+                    <div className="small muted" style={{ marginTop: 6 }}>
+                      Connected to <code>{import.meta.env.VITE_API_URL || 'live API'}</code>. Clients will show up here as soon as they are added or seeded.
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            )}
             </tbody>
           </table>
         </div>
@@ -140,10 +162,16 @@ export const AdminFeedbackPage: React.FC = () => {
       c.feedback.map((f) => ({
         client: c,
         fb: f,
-        session: c.sessions.find((s) => s.id === f.session)
+        session: c.sessions.find(
+          (s) =>
+            s.id === f.session ||
+            s.sessionId === f.session ||
+            (s.sessionId && s.sessionId === f.session.replace('S0', 'S')) ||
+            (s as any)._id === f.session
+        )
       }))
     )
-    .sort((a, b) => b.fb.date.localeCompare(a.fb.date));
+    .sort((a, b) => (b.fb.date || '').localeCompare(a.fb.date || ''));
 
   return (
     <>
