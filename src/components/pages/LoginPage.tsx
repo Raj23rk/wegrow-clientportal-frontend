@@ -179,57 +179,84 @@ export const LoginPage: React.FC<{ onForgotPw: () => void }> = ({ onForgotPw }) 
               d="M-20 620 L120 520 L220 580 L360 420 L480 470 L640 280"
               fill="none"
               stroke="url(#purpleLineGrad)"
-              strokeWidth="3.4"
+              strokeWidth="3.2"
               strokeLinecap="round"
               strokeLinejoin="round"
+              opacity="0.6"
             />
             <path
               ref={tealPathRef}
               d="M-20 660 L120 560 L220 620 L360 460 L480 510 L640 320"
               fill="none"
               stroke="url(#tealLineGrad)"
-              strokeWidth="2.8"
+              strokeWidth="2.6"
               strokeLinecap="round"
               strokeLinejoin="round"
-              opacity="0.9"
+              opacity="0.6"
             />
 
-            {/* Flowing Animated Neon Dash Streams */}
+            {/* Continuous High-Speed Fiber Stream Lines (Direct Pure CSS Flow) */}
             <path
               d="M-20 620 L120 520 L220 580 L360 420 L480 470 L640 280"
               fill="none"
-              stroke="url(#purplePulseGrad)"
-              strokeWidth="3.6"
+              stroke="#D8BEFF"
+              strokeWidth="3"
               strokeLinecap="round"
               strokeLinejoin="round"
+              className="fiber-stream-purple"
               filter="url(#glowPurple)"
-              className="dash-stream-purple"
             />
             <path
               d="M-20 660 L120 560 L220 620 L360 460 L480 510 L640 320"
               fill="none"
-              stroke="url(#tealPulseGrad)"
-              strokeWidth="3"
+              stroke="#6AFFF9"
+              strokeWidth="2.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="fiber-stream-teal"
+              filter="url(#glowTeal)"
+            />
+
+            {/* Shooting Bright Laser Packets (Pure CSS Keyframe Animation) */}
+            <path
+              d="M-20 620 L120 520 L220 580 L360 420 L480 470 L640 280"
+              fill="none"
+              stroke="#ffffff"
+              strokeWidth="4.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              filter="url(#glowPurple)"
+              className="shooting-laser-purple"
+            />
+            <path
+              d="M-20 660 L120 560 L220 620 L360 460 L480 510 L640 320"
+              fill="none"
+              stroke="#A3FFFA"
+              strokeWidth="4"
               strokeLinecap="round"
               strokeLinejoin="round"
               filter="url(#glowTeal)"
-              className="dash-stream-teal"
+              className="shooting-laser-teal"
             />
 
-            {/* Traveling Light Energy Comets (Tracked along path) */}
+            {/* Traveling Light Energy Comets (JS 60FPS Tracked along path) */}
             <g ref={purpleCometRef} className="moving-comet purple-comet">
-              <circle r="14" fill="#A875FF" opacity="0.4" filter="url(#glowPurple)" />
-              <circle r="7.5" fill="#CCA8FF" opacity="0.9" />
-              <circle r="3.5" fill="#ffffff" />
+              <circle r="16" fill="#A875FF" opacity="0.45" filter="url(#glowPurple)" />
+              <circle r="8" fill="#D2B2FF" opacity="0.9" />
+              <circle r="3.8" fill="#ffffff" />
             </g>
 
             <g ref={tealCometRef} className="moving-comet teal-comet">
-              <circle r="13" fill="#3CC3BF" opacity="0.45" filter="url(#glowTeal)" />
-              <circle r="7" fill="#68FFF9" opacity="0.9" />
-              <circle r="3" fill="#ffffff" />
+              <circle r="15" fill="#3CC3BF" opacity="0.5" filter="url(#glowTeal)" />
+              <circle r="7.5" fill="#6AFFF9" opacity="0.9" />
+              <circle r="3.5" fill="#ffffff" />
             </g>
 
-            {/* Glowing Milestone Data Nodes with expanding radar pings */}
+            {/* Milestone Node 0: Above 6-month on Purple line at (120, 520) */}
+            <circle cx="120" cy="520" r="5" className="radar-ping purple-ping delay-1" fill="none" />
+            <circle cx="120" cy="520" r="5.5" fill="#ffffff" filter="url(#glowPurple)" />
+            <circle cx="120" cy="520" r="2.2" fill="#5E28B0" />
+
             {/* Milestone Node 1: Purple line peak at (360, 420) */}
             <circle cx="360" cy="420" r="7" className="radar-ping teal-ping" fill="none" />
             <circle cx="360" cy="420" r="7" className="radar-ping teal-ping delay-1" fill="none" />
