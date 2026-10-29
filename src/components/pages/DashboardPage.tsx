@@ -40,7 +40,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
           Could not find dossier records for {user?.clientId || 'your account'} on the server ({user?.email}).
         </p>
         <div className="small muted">
-          Please verify that the client data has been seeded into MongoDB on the live backend.
+          Please contact your WeGrow Lead Consultant to initialize your client portal dossier.
         </div>
       </div>
     );

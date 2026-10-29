@@ -532,27 +532,6 @@ textarea.input {
   font-size: 13px;
   margin-bottom: 14px;
 }
-.demo-accts {
-  margin-top: 28px;
-  border-top: 1px solid var(--line);
-  padding-top: 18px;
-}
-.demo-accts .chipbtn {
-  display: flex;
-  width: 100%;
-  text-align: left;
-  gap: 10px;
-  align-items: center;
-  padding: 10px 12px;
-  border: 1px solid var(--line);
-  border-radius: var(--r-md);
-  background: var(--surface-2);
-  margin-top: 8px;
-  cursor: pointer;
-}
-.demo-accts .chipbtn:hover {
-  border-color: var(--brand-2);
-}
 
 /* ---------- BUTTONS / CHIPS ---------- */
 .btn {
@@ -2118,3 +2097,58 @@ table.t tr.click:hover td { background: var(--surface-2); }
   .modal .mh, .modal .mb, .modal .mf { padding-left: 18px; padding-right: 18px; }
   .bars .b { grid-template-columns: 90px 1fr 40px; }
 }
+
+/* ---------- ADMIN CONSOLE ---------- */
+.btn.danger { background: var(--bad); border-color: var(--bad); color: #fff; }
+.btn.danger:hover { opacity: .9; }
+.btn.danger-t { color: var(--bad); }
+.linkbtn { border: 0; background: none; padding: 0; color: var(--brand); font-weight: 700; cursor: pointer; text-align: left; word-break: break-all; }
+.qa { display: flex; gap: 8px; flex-wrap: wrap; }
+.fgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 16px; }
+.fgrid .full { grid-column: 1 / -1; }
+.fhead { font-size: 13px; font-weight: 700; color: var(--brand); padding: 6px 0 10px; border-bottom: 1px solid var(--line); margin-bottom: 14px; }
+.fgrid .fhead:not(:first-child) { margin-top: 6px; }
+input[type=color].input { height: 46px; padding: 6px; cursor: pointer; }
+.filedrop { display: flex; align-items: center; gap: 10px; padding: 14px; border: 1.5px dashed var(--line-2); border-radius: var(--r-md); cursor: pointer; font-size: 14px; font-weight: 600; color: var(--ink-2); background: var(--bg); }
+.filedrop:hover { border-color: var(--brand-2); color: var(--brand); }
+.filedrop input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.clientpick { display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow: auto; padding: 10px; border: 1px solid var(--line); border-radius: var(--r-md); }
+.clientpick .check { gap: 10px; }
+.thread { display: flex; flex-direction: column; gap: 10px; padding: 12px; background: var(--bg); border-radius: var(--r-md); margin-bottom: 14px; max-height: 200px; overflow: auto; }
+.pickgrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.pick { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; text-align: left; padding: 18px; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface); cursor: pointer; }
+.pick:hover { border-color: var(--brand-2); background: var(--brand-soft); }
+.pick svg { width: 22px; height: 22px; color: var(--brand); }
+.wshead { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 18px; padding: 18px 22px; }
+.tabs a, .tabs button { padding: 10px 14px; font-weight: 600; font-size: 14px; color: var(--ink-3); border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap; }
+.tabs a.on, .tabs button.on { color: var(--brand); border-color: var(--brand); }
+.tabs a:hover, .tabs button:hover { color: var(--ink); }
+.contentgrid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.cc { border: 1px solid var(--line); border-radius: var(--r-md); padding: 12px; display: flex; flex-direction: column; gap: 6px; }
+.cc a { display: flex; flex-direction: column; color: var(--ink); }
+.cc a b { font-size: 30px; font-weight: 500; line-height: 1; }
+.cc a span { font-size: 13px; color: var(--ink-3); }
+.cc .btn { align-self: flex-start; padding: 4px 8px; }
+.mblock { margin-bottom: 16px; }
+.mblock.now { border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-soft); }
+select.input.sm-input, .input.sm-input { padding: 6px 8px; font-size: 13px; border-radius: 8px; min-width: 130px; }
+.kanban { display: grid; grid-template-columns: repeat(5, minmax(210px, 1fr)); gap: 12px; min-width: 1080px; }
+.kcol { background: var(--surface-2); border-radius: var(--r-md); padding: 10px; display: flex; flex-direction: column; gap: 10px; min-height: 200px; }
+.khead { display: flex; justify-content: space-between; align-items: center; padding: 2px 2px 4px; }
+.kcard { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px; }
+.cchip { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--ink-2); }
+.cchip svg, .cchip img { width: 20px; height: 20px; }
+.ccard { display: flex; flex-direction: column; }
+.bcard { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
+.bcard .ic { width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; }
+.bcard .ic svg { width: 20px; height: 20px; }
+.bcard p { margin: 0; flex: 1; }
+.logoimg { object-fit: contain; background: #fff; border-radius: 10px; border: 1px solid var(--line); flex: none; }
+.photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.evbanner img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.loading { min-height: 100vh; display: grid; place-items: center; color: var(--ink-3); font-size: 14px; }
+.loading .spin { width: 28px; height: 28px; border: 3px solid var(--line); border-top-color: var(--brand); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 12px; }
+.banner-note { background: var(--warn-soft); color: var(--warn); padding: 8px clamp(16px, 3vw, 32px); font-size: 13px; font-weight: 600; }
+@media (max-width: 1024px) { .contentgrid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .fgrid, .pickgrid { grid-template-columns: 1fr; } .wshead { padding: 16px; } }
+

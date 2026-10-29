@@ -6,6 +6,11 @@ import { fmt, fmtL, TODAY } from '../../utils/date';
 
 interface ShellProps {
   children: React.ReactNode;
+  onOpenAddClient?: () => void;
+  onOpenAssignTask?: (clientId?: string, month?: number, action?: any) => void;
+  onOpenScheduleSession?: (clientId?: string, session?: any) => void;
+  onOpenUpload?: (clientId?: string) => void;
+  onOpenBroadcast?: () => void;
 }
 
 const NAV_ITEMS = [
@@ -26,18 +31,29 @@ const NAV_ITEMS = [
 ];
 
 const ADMIN_NAV_ITEMS = [
-  { path: '/admin', label: 'Clients', icon: 'building' },
-  { path: '/admin/feedback', label: 'Feedback received', icon: 'feedback' },
-  { path: '/admin/publish', label: 'Publish update', icon: 'send' }
+  { path: '/admin', label: 'Overview', icon: 'dashboard' },
+  { path: '/admin/clients', label: 'Clients', icon: 'building' },
+  { path: '/admin/tasks', label: 'Task board', icon: 'plan' },
+  { path: '/admin/sessions', label: 'Session schedule', icon: 'sessions' },
+  { path: '/admin/feedback', label: 'Feedback', icon: 'feedback' },
+  { path: '/admin/broadcast', label: 'Broadcast', icon: 'send' }
 ];
 
-export const Shell: React.FC<ShellProps> = ({ children }) => {
+export const Shell: React.FC<ShellProps> = ({
+  children,
+  onOpenAddClient,
+  onOpenAssignTask,
+  onOpenScheduleSession,
+  onOpenUpload,
+  onOpenBroadcast
+}) => {
   const navigate = useNavigate();
   const location = useLocation();
 
   const {
     user,
     client,
+    clients,
     previewAs,
     setPreviewAs,
     theme,
@@ -54,6 +70,7 @@ export const Shell: React.FC<ShellProps> = ({ children }) => {
   const isAdmin = user?.role === 'admin';
   const showAdminNav = isAdmin && !previewAs;
   const navList = showAdminNav ? ADMIN_NAV_ITEMS : NAV_ITEMS;
+  const activeClients = Object.values(clients).filter((c) => c.status !== 'Archived');
 
   const unreadCount = client ? client.notifications.filter((n) => !n.read).length : 0;
   const pendingFeedbackCount = client
@@ -63,7 +80,10 @@ export const Shell: React.FC<ShellProps> = ({ children }) => {
     : 0;
 
   const getNavGroup = (idx: number) => {
-    if (showAdminNav) return null;
+    if (showAdminNav) {
+      if (idx === 1) return <div className="nav-group">Manage</div>;
+      return null;
+    }
     if (idx === 0) return null;
     if (idx === 2) return <div className="nav-group">Engagement</div>;
     if (idx === 6) return <div className="nav-group">Schedule &amp; media</div>;
@@ -106,7 +126,11 @@ export const Shell: React.FC<ShellProps> = ({ children }) => {
 
           <nav className="nav">
             {navList.map((item, idx) => {
-              const isActive = location.pathname === item.path;
+              const isActive =
+                item.path === '/admin'
+                  ? location.pathname === '/admin'
+                  : location.pathname.startsWith(item.path);
+
               return (
                 <React.Fragment key={item.path}>
                   {getNavGroup(idx)}
@@ -128,6 +152,30 @@ export const Shell: React.FC<ShellProps> = ({ children }) => {
                 </React.Fragment>
               );
             })}
+
+            {showAdminNav && activeClients.length > 0 && (
+              <>
+                <div className="nav-group">Client portals</div>
+                {activeClients.slice(0, 8).map((c) => (
+                  <button
+                    key={c.id}
+                    type="button"
+                    className="nav-btn"
+                    onClick={() => {
+                      setPreviewAs(c.id);
+                      navigate('/dashboard');
+                      setSidebarOpen(false);
+                    }}
+                    title={c.company}
+                  >
+                    <ClientLogo client={c} size={20} />
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {c.company}
+                    </span>
+                  </button>
+                ))}
+              </>
+            )}
 
             <button
               type="button"
@@ -179,7 +227,7 @@ export const Shell: React.FC<ShellProps> = ({ children }) => {
               )}
             </div>
 
-            {client && (
+            {client ? (
               <div className="period">
                 <Icon name="calendar" />
                 <span>Consulting period</span>
@@ -187,9 +235,55 @@ export const Shell: React.FC<ShellProps> = ({ children }) => {
                   {fmt(client.start)} – {fmt(client.end)}
                 </b>
               </div>
+            ) : (
+              <div className="period desk-only">
+                <Icon name="calendar" />
+                <b>{fmtL(TODAY)}</b>
+              </div>
             )}
 
-            <div className="hdr-right">
+            <div className="hdr-right" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              {showAdminNav && (
+                <>
+                  {onOpenAssignTask && (
+                    <button
+                      type="button"
+                      className="btn sm primary desk-only"
+                      onClick={() => onOpenAssignTask()}
+                    >
+                      <Icon name="plus" /> Assign task
+                    </button>
+                  )}
+                  {onOpenScheduleSession && (
+                    <button
+                      type="button"
+                      className="btn sm desk-only"
+                      onClick={() => onOpenScheduleSession()}
+                    >
+                      <Icon name="calendar" /> Schedule session
+                    </button>
+                  )}
+                  {onOpenUpload && (
+                    <button
+                      type="button"
+                      className="btn sm desk-only"
+                      onClick={() => onOpenUpload()}
+                    >
+                      <Icon name="upload" /> Upload
+                    </button>
+                  )}
+                  {onOpenBroadcast && (
+                    <button
+                      type="button"
+                      className="btn sm desk-only"
+                      onClick={() => onOpenBroadcast()}
+                    >
+                      <Icon name="send" /> Publish update
+                    </button>
+                  )}
+                </>
+              )}
+
               {client && (
                 <button
                   className="iconbtn"
@@ -217,10 +311,10 @@ export const Shell: React.FC<ShellProps> = ({ children }) => {
                         .map((x) => x[0])
                         .slice(0, 2)
                         .join('')
-                    : 'U'}
+                    : 'DT'}
                 </span>
                 <span className="who">
-                  <b>{user?.name}</b>
+                  <b>{user?.name || (isAdmin ? 'Dr. Thavabalan' : 'Client')}</b>
                   <span>{isAdmin ? 'WeGrow Consultant' : client?.company}</span>
                 </span>
               </button>
@@ -229,6 +323,28 @@ export const Shell: React.FC<ShellProps> = ({ children }) => {
 
           {menuOpen && (
             <div className="dropdown" role="menu">
+              {isAdmin && onOpenAddClient && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onOpenAddClient();
+                    setMenuOpen(false);
+                  }}
+                >
+                  <Icon name="plus" /> Add a client
+                </button>
+              )}
+              {isAdmin && onOpenAssignTask && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onOpenAssignTask();
+                    setMenuOpen(false);
+                  }}
+                >
+                  <Icon name="plus" /> Assign task
+                </button>
+              )}
               {client && !isAdmin && (
                 <>
                   <button
@@ -281,7 +397,7 @@ export const Shell: React.FC<ShellProps> = ({ children }) => {
             <div>
               <b>WeGrow B School</b> · Business Transformation &amp; Management Consulting
             </div>
-            <div>Demo data as of {fmtL(TODAY)}</div>
+            <div>{fmtL(TODAY)}</div>
           </footer>
         </div>
       </div>

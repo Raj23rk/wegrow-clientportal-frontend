@@ -18,9 +18,13 @@ import { NotificationsPage } from './components/pages/NotificationsPage';
 import { ProfilePage } from './components/pages/ProfilePage';
 import { SettingsPage } from './components/pages/SettingsPage';
 import {
+  AdminOverviewPage,
   AdminClientsPage,
+  AdminClientWorkspacePage,
+  AdminTasksPage,
+  AdminSessionsPage,
   AdminFeedbackPage,
-  AdminPublishPage
+  AdminBroadcastPage
 } from './components/pages/AdminPages';
 import {
   SessionModal,
@@ -33,13 +37,23 @@ import {
   FeedbackModal,
   ForgotPasswordModal
 } from './components/modals/DetailModals';
+import {
+  AddClientModal,
+  AssignTaskModal,
+  ScheduleSessionModal,
+  UploadModal,
+  BroadcastModal,
+  SessionSummaryModal,
+  ScoresModal,
+  EditMonthModal
+} from './components/modals/AdminModals';
 
 export const App: React.FC = () => {
   const { user, client, previewAs, loading } = usePortal();
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Modal states
+  // Client Detail Modal states
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [activeActionId, setActiveActionId] = useState<string | null>(null);
   const [activeReportId, setActiveReportId] = useState<string | null>(null);
@@ -49,6 +63,34 @@ export const App: React.FC = () => {
   const [activeDocName, setActiveDocName] = useState<string | null>(null);
   const [feedbackSessionId, setFeedbackSessionId] = useState<string | null>(null);
   const [showForgotPw, setShowForgotPw] = useState<boolean>(false);
+
+  // Admin Modal states
+  const [showAddClient, setShowAddClient] = useState<boolean>(false);
+  const [assignTaskState, setAssignTaskState] = useState<{
+    open: boolean;
+    clientId?: string;
+    month?: number;
+    action?: any;
+  } | null>(null);
+  const [scheduleSessionState, setScheduleSessionState] = useState<{
+    open: boolean;
+    clientId?: string;
+    session?: any;
+  } | null>(null);
+  const [uploadState, setUploadState] = useState<{
+    open: boolean;
+    clientId?: string;
+  } | null>(null);
+  const [showBroadcast, setShowBroadcast] = useState<boolean>(false);
+  const [sessionSummaryState, setSessionSummaryState] = useState<{
+    clientId: string;
+    sessionId: string;
+  } | null>(null);
+  const [scoresClientId, setScoresClientId] = useState<string | null>(null);
+  const [editMonthState, setEditMonthState] = useState<{
+    clientId: string;
+    monthNum: number;
+  } | null>(null);
 
   // Smooth backward compatibility: automatically redirect legacy hash URLs (/#/feedback -> /feedback)
   useEffect(() => {
@@ -97,7 +139,17 @@ export const App: React.FC = () => {
 
   return (
     <>
-      <Shell>
+      <Shell
+        onOpenAddClient={() => setShowAddClient(true)}
+        onOpenAssignTask={(cid, m, a) =>
+          setAssignTaskState({ open: true, clientId: cid, month: m, action: a })
+        }
+        onOpenScheduleSession={(cid, s) =>
+          setScheduleSessionState({ open: true, clientId: cid, session: s })
+        }
+        onOpenUpload={(cid) => setUploadState({ open: true, clientId: cid })}
+        onOpenBroadcast={() => setShowBroadcast(true)}
+      >
         <Routes>
           {/* Default redirect */}
           <Route
@@ -185,9 +237,109 @@ export const App: React.FC = () => {
           <Route path="/settings" element={<SettingsPage />} />
 
           {/* Admin routes */}
-          <Route path="/admin" element={<AdminClientsPage onNavigate={navigateTo} />} />
+          <Route
+            path="/admin"
+            element={
+              <AdminOverviewPage
+                onNavigate={navigateTo}
+                onOpenAddClient={() => setShowAddClient(true)}
+                onOpenAssignTask={(cid, m, a) =>
+                  setAssignTaskState({ open: true, clientId: cid, month: m, action: a })
+                }
+                onOpenScheduleSession={(cid, s) =>
+                  setScheduleSessionState({ open: true, clientId: cid, session: s })
+                }
+                onOpenUpload={(cid) => setUploadState({ open: true, clientId: cid })}
+                onOpenBroadcast={() => setShowBroadcast(true)}
+                onOpenSessionSummary={(cid, sid) =>
+                  setSessionSummaryState({ clientId: cid, sessionId: sid })
+                }
+              />
+            }
+          />
+          <Route
+            path="/admin/clients"
+            element={
+              <AdminClientsPage
+                onNavigate={navigateTo}
+                onOpenAddClient={() => setShowAddClient(true)}
+              />
+            }
+          />
+          <Route
+            path="/admin/client/:id"
+            element={
+              <AdminClientWorkspacePage
+                onOpenAssignTask={(cid, m, a) =>
+                  setAssignTaskState({ open: true, clientId: cid, month: m, action: a })
+                }
+                onOpenScheduleSession={(cid, s) =>
+                  setScheduleSessionState({ open: true, clientId: cid, session: s })
+                }
+                onOpenUpload={(cid) => setUploadState({ open: true, clientId: cid })}
+                onOpenScores={(cid) => setScoresClientId(cid)}
+                onOpenMonth={(cid, m) => setEditMonthState({ clientId: cid, monthNum: m })}
+                onOpenSessionSummary={(cid, sid) =>
+                  setSessionSummaryState({ clientId: cid, sessionId: sid })
+                }
+              />
+            }
+          />
+          <Route
+            path="/admin/client/:id/:tab"
+            element={
+              <AdminClientWorkspacePage
+                onOpenAssignTask={(cid, m, a) =>
+                  setAssignTaskState({ open: true, clientId: cid, month: m, action: a })
+                }
+                onOpenScheduleSession={(cid, s) =>
+                  setScheduleSessionState({ open: true, clientId: cid, session: s })
+                }
+                onOpenUpload={(cid) => setUploadState({ open: true, clientId: cid })}
+                onOpenScores={(cid) => setScoresClientId(cid)}
+                onOpenMonth={(cid, m) => setEditMonthState({ clientId: cid, monthNum: m })}
+                onOpenSessionSummary={(cid, sid) =>
+                  setSessionSummaryState({ clientId: cid, sessionId: sid })
+                }
+              />
+            }
+          />
+          <Route
+            path="/admin/tasks"
+            element={
+              <AdminTasksPage
+                onOpenAssignTask={(cid, m, a) =>
+                  setAssignTaskState({ open: true, clientId: cid, month: m, action: a })
+                }
+              />
+            }
+          />
+          <Route
+            path="/admin/sessions"
+            element={
+              <AdminSessionsPage
+                onOpenScheduleSession={(cid, s) =>
+                  setScheduleSessionState({ open: true, clientId: cid, session: s })
+                }
+                onOpenSessionSummary={(cid, sid) =>
+                  setSessionSummaryState({ clientId: cid, sessionId: sid })
+                }
+              />
+            }
+          />
           <Route path="/admin/feedback" element={<AdminFeedbackPage />} />
-          <Route path="/admin/publish" element={<AdminPublishPage />} />
+          <Route
+            path="/admin/broadcast"
+            element={
+              <AdminBroadcastPage onOpenBroadcast={() => setShowBroadcast(true)} />
+            }
+          />
+          <Route
+            path="/admin/publish"
+            element={
+              <AdminBroadcastPage onOpenBroadcast={() => setShowBroadcast(true)} />
+            }
+          />
 
           {/* Fallback */}
           <Route
@@ -197,7 +349,7 @@ export const App: React.FC = () => {
         </Routes>
       </Shell>
 
-      {/* Active Modals */}
+      {/* Client Active Modals */}
       {activeSessionId && (
         <SessionModal
           sessionId={activeSessionId}
@@ -253,6 +405,68 @@ export const App: React.FC = () => {
         <FeedbackModal
           sessionId={feedbackSessionId}
           onClose={() => setFeedbackSessionId(null)}
+        />
+      )}
+
+      {/* Admin Active Modals */}
+      {showAddClient && (
+        <AddClientModal
+          onClose={() => setShowAddClient(false)}
+          onSuccess={(cid) => {
+            setShowAddClient(false);
+            navigateTo(`/admin/client/${cid}`);
+          }}
+        />
+      )}
+
+      {assignTaskState?.open && (
+        <AssignTaskModal
+          initialClientId={assignTaskState.clientId}
+          initialMonth={assignTaskState.month}
+          initialAction={assignTaskState.action}
+          onClose={() => setAssignTaskState(null)}
+        />
+      )}
+
+      {scheduleSessionState?.open && (
+        <ScheduleSessionModal
+          initialClientId={scheduleSessionState.clientId}
+          initialSession={scheduleSessionState.session}
+          onClose={() => setScheduleSessionState(null)}
+        />
+      )}
+
+      {uploadState?.open && (
+        <UploadModal
+          initialClientId={uploadState.clientId}
+          onClose={() => setUploadState(null)}
+        />
+      )}
+
+      {showBroadcast && (
+        <BroadcastModal onClose={() => setShowBroadcast(false)} />
+      )}
+
+      {sessionSummaryState && (
+        <SessionSummaryModal
+          clientId={sessionSummaryState.clientId}
+          sessionId={sessionSummaryState.sessionId}
+          onClose={() => setSessionSummaryState(null)}
+        />
+      )}
+
+      {scoresClientId && (
+        <ScoresModal
+          clientId={scoresClientId}
+          onClose={() => setScoresClientId(null)}
+        />
+      )}
+
+      {editMonthState && (
+        <EditMonthModal
+          clientId={editMonthState.clientId}
+          monthNum={editMonthState.monthNum}
+          onClose={() => setEditMonthState(null)}
         />
       )}
     </>

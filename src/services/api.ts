@@ -1,6 +1,6 @@
 import { User, ClientData, SessionFeedback, BusinessUpdate } from '../types';
 
-const API_BASE = (import.meta as any).env?.VITE_API_URL || '/api';
+const API_BASE = String((import.meta as any).env?.VITE_API_URL || '/api').trim();
 
 function getAuthHeader(): Record<string, string> {
   const token = localStorage.getItem('wg:token');
@@ -14,17 +14,27 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     ...options.headers
   };
 
-  const response = await fetch(`${API_BASE}${endpoint}`, {
-    ...options,
-    headers
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 12000);
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || `Request failed with status ${response.status}`);
+  try {
+    const response = await fetch(`${API_BASE}${endpoint}`, {
+      ...options,
+      headers,
+      signal: options.signal || controller.signal
+    });
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `Request failed with status ${response.status}`);
+    }
+
+    return response.json();
+  } catch (err: any) {
+    clearTimeout(timeoutId);
+    throw err;
   }
-
-  return response.json();
 }
 
 export function normalizeClient(raw: any): ClientData {
@@ -36,6 +46,8 @@ export function normalizeClient(raw: any): ClientData {
     ...raw,
     id,
     clientId,
+    logo: raw.logo || null,
+    status: raw.status || 'Active',
     actions: Array.isArray(raw.actions)
       ? raw.actions.map((a: any) => ({
           ...a,
@@ -142,16 +154,131 @@ export const api = {
       return normalizeClient(data);
     },
 
+    async create(payload: Partial<ClientData>): Promise<ClientData> {
+      try {
+        const data = await request<any>('/admin/clients', {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+        return normalizeClient(data);
+      } catch (e) {
+        console.warn('Backend admin create client fallback to local', e);
+        return normalizeClient(payload);
+      }
+    },
+
     async updateProfile(id: string, patch: Partial<ClientData>): Promise<ClientData> {
       const data = await request<any>(`/clients/${id}`, {
         method: 'PATCH',
         body: JSON.stringify(patch)
       });
       return normalizeClient(data);
+    },
+
+    async delete(id: string): Promise<any> {
+      return request(`/admin/clients/${id}`, {
+        method: 'DELETE'
+      });
+    }
+  },
+
+  admin: {
+    async getDashboard(): Promise<any> {
+      return request<any>('/admin/dashboard');
+    },
+
+    async createTask(clientId: string, task: any): Promise<any> {
+      return request(`/admin/clients/${clientId}/tasks`, {
+        method: 'POST',
+        body: JSON.stringify(task)
+      });
+    },
+
+    async updateTask(clientId: string, actionId: string, patch: any): Promise<any> {
+      return request(`/admin/clients/${clientId}/tasks/${actionId}`, {
+        method: 'PATCH',
+        body: JSON.stringify(patch)
+      });
+    },
+
+    async deleteTask(clientId: string, actionId: string): Promise<any> {
+      return request(`/admin/clients/${clientId}/tasks/${actionId}`, {
+        method: 'DELETE'
+      });
+    },
+
+    async createSession(clientId: string, session: any): Promise<any> {
+      return request(`/admin/clients/${clientId}/sessions`, {
+        method: 'POST',
+        body: JSON.stringify(session)
+      });
+    },
+
+    async updateSession(clientId: string, sessionId: string, patch: any): Promise<any> {
+      return request(`/admin/clients/${clientId}/sessions/${sessionId}`, {
+        method: 'PATCH',
+        body: JSON.stringify(patch)
+      });
+    },
+
+    async deleteSession(clientId: string, sessionId: string): Promise<any> {
+      return request(`/admin/clients/${clientId}/sessions/${sessionId}`, {
+        method: 'DELETE'
+      });
+    },
+
+    async addDocument(clientId: string, doc: any): Promise<any> {
+      return request(`/admin/clients/${clientId}/documents`, {
+        method: 'POST',
+        body: JSON.stringify(doc)
+      });
+    },
+
+    async addReport(clientId: string, report: any): Promise<any> {
+      return request(`/admin/clients/${clientId}/reports`, {
+        method: 'POST',
+        body: JSON.stringify(report)
+      });
+    },
+
+    async addUpdate(clientId: string, update: any): Promise<any> {
+      return request(`/admin/clients/${clientId}/updates`, {
+        method: 'POST',
+        body: JSON.stringify(update)
+      });
+    },
+
+    async sendNotification(clientId: string, notif: any): Promise<any> {
+      return request(`/admin/clients/${clientId}/notifications`, {
+        method: 'POST',
+        body: JSON.stringify(notif)
+      });
     }
   },
 
   portal: {
+    async createAction(clientId: string, action: any) {
+      try {
+        return await request(`/admin/clients/${clientId}/tasks`, {
+          method: 'POST',
+          body: JSON.stringify(action)
+        });
+      } catch (e) {
+        return action;
+      }
+    },
+
+    async updateAction(clientId: string, actionId: string, patch: any) {
+      try {
+        return await request(`/admin/clients/${clientId}/tasks/${actionId}`, {
+          method: 'PATCH',
+          body: JSON.stringify(patch)
+        });
+      } catch (e) {
+        return patch;
+      }
+    },
+
     async addComment(clientId: string, actionId: string, text: string) {
       return request(`/portal/${clientId}/actions/${actionId}/comments`, {
         method: 'POST',

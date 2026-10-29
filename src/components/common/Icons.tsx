@@ -39,6 +39,7 @@ export const ICONS: Record<string, string> = {
   building: '<rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4M8 6h.01M16 6h.01M12 6h.01M12 10h.01M12 14h.01M16 10h.01M16 14h.01M8 10h.01M8 14h.01"/>',
   plus: '<path d="M12 5v14M5 12h14"/>',
   send: '<path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/>',
+  upload: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>',
   moon: '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>',
   more: '<circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/>'
 };
@@ -85,19 +86,49 @@ export const WeGrowLogo: React.FC<{ size?: number; className?: string }> = ({ si
   />
 );
 
-export const ClientLogo: React.FC<{ client: ClientData; size?: number }> = ({ client, size = 36 }) => (
-  <svg width={size} height={size} viewBox="0 0 40 40" aria-label={`${client.company} logo`}>
-    <rect width="40" height="40" rx="10" fill={client.color} />
-    <text
-      x="20"
-      y="25.5"
-      textAnchor="middle"
-      fontFamily="Manrope, system-ui, sans-serif"
-      fontSize="14"
-      fontWeight="800"
-      fill="#fff"
-    >
-      {client.short}
-    </text>
-  </svg>
-);
+export const ClientLogo: React.FC<{ client: ClientData; size?: number; className?: string }> = ({
+  client,
+  size = 36,
+  className = ''
+}) => {
+  const logoHref =
+    typeof client?.logo === 'string'
+      ? client.logo
+      : client?.logo?.url || (client?.logo?.assetId ? '/_blob/' + client.logo.assetId : null);
+
+  if (logoHref) {
+    return (
+      <img
+        src={logoHref}
+        alt={`${client.company} logo`}
+        className={`logoimg ${className}`}
+        style={{
+          width: size,
+          height: size,
+          objectFit: 'contain',
+          borderRadius: 10,
+          background: '#fff',
+          border: '1px solid var(--line)',
+          flexShrink: 0
+        }}
+      />
+    );
+  }
+
+  return (
+    <svg width={size} height={size} viewBox="0 0 40 40" aria-label={`${client.company} logo`} className={className} style={{ flexShrink: 0 }}>
+      <rect width="40" height="40" rx="10" fill={client.color || '#C2410C'} />
+      <text
+        x="20"
+        y="25.5"
+        textAnchor="middle"
+        fontFamily="Manrope, system-ui, sans-serif"
+        fontSize="14"
+        fontWeight="800"
+        fill="#fff"
+      >
+        {client.short || client.company?.slice(0, 2).toUpperCase() || 'WG'}
+      </text>
+    </svg>
+  );
+};

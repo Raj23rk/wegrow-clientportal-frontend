@@ -32,7 +32,7 @@ export interface ActionItem {
   status: ActionStatus;
   progress: number;
   comments: ActionComment[];
-  attachments: string[];
+  attachments: any[];
 }
 
 export interface MonthPlan {
@@ -53,6 +53,7 @@ export interface SessionSummary {
   findings: string[];
   decisions: string[];
   next: string[];
+  file?: any;
 }
 
 export interface Session {
@@ -69,9 +70,12 @@ export interface Session {
   consultant: string;
   agenda: string[];
   objectives: string[];
-  status: 'Completed' | 'Upcoming';
+  status: 'Completed' | 'Upcoming' | 'Cancelled';
+  start?: string;
+  end?: string;
+  notes?: string;
   summary?: SessionSummary | null;
-  attachments: string[];
+  attachments: any[];
 }
 
 export interface ReportItem {
@@ -126,6 +130,8 @@ export interface ClientPhoto {
   desc: string;
   hue: number;
   seed: number;
+  url?: string;
+  file?: any;
 }
 
 export interface ClientDocument {
@@ -207,5 +213,8 @@ export interface ClientData {
   notifications: NotificationItem[];
   feedback: SessionFeedback[];
   readUpdates?: string[];
+  logo?: any;
+  password?: string;
+  status?: string;
 }
 

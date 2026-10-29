@@ -7,9 +7,8 @@ export const LoginPage: React.FC<{ onForgotPw: () => void }> = ({ onForgotPw }) 
   const { login, loading } = usePortal();
   const navigate = useNavigate();
 
-  // Pre-filled with Meridian Foods demo credentials for convenience
-  const [email, setEmail] = useState('arjun@meridianfoods.in');
-  const [password, setPassword] = useState('demo123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [remember, setRemember] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -69,19 +68,9 @@ export const LoginPage: React.FC<{ onForgotPw: () => void }> = ({ onForgotPw }) 
     setError(null);
     const ok = await login(email, password, remember);
     if (ok) {
-      navigate(email === 'admin@wegrow.in' ? '/admin' : '/dashboard');
+      navigate('/');
     } else {
       setError('That email or password is not recognised. Check both and try again.');
-    }
-  };
-
-  const handleQuickFill = async (fillEmail: string, fillPw: string) => {
-    setEmail(fillEmail);
-    setPassword(fillPw);
-    setError(null);
-    const ok = await login(fillEmail, fillPw, true);
-    if (ok) {
-      navigate(fillEmail === 'admin@wegrow.in' ? '/admin' : '/dashboard');
     }
   };
 
@@ -339,7 +328,7 @@ export const LoginPage: React.FC<{ onForgotPw: () => void }> = ({ onForgotPw }) 
               className="input"
               id="em"
               autoComplete="username"
-              placeholder="you@company.com or C001"
+              placeholder="you@company.com or Client ID"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -383,45 +372,6 @@ export const LoginPage: React.FC<{ onForgotPw: () => void }> = ({ onForgotPw }) 
           <button className="btn primary block" type="submit" disabled={loading}>
             {loading ? 'Authenticating…' : 'Log in to client portal'}
           </button>
-
-          <div className="demo-accts">
-            <div className="small muted" style={{ fontWeight: 600 }}>Quick login accounts</div>
-            <button
-              type="button"
-              className="chipbtn"
-              onClick={() => handleQuickFill('arjun@meridianfoods.in', 'demo123')}
-            >
-              <span>
-                <b className="small">Meridian Foods</b>
-                <br />
-                <span className="tiny muted">Client Account · arjun@meridianfoods.in</span>
-              </span>
-            </button>
-
-            <button
-              type="button"
-              className="chipbtn"
-              onClick={() => handleQuickFill('lakshmi@kaveritextiles.in', 'demo123')}
-            >
-              <span>
-                <b className="small">Kaveri Textiles</b>
-                <br />
-                <span className="tiny muted">Client Account · lakshmi@kaveritextiles.in</span>
-              </span>
-            </button>
-
-            <button
-              type="button"
-              className="chipbtn"
-              onClick={() => handleQuickFill('admin@wegrow.in', 'admin123')}
-            >
-              <span>
-                <b className="small">WeGrow Consultant</b>
-                <br />
-                <span className="tiny muted">Admin / Consultant Account · admin@wegrow.in</span>
-              </span>
-            </button>
-          </div>
         </form>
       </section>
     </div>
