@@ -33,6 +33,7 @@ const NAV_ITEMS = [
 const ADMIN_NAV_ITEMS = [
   { path: '/admin', label: 'Overview', icon: 'dashboard' },
   { path: '/admin/clients', label: 'Clients', icon: 'building' },
+  { path: '/admin/attendance', label: 'Attendance', icon: 'check' },
   { path: '/admin/tasks', label: 'Task board', icon: 'plan' },
   { path: '/admin/sessions', label: 'Session schedule', icon: 'sessions' },
   { path: '/admin/feedback', label: 'Feedback', icon: 'feedback' },
@@ -67,8 +68,8 @@ export const Shell: React.FC<ShellProps> = ({
 
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const isAdmin = user?.role === 'admin';
-  const showAdminNav = isAdmin && !previewAs;
+  const isAdmin = user?.role === 'admin' || location.pathname.startsWith('/admin');
+  const showAdminNav = (isAdmin || location.pathname.startsWith('/admin')) && !previewAs;
   const navList = showAdminNav ? ADMIN_NAV_ITEMS : NAV_ITEMS;
   const activeClients = Object.values(clients).filter((c) => c.status !== 'Archived');
 

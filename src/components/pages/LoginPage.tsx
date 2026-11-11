@@ -372,6 +372,20 @@ export const LoginPage: React.FC<{ onForgotPw: () => void }> = ({ onForgotPw }) 
           <button className="btn primary block" type="submit" disabled={loading}>
             {loading ? 'Authenticating…' : 'Log in to client portal'}
           </button>
+
+          <div style={{ marginTop: 24, textAlign: 'center', fontSize: 13, color: 'var(--ink-3)' }}>
+            Looking for the upcoming orientation?{' '}
+            <a
+              href="/"
+              onClick={(e) => {
+                e.preventDefault();
+                navigate('/');
+              }}
+              style={{ color: '#E86014', fontWeight: 700 }}
+            >
+              Business Transformation Meetup →
+            </a>
+          </div>
         </form>
       </section>
     </div>

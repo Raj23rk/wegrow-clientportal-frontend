@@ -26,6 +26,8 @@ import {
   AdminFeedbackPage,
   AdminBroadcastPage
 } from './components/pages/AdminPages';
+import { AdminAttendancePage } from './components/pages/AdminAttendancePage';
+import { EventLandingPage } from './components/pages/EventLandingPage';
 import {
   SessionModal,
   ActionModal,
@@ -112,10 +114,27 @@ export const App: React.FC = () => {
     );
   }
 
-  // Not logged in: route to login
+  // Public Event Landing Page routes (accessible whether logged in or out)
+  if (['/meetup', '/orientation', '/landing'].includes(location.pathname)) {
+    return <EventLandingPage />;
+  }
+
+  // Not logged in: root defaults to EventLandingPage, or /login for portal, or /admin/attendance
   if (!user) {
     return (
       <Routes>
+        <Route path="/" element={<EventLandingPage />} />
+        <Route path="/meetup" element={<EventLandingPage />} />
+        <Route path="/orientation" element={<EventLandingPage />} />
+        <Route path="/landing" element={<EventLandingPage />} />
+        <Route
+          path="/admin/attendance"
+          element={
+            <Shell>
+              <AdminAttendancePage />
+            </Shell>
+          }
+        />
         <Route
           path="/login"
           element={
@@ -127,7 +146,7 @@ export const App: React.FC = () => {
             </>
           }
         />
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     );
   }
@@ -327,6 +346,7 @@ export const App: React.FC = () => {
               />
             }
           />
+          <Route path="/admin/attendance" element={<AdminAttendancePage />} />
           <Route path="/admin/feedback" element={<AdminFeedbackPage />} />
           <Route
             path="/admin/broadcast"
