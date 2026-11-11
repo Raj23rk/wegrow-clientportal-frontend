@@ -1,6 +1,33 @@
 import { User, ClientData, SessionFeedback, BusinessUpdate } from '../types';
 
-const API_BASE = String((import.meta as any).env?.VITE_API_URL || '/api').trim();
+export function resolveApiBase(): string {
+  if (typeof window !== 'undefined') {
+    const override = localStorage.getItem('wg:api_url');
+    if (override && override.trim()) return override.trim().replace(/\/$/, '');
+  }
+
+  const envUrl = String((import.meta as any).env?.VITE_API_URL || '').trim();
+
+  if (typeof window !== 'undefined') {
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    if (isLocalhost) {
+      if (envUrl.includes('localhost') || envUrl.includes('127.0.0.1')) {
+        return envUrl.replace(/\/$/, '');
+      }
+      return 'http://localhost:3000/api';
+    }
+  }
+
+  return (envUrl || 'https://wegrowclientportal.onrender.com/api').replace(/\/$/, '');
+}
+
+export function getSecondaryApiBase(): string {
+  const primary = resolveApiBase();
+  if (primary.includes('localhost') || primary.includes('127.0.0.1')) {
+    return 'https://wegrowclientportal.onrender.com/api';
+  }
+  return 'http://localhost:3000/api';
+}
 
 function getAuthHeader(): Record<string, string> {
   const token = localStorage.getItem('wg:token');
@@ -14,11 +41,12 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     ...options.headers
   };
 
+  const primaryBase = resolveApiBase();
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 12000);
 
   try {
-    const response = await fetch(`${API_BASE}${endpoint}`, {
+    const response = await fetch(`${primaryBase}${endpoint}`, {
       ...options,
       headers,
       signal: options.signal || controller.signal
@@ -33,6 +61,30 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     return response.json();
   } catch (err: any) {
     clearTimeout(timeoutId);
+
+    // If request to primary failed and secondary is available, attempt fallback
+    const isNetworkError =
+      err.name === 'AbortError' ||
+      err.name === 'TypeError' ||
+      String(err.message).toLowerCase().includes('failed to fetch');
+
+    const secondaryBase = getSecondaryApiBase();
+    if (isNetworkError && secondaryBase && secondaryBase !== primaryBase) {
+      try {
+        const fallbackCtrl = new AbortController();
+        const fallbackTimeout = setTimeout(() => fallbackCtrl.abort(), 8000);
+        const fbRes = await fetch(`${secondaryBase}${endpoint}`, {
+          ...options,
+          headers,
+          signal: options.signal || fallbackCtrl.signal
+        });
+        clearTimeout(fallbackTimeout);
+        if (fbRes.ok) {
+          return fbRes.json();
+        }
+      } catch {}
+    }
+
     throw err;
   }
 }
@@ -323,5 +375,82 @@ export const api = {
         method: 'POST'
       });
     }
+  },
+
+  attendance: {
+    async checkHealth(): Promise<{ status: string; message: string; timestamp: string; stats?: any }> {
+      return request('/attendance/health');
+    },
+
+    async getStats(): Promise<any> {
+      return request('/attendance/stats');
+    },
+
+    async getAll(params?: { search?: string; department?: string; status?: string }): Promise<{ attendees: any[]; stats: any }> {
+      const q = new URLSearchParams();
+      if (params?.search) q.set('search', params.search);
+      if (params?.department && params.department !== 'ALL') q.set('department', params.department);
+      if (params?.status && params.status !== 'ALL') q.set('status', params.status);
+      const queryStr = q.toString() ? `?${q.toString()}` : '';
+      return request(`/attendance${queryStr}`);
+    },
+
+    async register(nominee: {
+      fullName: string;
+      phone: string;
+      companyName?: string;
+      designation: string;
+      department?: string;
+      email?: string;
+      experience?: string;
+    }): Promise<{ success: boolean; message: string; attendee: any }> {
+      return request('/attendance/register', {
+        method: 'POST',
+        body: JSON.stringify(nominee)
+      });
+    },
+
+    async checkIn(id: string): Promise<{ success: boolean; attendee: any; stats: any }> {
+      return request(`/attendance/${id}/checkin`, {
+        method: 'PATCH'
+      });
+    },
+
+    async toggleCheckIn(id: string): Promise<{ success: boolean; attendee: any; stats: any }> {
+      return request(`/attendance/${id}/toggle-checkin`, {
+        method: 'PATCH'
+      });
+    },
+
+    async gateCheckIn(code: string): Promise<{ success: boolean; message: string; attendee?: any; stats?: any }> {
+      return request('/attendance/gate-checkin', {
+        method: 'POST',
+        body: JSON.stringify({ code })
+      });
+    },
+
+    async toggleFeedback(id: string, feedbackFilled?: boolean, rating?: number): Promise<{ success: boolean; attendee: any; stats: any }> {
+      return request(`/attendance/${id}/feedback`, {
+        method: 'PATCH',
+        body: JSON.stringify({ feedbackFilled, feedbackRating: rating })
+      });
+    },
+
+    async updateDispatch(id: string, channel: 'wa' | 'mail'): Promise<{ success: boolean; attendee: any }> {
+      return request(`/attendance/${id}/dispatch`, {
+        method: 'PATCH',
+        body: JSON.stringify({ channel })
+      });
+    },
+
+    async seed(): Promise<{ count: number; attendees: any[] }> {
+      return request('/attendance/seed', {
+        method: 'POST'
+      });
+    }
+  },
+
+  getBaseUrl(): string {
+    return resolveApiBase();
   }
 };

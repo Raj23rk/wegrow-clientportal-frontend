@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 interface FooterProps {
   scrollToHero?: () => void;
+  scrollToAbout?: () => void;
   scrollToOverview?: () => void;
   scrollToGoals?: () => void;
   scrollToCarousel?: () => void;
@@ -25,6 +26,7 @@ interface FooterProps {
 
 export const Footer: React.FC<FooterProps> = ({
   scrollToHero = () => {},
+  scrollToAbout,
   scrollToOverview = () => {},
   scrollToGoals = () => {},
   scrollToCarousel = () => {},
@@ -72,25 +74,24 @@ export const Footer: React.FC<FooterProps> = ({
   // Event Landing Page Navigation Links (matches Navbar)
   const programmeNavLinks = [
     { name: 'Overview', action: () => scrollToHero?.() },
-    { name: 'Programme Details', action: () => (scrollToOverview ? scrollToOverview() : scrollToWhoCanJoin ? scrollToWhoCanJoin() : scrollToCourses?.()) },
-    { name: 'Key Goals & Outcomes', action: () => (scrollToGoals ? scrollToGoals() : scrollToMissionVision?.()) },
-    { name: 'Campus & Workshops', action: () => (scrollToCarousel ? scrollToCarousel() : scrollToGallery ? scrollToGallery() : scrollToEvents?.()) },
-    { name: 'Event Venue & Timing', action: () => (scrollToVenue ? scrollToVenue() : scrollToVisits ? scrollToVisits() : scrollToContact?.()) },
+    { name: 'About WeGrow', action: () => (scrollToAbout ? scrollToAbout() : scrollToOverview ? scrollToOverview() : scrollToWhoCanJoin?.()) },
+    { name: 'Campus Moments', action: () => (scrollToCarousel ? scrollToCarousel() : scrollToGallery ? scrollToGallery() : scrollToEvents?.()) },
+    { name: 'Venue & Timing', action: () => (scrollToVenue ? scrollToVenue() : scrollToVisits ? scrollToVisits() : scrollToContact?.()) },
     { name: 'Nominate Participant', action: () => (scrollToRegister ? scrollToRegister() : scrollToResources?.()), highlight: true }
   ];
 
   // Quick Access & Event Actions
   const quickAccessLinks = [
     { name: 'Reserve Seat Now →', action: () => (scrollToRegister ? scrollToRegister() : scrollToResources?.()), highlight: true },
-    { name: 'TAG Group Requirement', action: () => (scrollToOverview ? scrollToOverview() : scrollToWhoCanJoin?.()) },
+    { name: 'About WeGrow Consultancy', action: () => (scrollToAbout ? scrollToAbout() : scrollToOverview?.()) },
     {
       name: 'Add to Calendar',
       action: () => {
         const title = encodeURIComponent('Leadership in Action - TAG Group Programme');
         const details = encodeURIComponent(
-          'Practical Leadership Development Programme for TAG Group middle-management team.\nVenue: TAG Group Conference Hall, Amathur\nDate: 18 November 2026\nDaily Timing: 9:30 AM – 5:30 PM\nContact: +91 93443 37331'
+          'Practical Leadership Development Programme for TAG Group middle-management team.\nVenue: TAG Knowledge Centre, Amathur\nDate: 18 November 2026\nDaily Timing: 9:30 AM – 5:30 PM\nContact: +91 93443 37331'
         );
-        const location = encodeURIComponent('TAG Group Conference Hall, Amathur');
+        const location = encodeURIComponent('TAG Knowledge Centre, Amathur');
         window.open(`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=20261118T040000Z/20261118T120000Z&details=${details}&location=${location}`, '_blank');
       }
     },

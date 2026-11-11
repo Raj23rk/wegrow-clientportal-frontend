@@ -24,10 +24,11 @@ import {
   X
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { api } from '../../services/api';
 
 export interface AttendeeRecord {
   id: string;
-  passCode: string; // e.g. TAG26-001
+  passCode: string; // e.g. WG-LDP-001
   fullName: string;
   phone: string;
   email?: string;
@@ -42,13 +43,14 @@ export interface AttendeeRecord {
   feedbackFilled: boolean;
   feedbackRating?: number;
   feedbackNotes?: string;
+  experience?: string;
 }
 
 // Initial 25 TAG Group Middle-Management Nominees
 const SEED_ATTENDEES: AttendeeRecord[] = [
   {
     id: 'att_01',
-    passCode: 'TAG26-001',
+    passCode: 'WG-LDP-001',
     fullName: 'Krisshiya R.B',
     phone: '9994010131',
     email: 'krisshiya.rb@anamalais.in',
@@ -65,7 +67,7 @@ const SEED_ATTENDEES: AttendeeRecord[] = [
   },
   {
     id: 'att_02',
-    passCode: 'TAG26-002',
+    passCode: 'WG-LDP-002',
     fullName: 'Sujay Sarvesh R.B',
     phone: '9994010132',
     email: 'sujay.sarvesh@anamalais.in',
@@ -82,7 +84,7 @@ const SEED_ATTENDEES: AttendeeRecord[] = [
   },
   {
     id: 'att_03',
-    passCode: 'TAG26-003',
+    passCode: 'WG-LDP-003',
     fullName: 'R. Soundararajan',
     phone: '9842188231',
     email: 'soundar.r@taggroup.in',
@@ -99,7 +101,7 @@ const SEED_ATTENDEES: AttendeeRecord[] = [
   },
   {
     id: 'att_04',
-    passCode: 'TAG26-004',
+    passCode: 'WG-LDP-004',
     fullName: 'M. Karthikeyan',
     phone: '9789456123',
     email: 'karthik.m@taggroup.in',
@@ -115,7 +117,7 @@ const SEED_ATTENDEES: AttendeeRecord[] = [
   },
   {
     id: 'att_05',
-    passCode: 'TAG26-005',
+    passCode: 'WG-LDP-005',
     fullName: 'P. Meenakshi Sundaram',
     phone: '9843322110',
     email: 'meenakshi.p@taggroup.in',
@@ -131,7 +133,7 @@ const SEED_ATTENDEES: AttendeeRecord[] = [
   },
   {
     id: 'att_06',
-    passCode: 'TAG26-006',
+    passCode: 'WG-LDP-006',
     fullName: 'S. Anand Kumar',
     phone: '9443155880',
     email: 'anand.s@taggroup.in',
@@ -146,7 +148,7 @@ const SEED_ATTENDEES: AttendeeRecord[] = [
   },
   {
     id: 'att_07',
-    passCode: 'TAG26-007',
+    passCode: 'WG-LDP-007',
     fullName: 'V. Divya Lakshmi',
     phone: '9944887766',
     email: 'divya.v@taggroup.in',
@@ -163,7 +165,7 @@ const SEED_ATTENDEES: AttendeeRecord[] = [
   },
   {
     id: 'att_08',
-    passCode: 'TAG26-008',
+    passCode: 'WG-LDP-008',
     fullName: 'K. Rajesh Kannan',
     phone: '9360123456',
     email: 'rajesh.k@taggroup.in',
@@ -178,7 +180,7 @@ const SEED_ATTENDEES: AttendeeRecord[] = [
   },
   {
     id: 'att_09',
-    passCode: 'TAG26-009',
+    passCode: 'WG-LDP-009',
     fullName: 'A. Balaji Swaminathan',
     phone: '9840223344',
     email: 'balaji.a@taggroup.in',
@@ -194,7 +196,7 @@ const SEED_ATTENDEES: AttendeeRecord[] = [
   },
   {
     id: 'att_10',
-    passCode: 'TAG26-010',
+    passCode: 'WG-LDP-010',
     fullName: 'S. Priyadharshini',
     phone: '9788112233',
     email: 'priya.s@taggroup.in',
@@ -209,7 +211,7 @@ const SEED_ATTENDEES: AttendeeRecord[] = [
   },
   {
     id: 'att_11',
-    passCode: 'TAG26-011',
+    passCode: 'WG-LDP-011',
     fullName: 'N. Vigneshwaran',
     phone: '9488334455',
     email: 'vignesh.n@taggroup.in',
@@ -226,7 +228,7 @@ const SEED_ATTENDEES: AttendeeRecord[] = [
   },
   {
     id: 'att_12',
-    passCode: 'TAG26-012',
+    passCode: 'WG-LDP-012',
     fullName: 'T. Subhashini',
     phone: '9940556677',
     email: 'subha.t@taggroup.in',
@@ -241,7 +243,7 @@ const SEED_ATTENDEES: AttendeeRecord[] = [
   },
   {
     id: 'att_13',
-    passCode: 'TAG26-013',
+    passCode: 'WG-LDP-013',
     fullName: 'G. Murugan',
     phone: '9841778899',
     email: 'murugan.g@taggroup.in',
@@ -257,7 +259,7 @@ const SEED_ATTENDEES: AttendeeRecord[] = [
   },
   {
     id: 'att_14',
-    passCode: 'TAG26-014',
+    passCode: 'WG-LDP-014',
     fullName: 'K. Sangeetha',
     phone: '9361223344',
     email: 'sangeetha.k@taggroup.in',
@@ -272,7 +274,7 @@ const SEED_ATTENDEES: AttendeeRecord[] = [
   },
   {
     id: 'att_15',
-    passCode: 'TAG26-015',
+    passCode: 'WG-LDP-015',
     fullName: 'D. Saravanan',
     phone: '9843667788',
     email: 'saravanan.d@taggroup.in',
@@ -306,7 +308,7 @@ export const AdminAttendancePage: React.FC = () => {
         if (Array.isArray(publicRegs) && publicRegs.length > 0) {
           const mapped: AttendeeRecord[] = publicRegs.map((r, i) => ({
             id: r.id || 'reg_' + i,
-            passCode: `TAG26-${String(i + 1).padStart(3, '0')}`,
+            passCode: `WG-LDP-${String(i + 1).padStart(3, '0')}`,
             fullName: r.fullName || 'Nominee ' + (i + 1),
             phone: r.phone || '9876543210',
             email: r.email || `${(r.fullName || 'nominee').toLowerCase().replace(/\s+/g, '.')}@taggroup.in`,
@@ -355,7 +357,44 @@ export const AdminAttendancePage: React.FC = () => {
 
   const [detailModalAttendee, setDetailModalAttendee] = useState<AttendeeRecord | null>(null);
 
-  // Sync to localStorage
+  // Live API Connection State & Notifications
+  const [apiStatus, setApiStatus] = useState<'connected' | 'checking' | 'offline'>('checking');
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => {
+      setToastMessage((prev) => (prev === msg ? null : prev));
+    }, 3200);
+  };
+
+  // Fetch attendees from Backend NestJS API
+  const fetchAttendeesFromApi = async (silent = false) => {
+    if (!silent) setIsRefreshing(true);
+    try {
+      const res = await api.attendance.getAll();
+      if (res && Array.isArray(res.attendees) && res.attendees.length > 0) {
+        setAttendees(res.attendees);
+        setApiStatus('connected');
+        if (!silent) showToast(`✓ Live API Connected: Refreshed ${res.attendees.length} attendees from MongoDB`);
+      } else {
+        setApiStatus('connected');
+      }
+    } catch (err) {
+      console.warn('API sync failed, using cached attendance records', err);
+      setApiStatus('offline');
+      if (!silent) showToast('Backend API unreachable. Operating in cached mode.');
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAttendeesFromApi(true);
+  }, []);
+
+  // Sync to localStorage as offline cache
   useEffect(() => {
     try {
       localStorage.setItem('wg_attendance_records', JSON.stringify(attendees));
@@ -399,31 +438,52 @@ export const AdminAttendancePage: React.FC = () => {
     });
   }, [attendees, searchQuery, filterDepartment, filterStatus]);
 
-  // Toggle Check-In status
-  const handleToggleCheckIn = (id: string) => {
+  // Toggle Check-In status - Mark Check-In button click increases Checked In value
+  const handleToggleCheckIn = async (id: string) => {
+    const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    let willBeChecked = false;
+
+    // 1. Optimistic instant UI update (immediately increases CHECKED IN count!)
     setAttendees((prev) =>
       prev.map((a) => {
         if (a.id === id) {
-          const willBeCheckedIn = !a.isCheckedIn;
+          willBeChecked = !a.isCheckedIn;
           return {
             ...a,
-            isCheckedIn: willBeCheckedIn,
-            checkInTime: willBeCheckedIn
-              ? new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-              : undefined
+            isCheckedIn: willBeChecked,
+            checkInTime: willBeChecked ? timeNow : undefined
           };
         }
         return a;
       })
     );
+
+    if (willBeChecked) {
+      showToast('✓ Attendee Checked In! Checked-In count increased.');
+    } else {
+      showToast('Check-In undone. Status returned to Pending.');
+    }
+
+    // 2. Persist to MongoDB through Backend API
+    try {
+      const res = await api.attendance.toggleCheckIn(id);
+      if (res && res.attendee) {
+        setAttendees((prev) =>
+          prev.map((a) => (a.id === id ? { ...a, ...res.attendee } : a))
+        );
+      }
+    } catch (err) {
+      console.warn('Backend API toggle check-in sync failed, cached locally', err);
+    }
   };
 
   // Toggle Feedback status
-  const handleToggleFeedback = (id: string) => {
+  const handleToggleFeedback = async (id: string) => {
+    let willBeFeedback = false;
     setAttendees((prev) =>
       prev.map((a) => {
         if (a.id === id) {
-          const willBeFeedback = !a.feedbackFilled;
+          willBeFeedback = !a.feedbackFilled;
           return {
             ...a,
             feedbackFilled: willBeFeedback,
@@ -433,14 +493,51 @@ export const AdminAttendancePage: React.FC = () => {
         return a;
       })
     );
+
+    try {
+      await api.attendance.toggleFeedback(id);
+    } catch (err) {
+      console.warn('API feedback sync failed', err);
+    }
   };
 
   // Quick Gate Check-In by Code
-  const handleQuickCheckInSubmit = (e: React.FormEvent) => {
+  const handleQuickCheckInSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const cleanCode = quickCheckInCode.trim().toUpperCase();
     if (!cleanCode) return;
 
+    // Try Backend API gate check-in
+    try {
+      const res = await api.attendance.gateCheckIn(cleanCode);
+      if (res.success && res.attendee) {
+        setAttendees((prev) =>
+          prev.map((a) =>
+            a.id === res.attendee.id || a.passCode === res.attendee.passCode
+              ? { ...a, ...res.attendee }
+              : a
+          )
+        );
+        setQuickCheckInResult({
+          success: true,
+          message: res.message,
+          attendee: res.attendee
+        });
+        setQuickCheckInCode('');
+        showToast('✓ Verified & Checked in at gate!');
+        return;
+      } else if (!res.success) {
+        setQuickCheckInResult({
+          success: false,
+          message: res.message
+        });
+        return;
+      }
+    } catch (err) {
+      console.warn('API gate checkin fallback', err);
+    }
+
+    // Local fallback
     const found = attendees.find(
       (a) =>
         a.passCode.toUpperCase() === cleanCode ||
@@ -465,7 +562,7 @@ export const AdminAttendancePage: React.FC = () => {
       return;
     }
 
-    // Mark Checked In
+    // Mark Checked In locally
     const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     setAttendees((prev) =>
       prev.map((a) => (a.id === found.id ? { ...a, isCheckedIn: true, checkInTime: timeNow } : a))
@@ -487,7 +584,7 @@ export const AdminAttendancePage: React.FC = () => {
   };
 
   // Send Passcode via WhatsApp Web
-  const handleSendWhatsApp = (a: AttendeeRecord) => {
+  const handleSendWhatsApp = async (a: AttendeeRecord) => {
     const text = encodeURIComponent(
       `⭐ *WeGrow B School • Leadership in Action*\n\n` +
       `Hello ${a.fullName},\n` +
@@ -501,10 +598,13 @@ export const AdminAttendancePage: React.FC = () => {
     setAttendees((prev) =>
       prev.map((item) => (item.id === a.id ? { ...item, codeSentWhatsApp: true } : item))
     );
+    try {
+      await api.attendance.updateDispatch(a.id, 'wa');
+    } catch {}
   };
 
   // Send Passcode via Email
-  const handleSendEmail = (a: AttendeeRecord) => {
+  const handleSendEmail = async (a: AttendeeRecord) => {
     const subject = encodeURIComponent(`Your Entry Code [${a.passCode}] - Leadership in Action Programme`);
     const body = encodeURIComponent(
       `Dear ${a.fullName},\n\n` +
@@ -520,15 +620,48 @@ export const AdminAttendancePage: React.FC = () => {
     setAttendees((prev) =>
       prev.map((item) => (item.id === a.id ? { ...item, codeSentEmail: true } : item))
     );
+    try {
+      await api.attendance.updateDispatch(a.id, 'mail');
+    } catch {}
   };
 
   // Add Attendee
-  const handleAddAttendeeSubmit = (e: React.FormEvent) => {
+  const handleAddAttendeeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newAttendee.fullName || !newAttendee.phone) return;
 
+    // Call Backend API to create attendee and get auto-generated WG-LDP-xxx passcode
+    try {
+      const res = await api.attendance.register({
+        fullName: newAttendee.fullName,
+        phone: newAttendee.phone,
+        email: newAttendee.email,
+        companyName: newAttendee.companyName || 'TAG Group',
+        designation: newAttendee.designation || 'Middle Manager',
+        department: newAttendee.department || 'Operations'
+      });
+
+      if (res && res.attendee) {
+        setAttendees((prev) => [res.attendee, ...prev]);
+        setNewAttendee({
+          fullName: '',
+          phone: '',
+          email: '',
+          companyName: 'TAG Group',
+          designation: '',
+          department: 'Operations'
+        });
+        setAddModalOpen(false);
+        showToast(`✓ Nominee created with Passcode ${res.attendee.passCode}!`);
+        return;
+      }
+    } catch (err) {
+      console.warn('API attendee creation failed, falling back to local creation', err);
+    }
+
+    // Local fallback
     const nextNum = attendees.length + 1;
-    const passCode = `TAG26-${String(nextNum).padStart(3, '0')}`;
+    const passCode = `WG-LDP-${String(nextNum).padStart(3, '0')}`;
     const record: AttendeeRecord = {
       id: 'att_' + Date.now(),
       passCode,
@@ -555,6 +688,7 @@ export const AdminAttendancePage: React.FC = () => {
       department: 'Operations'
     });
     setAddModalOpen(false);
+    showToast(`✓ Nominee created with Passcode ${passCode}!`);
   };
 
   // Export CSV
@@ -602,11 +736,10 @@ export const AdminAttendancePage: React.FC = () => {
       {/* Styles */}
       <style>{`
         .att-page-root {
-          padding: 24px;
+          padding: 0 0 32px 0;
           color: #0F172A;
           font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-          min-height: 100vh;
-          background: #F8FAFC;
+          width: 100%;
         }
 
         /* Top Header Bar */
@@ -656,6 +789,88 @@ export const AdminAttendancePage: React.FC = () => {
           border-radius: 9999px;
           border: 1px solid rgba(232, 96, 20, 0.25);
           letter-spacing: 0.02em;
+        }
+
+        /* Live API Status Badge */
+        .att-api-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 11px;
+          font-weight: 700;
+          padding: 3px 10px;
+          border-radius: 9999px;
+          letter-spacing: 0.02em;
+          transition: all 0.2s ease;
+        }
+
+        .att-api-badge.online {
+          background: #ECFDF5;
+          color: #059669;
+          border: 1px solid #A7F3D0;
+        }
+
+        .att-api-badge.checking {
+          background: #FEF3C7;
+          color: #D97706;
+          border: 1px solid #FDE68A;
+        }
+
+        .att-api-badge.offline {
+          background: #F1F5F9;
+          color: #64748B;
+          border: 1px solid #CBD5E1;
+        }
+
+        .att-dot-pulse {
+          width: 7px;
+          height: 7px;
+          border-radius: 50%;
+          display: inline-block;
+        }
+
+        .att-dot-pulse.green {
+          background: #10B981;
+          box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25);
+          animation: pulse 1.8s infinite;
+        }
+
+        .att-dot-pulse.amber {
+          background: #F59E0B;
+          box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.25);
+          animation: pulse 1.2s infinite;
+        }
+
+        .att-dot-pulse.red {
+          background: #94A3B8;
+        }
+
+        @keyframes pulse {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.5; transform: scale(1.15); }
+        }
+
+        .att-toast {
+          position: fixed;
+          bottom: 24px;
+          right: 24px;
+          background: #0F172A;
+          color: #FFFFFF;
+          padding: 12px 20px;
+          border-radius: 12px;
+          font-size: 13.5px;
+          font-weight: 700;
+          box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.35);
+          z-index: 9999;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          animation: toastIn 0.25s ease-out;
+        }
+
+        @keyframes toastIn {
+          from { opacity: 0; transform: translateY(12px); }
+          to { opacity: 1; transform: translateY(0); }
         }
 
         .att-subtitle {
@@ -941,14 +1156,16 @@ export const AdminAttendancePage: React.FC = () => {
         .att-table-card {
           background: #FFFFFF;
           border: 1px solid #E2E8F0;
-          border-radius: 18px;
+          border-radius: 16px;
           overflow: hidden;
           box-shadow: 0 4px 16px rgba(15, 23, 42, 0.03);
+          width: 100%;
         }
 
         .att-table-container {
           overflow-x: auto;
           width: 100%;
+          scrollbar-width: thin;
         }
 
         .att-table {
@@ -960,21 +1177,31 @@ export const AdminAttendancePage: React.FC = () => {
         .att-table th {
           background: #F8FAFC;
           color: #64748B;
-          font-size: 11px;
+          font-size: 10.5px;
           font-weight: 800;
-          letter-spacing: 0.06em;
+          letter-spacing: 0.05em;
           text-transform: uppercase;
-          padding: 14px 18px;
+          padding: 12px 8px;
           border-bottom: 1px solid #E2E8F0;
           white-space: nowrap;
         }
 
         .att-table td {
-          padding: 14px 18px;
+          padding: 10px 8px;
           border-bottom: 1px solid #F1F5F9;
-          font-size: 13.5px;
+          font-size: 13px;
           color: #0F172A;
           vertical-align: middle;
+        }
+
+        .att-table th:first-child,
+        .att-table td:first-child {
+          padding-left: 14px;
+        }
+
+        .att-table th:last-child,
+        .att-table td:last-child {
+          padding-right: 14px;
         }
 
         .att-table tr:hover td {
@@ -985,17 +1212,18 @@ export const AdminAttendancePage: React.FC = () => {
         .att-code-pill {
           display: inline-flex;
           align-items: center;
-          gap: 6px;
-          font-size: 12.5px;
+          gap: 5px;
+          font-size: 11.5px;
           font-weight: 800;
           font-family: 'JetBrains Mono', monospace;
           background: #FFF7ED;
           color: #C2410C;
           border: 1px solid rgba(234, 88, 12, 0.25);
-          padding: 4px 10px;
-          border-radius: 8px;
+          padding: 3px 8px;
+          border-radius: 6px;
           cursor: pointer;
           transition: all 0.15s ease;
+          white-space: nowrap;
         }
 
         .att-code-pill:hover {
@@ -1007,49 +1235,58 @@ export const AdminAttendancePage: React.FC = () => {
         .att-name-cell {
           display: flex;
           flex-direction: column;
+          min-width: 120px;
+          max-width: 170px;
         }
 
         .att-name-val {
           font-weight: 700;
           color: #0F172A;
-          font-size: 14px;
+          font-size: 13px;
+          line-height: 1.3;
         }
 
         .att-email-val {
-          font-size: 12px;
+          font-size: 11px;
           color: #64748B;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
         }
 
         /* Contact Dispatch */
         .att-contact-cell {
           display: flex;
           flex-direction: column;
-          gap: 4px;
+          gap: 3px;
+          min-width: 105px;
         }
 
         .att-phone-val {
           font-weight: 700;
           color: #334155;
-          font-size: 13px;
+          font-size: 12.5px;
+          line-height: 1.2;
         }
 
         .att-dispatch-actions {
           display: flex;
           align-items: center;
-          gap: 6px;
+          gap: 4px;
         }
 
         .att-send-btn {
           display: inline-flex;
           align-items: center;
-          gap: 4px;
-          font-size: 11px;
+          gap: 3px;
+          font-size: 10px;
           font-weight: 700;
-          padding: 2px 7px;
-          border-radius: 6px;
+          padding: 2px 6px;
+          border-radius: 5px;
           cursor: pointer;
           border: none;
           transition: all 0.15s ease;
+          white-space: nowrap;
         }
 
         .att-send-btn.wa {
@@ -1074,12 +1311,13 @@ export const AdminAttendancePage: React.FC = () => {
         .att-status-badge {
           display: inline-flex;
           align-items: center;
-          gap: 5px;
-          font-size: 11.5px;
+          gap: 4px;
+          font-size: 10.5px;
           font-weight: 800;
-          padding: 4px 10px;
+          padding: 3px 8px;
           border-radius: 9999px;
           letter-spacing: 0.02em;
+          white-space: nowrap;
         }
 
         .att-status-badge.confirmed {
@@ -1101,14 +1339,15 @@ export const AdminAttendancePage: React.FC = () => {
         .att-btn-checkin-action {
           display: inline-flex;
           align-items: center;
-          gap: 6px;
-          font-size: 12px;
+          gap: 5px;
+          font-size: 11px;
           font-weight: 700;
-          padding: 7px 14px;
+          padding: 5px 10px;
           border-radius: 9999px;
           border: none;
           cursor: pointer;
           transition: all 0.2s ease;
+          white-space: nowrap;
         }
 
         .att-btn-checkin-action.mark {
@@ -1137,14 +1376,15 @@ export const AdminAttendancePage: React.FC = () => {
         .att-feedback-toggle {
           display: inline-flex;
           align-items: center;
-          gap: 5px;
-          font-size: 11.5px;
+          gap: 4px;
+          font-size: 10.5px;
           font-weight: 700;
-          padding: 4px 10px;
-          border-radius: 8px;
+          padding: 3px 8px;
+          border-radius: 6px;
           cursor: pointer;
           border: 1px solid transparent;
           transition: all 0.15s ease;
+          white-space: nowrap;
         }
 
         .att-feedback-toggle.filled {
@@ -1173,6 +1413,24 @@ export const AdminAttendancePage: React.FC = () => {
           justify-content: space-between;
           font-size: 13px;
           color: #64748B;
+        }
+
+        @media (max-width: 1200px) {
+          .att-table th {
+            padding: 10px 6px;
+            font-size: 10px;
+          }
+          .att-table td {
+            padding: 9px 6px;
+            font-size: 12.5px;
+          }
+          .att-name-cell {
+            min-width: 110px;
+            max-width: 140px;
+          }
+          .att-contact-cell {
+            min-width: 95px;
+          }
         }
 
         /* Modal Backdrop */
@@ -1320,9 +1578,22 @@ export const AdminAttendancePage: React.FC = () => {
             <QrCode size={24} />
           </div>
           <div className="att-title-wrap">
-            <h1>
+            <h1 style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
               Leadership in Action Attendance
               <span className="att-live-pill">Live Event 2026</span>
+              <span
+                className={`att-api-badge ${apiStatus === 'connected' ? 'online' : apiStatus === 'checking' ? 'checking' : 'offline'}`}
+                title={
+                  apiStatus === 'connected'
+                    ? 'Backend API is Live & Synced with MongoDB Atlas'
+                    : apiStatus === 'checking'
+                    ? 'Checking backend API connection...'
+                    : 'Backend API offline (Operating with local cache)'
+                }
+              >
+                <span className={`att-dot-pulse ${apiStatus === 'connected' ? 'green' : apiStatus === 'checking' ? 'amber' : 'red'}`} />
+                {apiStatus === 'connected' ? 'API Connected (MongoDB)' : apiStatus === 'checking' ? 'Connecting API...' : 'Local Mode'}
+              </span>
             </h1>
             <p className="att-subtitle">
               Manage attendee registrations, gate check-in verification, code dispatch, and feedback status.
@@ -1334,10 +1605,11 @@ export const AdminAttendancePage: React.FC = () => {
           <button
             type="button"
             className="att-btn-icon"
-            onClick={() => window.location.reload()}
-            title="Refresh Attendance List"
+            onClick={() => fetchAttendeesFromApi(false)}
+            title="Refresh Attendance List from API"
+            style={{ cursor: 'pointer' }}
           >
-            <RefreshCw size={17} />
+            <RefreshCw size={17} style={{ animation: isRefreshing ? 'spin 0.8s linear infinite' : 'none' }} />
           </button>
 
           {/* Quick Gate Check-In Modal Trigger (Matching User's Reference Button) */}
@@ -1447,7 +1719,7 @@ export const AdminAttendancePage: React.FC = () => {
             <Search size={18} />
             <input
               type="text"
-              placeholder="Search by Name, Phone, Passcode (TAG26-...), Designation..."
+              placeholder="Search by Name, Phone, Passcode (WG-LDP-...), Designation..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="att-search-input"
@@ -1527,10 +1799,10 @@ export const AdminAttendancePage: React.FC = () => {
                 <th>ATTENDEE</th>
                 <th>CONTACT &amp; DISPATCH</th>
                 <th>VERTICAL / DESIGNATION</th>
-                <th>GATE STATUS</th>
-                <th>CHECK-IN ACTION</th>
-                <th>FEEDBACK</th>
-                <th>ACTIONS</th>
+                <th style={{ textAlign: 'center' }}>GATE STATUS</th>
+                <th style={{ textAlign: 'center' }}>CHECK-IN</th>
+                <th style={{ textAlign: 'center' }}>FEEDBACK</th>
+                <th style={{ textAlign: 'center' }}>VIEW</th>
               </tr>
             </thead>
             <tbody>
@@ -1553,16 +1825,21 @@ export const AdminAttendancePage: React.FC = () => {
                       >
                         <span>{a.passCode}</span>
                         {copiedCode === a.passCode ? (
-                          <Check size={13} color="#16A34A" />
+                          <Check size={11} color="#16A34A" />
                         ) : (
-                          <Copy size={13} />
+                          <Copy size={11} />
                         )}
                       </div>
                     </td>
 
                     {/* Registration Date */}
-                    <td style={{ color: '#64748B', fontSize: 12.5, whiteSpace: 'nowrap' }}>
-                      {a.registeredAt}
+                    <td>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: '#334155', whiteSpace: 'nowrap' }}>
+                        {a.registeredAt.split(' ')[0]}
+                      </div>
+                      <div style={{ fontSize: 10.5, color: '#94A3B8', whiteSpace: 'nowrap' }}>
+                        {a.registeredAt.split(' ').slice(1).join(' ')}
+                      </div>
                     </td>
 
                     {/* Attendee Name & Email */}
@@ -1584,7 +1861,7 @@ export const AdminAttendancePage: React.FC = () => {
                             onClick={() => handleSendWhatsApp(a)}
                             title="Send passcode via WhatsApp"
                           >
-                            <MessageCircle size={11} />
+                            <MessageCircle size={10} />
                             <span>{a.codeSentWhatsApp ? 'Resend' : 'Send'} WA</span>
                           </button>
                           <button
@@ -1593,7 +1870,7 @@ export const AdminAttendancePage: React.FC = () => {
                             onClick={() => handleSendEmail(a)}
                             title="Send passcode via Email"
                           >
-                            <Mail size={11} />
+                            <Mail size={10} />
                             <span>Mail</span>
                           </button>
                         </div>
@@ -1602,29 +1879,33 @@ export const AdminAttendancePage: React.FC = () => {
 
                     {/* Company & Designation */}
                     <td>
-                      <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <span style={{ fontWeight: 700, fontSize: 13.5 }}>{a.designation}</span>
-                        <span style={{ fontSize: 12, color: '#64748B' }}>{a.department} • {a.companyName}</span>
+                      <div style={{ display: 'flex', flexDirection: 'column', minWidth: 135, maxWidth: 190 }}>
+                        <span style={{ fontWeight: 700, fontSize: 12.5, color: '#0F172A', lineHeight: 1.25 }}>
+                          {a.designation}
+                        </span>
+                        <span style={{ fontSize: 11, color: '#64748B', lineHeight: 1.2, marginTop: 2 }}>
+                          {a.department} • {a.companyName}
+                        </span>
                       </div>
                     </td>
 
                     {/* Gate Status Badge */}
-                    <td>
+                    <td style={{ textAlign: 'center' }}>
                       {a.isCheckedIn ? (
                         <div className="att-status-badge checked-in">
-                          <CheckCircle2 size={13} />
+                          <CheckCircle2 size={11} />
                           <span>CHECKED IN</span>
                         </div>
                       ) : (
                         <div className="att-status-badge pending">
-                          <Clock size={13} />
+                          <Clock size={11} />
                           <span>PENDING</span>
                         </div>
                       )}
                     </td>
 
                     {/* Gate Check-In Action Button */}
-                    <td>
+                    <td style={{ textAlign: 'center' }}>
                       {a.isCheckedIn ? (
                         <button
                           type="button"
@@ -1632,8 +1913,8 @@ export const AdminAttendancePage: React.FC = () => {
                           onClick={() => handleToggleCheckIn(a.id)}
                           title="Click to undo check-in if marked by mistake"
                         >
-                          <Check size={14} />
-                          <span>{a.checkInTime || 'Checked In'}</span>
+                          <Check size={12} />
+                          <span>{a.checkInTime || '09:30 AM'}</span>
                         </button>
                       ) : (
                         <button
@@ -1648,28 +1929,28 @@ export const AdminAttendancePage: React.FC = () => {
                     </td>
 
                     {/* Feedback Form Status Toggle */}
-                    <td>
+                    <td style={{ textAlign: 'center' }}>
                       <button
                         type="button"
                         className={`att-feedback-toggle ${a.feedbackFilled ? 'filled' : 'unfilled'}`}
                         onClick={() => handleToggleFeedback(a.id)}
                         title="Click to toggle feedback status"
                       >
-                        <Star size={13} />
+                        <Star size={11} />
                         <span>{a.feedbackFilled ? 'Filled (5★)' : 'Pending'}</span>
                       </button>
                     </td>
 
                     {/* View Details / Card */}
-                    <td>
+                    <td style={{ textAlign: 'center' }}>
                       <button
                         type="button"
                         className="att-btn-icon"
-                        style={{ width: 32, height: 32 }}
+                        style={{ width: 28, height: 28, margin: '0 auto' }}
                         onClick={() => setDetailModalAttendee(a)}
                         title="View Pass & Nominee Details"
                       >
-                        <Eye size={15} />
+                        <Eye size={13} />
                       </button>
                     </td>
                   </tr>
@@ -1709,7 +1990,7 @@ export const AdminAttendancePage: React.FC = () => {
             <form onSubmit={handleQuickCheckInSubmit}>
               <div className="att-modal-body">
                 <p style={{ fontSize: 14, color: '#64748B', margin: '0 0 16px' }}>
-                  Ask the attendee for their entry passcode (e.g. <strong>TAG26-001</strong>) or phone number to check them in at the gate.
+                  Ask the attendee for their entry passcode (e.g. <strong>WG-LDP-001</strong>) or phone number to check them in at the gate.
                 </p>
 
                 <div className="att-form-group">
@@ -1718,7 +1999,7 @@ export const AdminAttendancePage: React.FC = () => {
                     type="text"
                     value={quickCheckInCode}
                     onChange={(e) => setQuickCheckInCode(e.target.value)}
-                    placeholder="e.g. TAG26-003 or 9842188231"
+                    placeholder="e.g. WG-LDP-003 or 9842188231"
                     className="att-form-input"
                     autoFocus
                   />
@@ -1985,13 +2266,19 @@ export const AdminAttendancePage: React.FC = () => {
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, color: '#93C5FD' }}>
-                  <span>Venue: TAG Hall, Amathur</span>
+                  <span>Venue: TAG Knowledge Centre, Amathur</span>
                   <span>Time: 9:30 AM – 5:30 PM</span>
                 </div>
               </div>
 
               {/* Status details */}
               <div style={{ background: '#F8FAFC', borderRadius: 12, padding: 16, border: '1px solid #E2E8F0' }}>
+                {detailModalAttendee.experience && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #E2E8F0' }}>
+                    <span style={{ color: '#64748B', fontSize: 13 }}>Work Experience:</span>
+                    <span style={{ fontWeight: 700, color: '#0F172A' }}>{detailModalAttendee.experience}</span>
+                  </div>
+                )}
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #E2E8F0' }}>
                   <span style={{ color: '#64748B', fontSize: 13 }}>Gate Check-In:</span>
                   <span style={{ fontWeight: 700, color: detailModalAttendee.isCheckedIn ? '#16A34A' : '#D97706' }}>
@@ -2057,6 +2344,14 @@ export const AdminAttendancePage: React.FC = () => {
               </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Live Action Toast Notification */}
+      {toastMessage && (
+        <div className="att-toast">
+          <CheckCircle2 size={18} color="#10B981" />
+          <span>{toastMessage}</span>
         </div>
       )}
     </div>

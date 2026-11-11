@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Footer from '../layout/Footer';
+import { api } from '../../services/api';
 
 interface RegistrationData {
   id: string;
@@ -35,6 +36,7 @@ interface RegistrationData {
   companyName: string;
   designation: string;
   department?: string;
+  experience?: string;
   registeredAt: string;
   passCode?: string;
 }
@@ -78,13 +80,47 @@ export const EventLandingPage: React.FC = () => {
   // Mobile menu toggle
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  // Live Countdown Timer to 18 November 2026, 09:30 AM IST
+  const [timeLeft, setTimeLeft] = useState<{
+    days: number;
+    hours: number;
+    minutes: number;
+    seconds: number;
+  }>({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+
+  useEffect(() => {
+    const targetDate = new Date('2026-11-18T09:30:00+05:30').getTime();
+
+    const calculateCountdown = () => {
+      const now = new Date().getTime();
+      const diff = targetDate - now;
+
+      if (diff <= 0) {
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+        return;
+      }
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+      const minutes = Math.floor((diff / (1000 * 60)) % 60);
+      const seconds = Math.floor((diff / 1000) % 60);
+
+      setTimeLeft({ days, hours, minutes, seconds });
+    };
+
+    calculateCountdown();
+    const timer = setInterval(calculateCountdown, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
   // Registration form state
   const [formData, setFormData] = useState({
     fullName: '',
     phone: '',
     companyName: 'TAG Group',
     designation: '',
-    department: 'Operations'
+    department: 'Operations',
+    experience: '3 – 5 Years'
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -145,6 +181,9 @@ export const EventLandingPage: React.FC = () => {
     if (!formData.designation.trim()) {
       newErrors.designation = 'Please enter current designation';
     }
+    if (!formData.experience) {
+      newErrors.experience = 'Please select total work experience';
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -155,25 +194,69 @@ export const EventLandingPage: React.FC = () => {
 
     setIsSubmitting(true);
 
-    const record: RegistrationData = {
-      id: 'reg_' + Date.now(),
-      ...formData,
-      registeredAt: new Date().toISOString()
-    };
+    try {
+      const response = await api.attendance.register({
+        fullName: formData.fullName,
+        phone: formData.phone,
+        companyName: formData.companyName,
+        designation: formData.designation,
+        department: formData.department,
+        experience: formData.experience
+      });
 
-    // Save locally to browser storage
+      if (response && response.attendee) {
+        const att = response.attendee;
+        const record: RegistrationData = {
+          id: att.id || att._id || 'reg_' + Date.now(),
+          fullName: att.fullName,
+          phone: att.phone,
+          companyName: att.companyName,
+          designation: att.designation,
+          department: att.department,
+          experience: att.experience || formData.experience,
+          registeredAt: att.registeredAt,
+          passCode: att.passCode || 'WG-LDP-001'
+        };
+
+        // Cache locally as well
+        try {
+          const existingStr = localStorage.getItem('wg_event_registrations');
+          const list: RegistrationData[] = existingStr ? JSON.parse(existingStr) : [];
+          list.push(record);
+          localStorage.setItem('wg_event_registrations', JSON.stringify(list));
+        } catch {}
+
+        setIsSubmitting(false);
+        setSubmittedData(record);
+        scrollTo('register');
+        return;
+      }
+    } catch (apiErr) {
+      console.warn('API call failed, falling back to local generation', apiErr);
+    }
+
+    // Fallback: Generate WG-LDP-xxx locally if backend is temporarily unreachable
+    let fallbackCode = 'WG-LDP-001';
     try {
       const existingStr = localStorage.getItem('wg_event_registrations');
       const list: RegistrationData[] = existingStr ? JSON.parse(existingStr) : [];
+      const nextNum = list.length + 1;
+      fallbackCode = `WG-LDP-${String(nextNum).padStart(3, '0')}`;
+      const record: RegistrationData = {
+        id: 'reg_' + Date.now(),
+        ...formData,
+        passCode: fallbackCode,
+        registeredAt: new Date().toISOString()
+      };
       list.push(record);
       localStorage.setItem('wg_event_registrations', JSON.stringify(list));
+      setSubmittedData(record);
     } catch (err) {
       console.warn('Could not save to localStorage', err);
     }
 
     setTimeout(() => {
       setIsSubmitting(false);
-      setSubmittedData(record);
       scrollTo('register');
     }, 450);
   };
@@ -184,7 +267,8 @@ export const EventLandingPage: React.FC = () => {
       phone: '',
       companyName: 'TAG Group',
       designation: '',
-      department: 'Operations'
+      department: 'Operations',
+      experience: '3 – 5 Years'
     });
     setSubmittedData(null);
   };
@@ -192,15 +276,17 @@ export const EventLandingPage: React.FC = () => {
   const getGoogleCalendarUrl = () => {
     const title = encodeURIComponent('Leadership in Action - TAG Group Programme');
     const details = encodeURIComponent(
-      'Practical Leadership Development Programme for TAG Group middle-management team.\nVenue: TAG Group Conference Hall, Amathur\nDate: 18 November 2026\nDaily Timing: 9:30 AM – 5:30 PM\nContact: +91 93443 37331'
+      'Practical Leadership Development Programme for TAG Group middle-management team.\nVenue: TAG Knowledge Centre, Amathur\nDate: 18 November 2026\nDaily Timing: 9:30 AM – 5:30 PM\nContact: +91 93443 37331'
     );
-    const location = encodeURIComponent('TAG Group Conference Hall, Amathur');
+    const location = encodeURIComponent('TAG Knowledge Centre, Amathur');
     return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=20261118T040000Z/20261118T120000Z&details=${details}&location=${location}`;
   };
 
   const getWhatsAppMessageUrl = () => {
+    const code = submittedData?.passCode ? `\nPasscode: ${submittedData.passCode}` : '';
+    const exp = submittedData?.experience ? `\nExperience: ${submittedData.experience}` : (formData.experience ? `\nExperience: ${formData.experience}` : '');
     const message = encodeURIComponent(
-      `Hello WeGrow Team! I have registered for the Leadership in Action Programme (TAG Group) scheduled for 18 November 2026.\nName: ${submittedData?.fullName || formData.fullName}\nGroup: ${submittedData?.companyName || formData.companyName}\nDesignation: ${submittedData?.designation || formData.designation}`
+      `Hello WeGrow Team! I have registered for the Leadership in Action Programme (TAG Group) scheduled for 18 November 2026 at TAG Knowledge Centre, Amathur.\nName: ${submittedData?.fullName || formData.fullName}\nGroup: ${submittedData?.companyName || formData.companyName}\nDesignation: ${submittedData?.designation || formData.designation}${exp}${code}`
     );
     return `https://wa.me/919344337331?text=${message}`;
   };
@@ -753,150 +839,191 @@ export const EventLandingPage: React.FC = () => {
           margin: 0;
         }
 
-        .lp-req-box {
-          background: var(--lp-surface);
-          border: 1px solid var(--lp-border);
-          border-radius: 24px;
-          padding: 36px 40px;
-          margin-bottom: 48px;
-          box-shadow: var(--lp-shadow-sm);
-        }
-
-        .lp-req-header {
-          display: flex;
-          align-items: center;
-          gap: 14px;
-          margin-bottom: 16px;
-        }
-
-        .lp-step-num {
-          width: 34px;
-          height: 34px;
-          border-radius: 10px;
-          background: var(--lp-accent);
+        /* ================= HERO LIVE COUNTDOWN TIMER ================= */
+        .lp-countdown-card {
+          display: inline-flex;
+          flex-direction: column;
+          background: linear-gradient(135deg, #0C1D36 0%, #152B4D 100%);
           color: #FFFFFF;
-          font-weight: 800;
-          font-size: 15px;
+          padding: 14px 22px;
+          border-radius: 18px;
+          box-shadow: 0 10px 24px -4px rgba(12, 29, 54, 0.22);
+          margin-bottom: 24px;
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          max-width: 440px;
+        }
+
+        .lp-countdown-header {
           display: flex;
           align-items: center;
-          justify-content: center;
-          flex-shrink: 0;
-        }
-
-        .lp-req-header h3 {
-          font-size: 21px;
+          gap: 8px;
+          font-size: 11px;
           font-weight: 800;
-          color: var(--lp-primary);
-          margin: 0;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: #FBD38D;
+          margin-bottom: 10px;
         }
 
-        .lp-req-text {
-          font-size: 16px;
-          line-height: 1.7;
-          color: var(--lp-text-body);
-          margin: 0 0 20px;
+        .lp-countdown-target {
+          margin-left: auto;
+          color: rgba(255, 255, 255, 0.7);
+          font-weight: 600;
+          font-size: 11px;
+          letter-spacing: normal;
+          text-transform: none;
         }
 
-        .lp-approach-callout {
-          background: #FFF9F5;
-          border-left: 4px solid var(--lp-accent);
-          padding: 18px 24px;
-          border-radius: 0 14px 14px 0;
-          font-size: 15px;
-          line-height: 1.6;
-          color: var(--lp-primary);
+        .lp-countdown-timer {
+          display: flex;
+          align-items: center;
+          gap: 12px;
         }
 
-        /* 5 Overview Cards */
-        .lp-overview-cards-grid {
-          display: grid;
-          grid-template-columns: repeat(5, 1fr);
-          gap: 18px;
-          margin-bottom: 56px;
-        }
-
-        .lp-overview-card {
-          background: var(--lp-surface);
-          border: 1px solid var(--lp-border);
-          border-radius: 20px;
-          padding: 26px 20px;
+        .lp-countdown-item {
           display: flex;
           flex-direction: column;
+          align-items: center;
+          min-width: 44px;
+        }
+
+        .lp-countdown-num {
+          font-size: 26px;
+          font-weight: 900;
+          color: #FFFFFF;
+          line-height: 1;
+          font-variant-numeric: tabular-nums;
+        }
+
+        .lp-countdown-lbl {
+          font-size: 9.5px;
+          font-weight: 700;
+          color: #94A3B8;
+          letter-spacing: 0.08em;
+          margin-top: 5px;
+        }
+
+        .lp-countdown-sep {
+          font-size: 20px;
+          font-weight: 800;
+          color: #E86014;
+          margin-top: -10px;
+          opacity: 0.9;
+        }
+
+        /* ================= ABOUT WEGROW B-SCHOOL SECTION ================= */
+        .lp-about-intro-card {
+          background: #FFFFFF;
+          border: 1px solid var(--lp-border);
+          border-radius: 24px;
+          padding: 38px 42px;
+          margin-bottom: 32px;
           box-shadow: var(--lp-shadow-sm);
+          display: grid;
+          grid-template-columns: 1.35fr 0.85fr;
+          gap: 36px;
+          align-items: center;
+        }
+
+        .lp-about-intro-left h3 {
+          font-size: 24px;
+          font-weight: 800;
+          color: var(--lp-primary);
+          line-height: 1.35;
+          margin: 0 0 16px;
+        }
+
+        .lp-about-intro-left p {
+          font-size: 15.5px;
+          line-height: 1.7;
+          color: var(--lp-text-body);
+          margin: 0 0 14px;
+        }
+
+        .lp-about-metrics-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 16px;
+        }
+
+        .lp-metric-tile {
+          background: #FAF7F2;
+          border: 1px solid #EAE4D8;
+          border-radius: 16px;
+          padding: 20px 18px;
+          text-align: center;
+          transition: transform 0.2s ease;
+        }
+
+        .lp-metric-tile:hover {
+          transform: translateY(-2px);
+          border-color: var(--lp-accent);
+        }
+
+        .lp-metric-num {
+          font-size: 28px;
+          font-weight: 900;
+          color: var(--lp-accent);
+          line-height: 1;
+          margin-bottom: 6px;
+        }
+
+        .lp-metric-label {
+          font-size: 11.5px;
+          font-weight: 700;
+          color: var(--lp-primary);
+          text-transform: uppercase;
+          letter-spacing: 0.04em;
+        }
+
+        /* Vision & Mission 2-Column Grid */
+        .lp-vm-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 24px;
+          margin-bottom: 36px;
+        }
+
+        .lp-vm-card {
+          background: #FFFFFF;
+          border: 1px solid var(--lp-border);
+          border-radius: 22px;
+          padding: 34px 32px;
+          box-shadow: var(--lp-shadow-sm);
+          display: flex;
+          flex-direction: column;
+          position: relative;
+          overflow: hidden;
           transition: all 0.25s ease;
         }
 
-        .lp-overview-card:hover {
+        .lp-vm-card:hover {
           transform: translateY(-4px);
           border-color: var(--lp-accent);
           box-shadow: var(--lp-shadow-md);
         }
 
-        .lp-overview-icon {
-          width: 44px;
-          height: 44px;
-          border-radius: 12px;
-          background: var(--lp-primary);
-          color: #FFFFFF;
+        .lp-vm-card::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 4px;
+          background: linear-gradient(90deg, #E86014, #FBD38D);
+        }
+
+        .lp-vm-header {
           display: flex;
           align-items: center;
-          justify-content: center;
-          margin-bottom: 16px;
+          gap: 14px;
+          margin-bottom: 18px;
         }
 
-        .lp-overview-label {
-          font-size: 11.5px;
-          font-weight: 800;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
-          color: var(--lp-text-muted);
-          margin-bottom: 6px;
-        }
-
-        .lp-overview-title {
-          font-size: 16px;
-          font-weight: 800;
-          color: var(--lp-primary);
-          line-height: 1.35;
-          margin: 0 0 6px;
-        }
-
-        .lp-overview-sub {
-          font-size: 13px;
-          color: var(--lp-text-body);
-          line-height: 1.45;
-          margin-top: auto;
-        }
-
-        /* 6 Goals Grid */
-        .lp-goals-grid {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: 20px;
-        }
-
-        .lp-goal-card {
-          background: var(--lp-surface);
-          border: 1px solid var(--lp-border);
-          border-radius: 18px;
-          padding: 24px 26px;
-          display: flex;
-          gap: 20px;
-          align-items: flex-start;
-          transition: all 0.25s ease;
-          box-shadow: var(--lp-shadow-sm);
-        }
-
-        .lp-goal-card:hover {
-          border-color: #D3C9B8;
-          transform: translateY(-3px);
-          box-shadow: var(--lp-shadow-md);
-        }
-
-        .lp-goal-icon-box {
-          width: 44px;
-          height: 44px;
-          border-radius: 12px;
+        .lp-vm-icon-box {
+          width: 48px;
+          height: 48px;
+          border-radius: 14px;
           background: var(--lp-accent-soft);
           color: var(--lp-accent);
           display: flex;
@@ -905,20 +1032,210 @@ export const EventLandingPage: React.FC = () => {
           flex-shrink: 0;
         }
 
-        .lp-goal-content h4 {
-          font-size: 14.5px;
+        .lp-vm-title-wrap h3 {
+          font-size: 20px;
           font-weight: 800;
-          letter-spacing: 0.06em;
+          color: var(--lp-primary);
+          margin: 0;
+        }
+
+        .lp-vm-title-wrap span {
+          font-size: 11px;
+          font-weight: 800;
+          letter-spacing: 0.08em;
           text-transform: uppercase;
+          color: var(--lp-accent);
+        }
+
+        .lp-vm-statement {
+          font-size: 15px;
+          line-height: 1.7;
+          color: var(--lp-text-body);
+          margin: 0 0 20px;
+        }
+
+        .lp-vm-list {
+          list-style: none;
+          padding: 0;
+          margin: 0;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+
+        .lp-vm-list li {
+          display: flex;
+          align-items: flex-start;
+          gap: 10px;
+          font-size: 14px;
+          color: var(--lp-primary);
+          font-weight: 600;
+          line-height: 1.45;
+        }
+
+        .lp-vm-bullet {
+          color: var(--lp-accent);
+          font-weight: 900;
+          font-size: 15px;
+          line-height: 1;
+          margin-top: 2px;
+        }
+
+        /* Business Transformation Practice */
+        .lp-consultancy-block {
+          background: #FFFFFF;
+          border: 1px solid var(--lp-border);
+          border-radius: 24px;
+          padding: 40px;
+          box-shadow: var(--lp-shadow-sm);
+          margin-bottom: 32px;
+        }
+
+        .lp-consultancy-header {
+          text-align: center;
+          max-width: 680px;
+          margin: 0 auto 36px;
+        }
+
+        .lp-consultancy-header h3 {
+          font-size: 24px;
+          font-weight: 800;
+          color: var(--lp-primary);
+          margin: 8px 0;
+        }
+
+        .lp-consultancy-header p {
+          font-size: 15px;
+          color: var(--lp-text-muted);
+          line-height: 1.6;
+          margin: 0;
+        }
+
+        .lp-pillars-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 22px;
+        }
+
+        .lp-pillar-card {
+          background: #FAF7F2;
+          border: 1px solid #EAE4D8;
+          border-radius: 20px;
+          padding: 28px 24px;
+          display: flex;
+          flex-direction: column;
+          transition: all 0.25s ease;
+        }
+
+        .lp-pillar-card:hover {
+          transform: translateY(-4px);
+          border-color: var(--lp-accent);
+          box-shadow: var(--lp-shadow-md);
+          background: #FFFFFF;
+        }
+
+        .lp-pillar-icon-box {
+          width: 48px;
+          height: 48px;
+          border-radius: 12px;
+          background: var(--lp-primary);
+          color: #FFFFFF;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-bottom: 18px;
+        }
+
+        .lp-pillar-tag {
+          font-size: 11px;
+          font-weight: 800;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: var(--lp-accent);
+          margin-bottom: 6px;
+        }
+
+        .lp-pillar-card h4 {
+          font-size: 18px;
+          font-weight: 800;
+          color: var(--lp-primary);
+          margin: 0 0 10px;
+        }
+
+        .lp-pillar-card p {
+          font-size: 14px;
+          line-height: 1.65;
+          color: var(--lp-text-body);
+          margin: 0 0 18px;
+        }
+
+        .lp-pillar-deliverables {
+          list-style: none;
+          padding: 0;
+          margin: auto 0 0;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          border-top: 1px dashed #E2D9CC;
+          padding-top: 16px;
+        }
+
+        .lp-pillar-deliverables li {
+          font-size: 13px;
+          color: var(--lp-primary);
+          font-weight: 600;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .lp-pillar-check {
+          color: #16A34A;
+          font-weight: 800;
+        }
+
+        /* Campuses Strip */
+        .lp-campuses-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 22px;
+        }
+
+        .lp-campus-card {
+          background: #FFFFFF;
+          border: 1px solid var(--lp-border);
+          border-radius: 18px;
+          padding: 24px 28px;
+          display: flex;
+          align-items: center;
+          gap: 20px;
+          box-shadow: var(--lp-shadow-sm);
+        }
+
+        .lp-campus-icon {
+          width: 46px;
+          height: 46px;
+          border-radius: 12px;
+          background: #FFF1E8;
+          color: #E86014;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+        }
+
+        .lp-campus-info h4 {
+          font-size: 16.5px;
+          font-weight: 800;
           color: var(--lp-primary);
           margin: 0 0 4px;
         }
 
-        .lp-goal-content p {
-          font-size: 14.5px;
-          line-height: 1.6;
-          color: var(--lp-text-body);
+        .lp-campus-info p {
+          font-size: 13.5px;
+          color: var(--lp-text-muted);
           margin: 0;
+          line-height: 1.45;
         }
 
         /* ================= CAROUSEL SECTION (Clean, Premium, Automatic - No Thumbnail list) ================= */
@@ -1545,7 +1862,21 @@ export const EventLandingPage: React.FC = () => {
           .lp-venue-grid {
             grid-template-columns: 1fr;
           }
-          .lp-req-box {
+          .lp-about-intro-card {
+            grid-template-columns: 1fr;
+            gap: 24px;
+            padding: 28px 20px;
+          }
+          .lp-vm-grid {
+            grid-template-columns: 1fr;
+          }
+          .lp-pillars-grid {
+            grid-template-columns: 1fr;
+          }
+          .lp-campuses-grid {
+            grid-template-columns: 1fr;
+          }
+          .lp-consultancy-block {
             padding: 24px 20px;
           }
           .lp-form-card {
@@ -1609,10 +1940,12 @@ export const EventLandingPage: React.FC = () => {
               <Sparkles size={14} />
               <span>TAG Group Middle-Management Leadership Initiative</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-              <span>Strictly 25 Nominations</span>
-              <span>•</span>
-              <span>Sivakasi & Amathur</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 13, fontWeight: 700 }}>
+              <Calendar size={13} color="#FBD38D" />
+              <span>18 November 2026</span>
+              <span style={{ opacity: 0.5 }}>•</span>
+              <Clock size={13} color="#FBD38D" />
+              <span>9:30 AM – 5:30 PM</span>
             </div>
           </div>
         </div>
@@ -1631,10 +1964,10 @@ export const EventLandingPage: React.FC = () => {
             <nav className="lp-desktop-nav-wrap">
               <ul className="lp-desktop-nav">
                 <li><a href="#hero" onClick={e => { e.preventDefault(); scrollTo('hero'); }}>Overview</a></li>
-                <li><a href="#programme-overview" onClick={e => { e.preventDefault(); scrollTo('programme-overview'); }}>Programme</a></li>
-                <li><a href="#programme-goals" onClick={e => { e.preventDefault(); scrollTo('programme-goals'); }}>Key Goals</a></li>
-                <li><a href="#carousel" onClick={e => { e.preventDefault(); scrollTo('carousel'); }}>Campus</a></li>
+                <li><a href="#about" onClick={e => { e.preventDefault(); scrollTo('about'); }}>About WeGrow</a></li>
+                <li><a href="#carousel" onClick={e => { e.preventDefault(); scrollTo('carousel'); }}>Campus Moments</a></li>
                 <li><a href="#venue" onClick={e => { e.preventDefault(); scrollTo('venue'); }}>Venue & Timing</a></li>
+                <li><a href="#register" onClick={e => { e.preventDefault(); scrollTo('register'); }}>Register</a></li>
               </ul>
             </nav>
 
@@ -1675,8 +2008,7 @@ export const EventLandingPage: React.FC = () => {
       {mobileMenuOpen && (
         <div className="lp-mobile-drawer">
           <a href="#hero" onClick={e => { e.preventDefault(); scrollTo('hero'); }}>Overview</a>
-          <a href="#programme-overview" onClick={e => { e.preventDefault(); scrollTo('programme-overview'); }}>Programme Details</a>
-          <a href="#programme-goals" onClick={e => { e.preventDefault(); scrollTo('programme-goals'); }}>Key Goals</a>
+          <a href="#about" onClick={e => { e.preventDefault(); scrollTo('about'); }}>About WeGrow B-School</a>
           <a href="#carousel" onClick={e => { e.preventDefault(); scrollTo('carousel'); }}>Campus Moments</a>
           <a href="#venue" onClick={e => { e.preventDefault(); scrollTo('venue'); }}>Venue & Timing</a>
           <a href="#register" onClick={e => { e.preventDefault(); scrollTo('register'); }} style={{ color: '#E86014', fontWeight: 800 }}>
@@ -1735,13 +2067,43 @@ export const EventLandingPage: React.FC = () => {
                 structured around guided learning, workplace scenarios, peer discussions, and team-based activities.
               </p>
 
+              {/* Live Countdown Timer to 18 Nov 2026 9:30 AM */}
+              <div className="lp-countdown-card">
+                <div className="lp-countdown-header">
+                  <Clock size={15} color="#FBD38D" />
+                  <span className="lp-countdown-tag">COUNTDOWN TO EVENT</span>
+                  <span className="lp-countdown-target">18 Nov 2026 • 9:30 AM</span>
+                </div>
+                <div className="lp-countdown-timer">
+                  <div className="lp-countdown-item">
+                    <div className="lp-countdown-num">{timeLeft.days}</div>
+                    <div className="lp-countdown-lbl">DAYS</div>
+                  </div>
+                  <div className="lp-countdown-sep">:</div>
+                  <div className="lp-countdown-item">
+                    <div className="lp-countdown-num">{String(timeLeft.hours).padStart(2, '0')}</div>
+                    <div className="lp-countdown-lbl">HOURS</div>
+                  </div>
+                  <div className="lp-countdown-sep">:</div>
+                  <div className="lp-countdown-item">
+                    <div className="lp-countdown-num">{String(timeLeft.minutes).padStart(2, '0')}</div>
+                    <div className="lp-countdown-lbl">MINS</div>
+                  </div>
+                  <div className="lp-countdown-sep">:</div>
+                  <div className="lp-countdown-item">
+                    <div className="lp-countdown-num">{String(timeLeft.seconds).padStart(2, '0')}</div>
+                    <div className="lp-countdown-lbl">SECS</div>
+                  </div>
+                </div>
+              </div>
+
               {/* Action Buttons */}
               <div className="lp-hero-actions-row">
                 <button className="lp-btn-cta" onClick={() => scrollTo('register')}>
                   Register now <ArrowRight size={16} />
                 </button>
-                <button className="lp-btn-secondary" onClick={() => scrollTo('programme-overview')}>
-                  See event details
+                <button className="lp-btn-secondary" onClick={() => scrollTo('about')}>
+                  About WeGrow & Event
                 </button>
               </div>
 
@@ -1776,7 +2138,7 @@ export const EventLandingPage: React.FC = () => {
                   </div>
                   <div className="lp-sched-text">
                     <span className="lp-sched-label">EVENT VENUE</span>
-                    <span className="lp-sched-value">TAG Group Hall, Amathur</span>
+                    <span className="lp-sched-value">TAG Knowledge Centre, Amathur</span>
                   </div>
                 </div>
               </div>
@@ -1797,177 +2159,221 @@ export const EventLandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* ================= PROGRAMME OVERVIEW SECTION (From Image 3) ================= */}
-      <section id="programme-overview" className="lp-section" style={{ background: '#F5F1EA' }}>
+      {/* ================= ABOUT WEGROW B-SCHOOL SECTION (Replacing Overview & Goals per user instruction) ================= */}
+      <section id="about" className="lp-section" style={{ background: '#F5F1EA' }}>
         <div className="lp-container">
           <div className="lp-section-header">
             <div className="lp-pill-badge" style={{ background: '#EAE5DB', color: '#0C1D36' }}>
-              <span>Curriculum & Structure</span>
+              <Sparkles size={14} />
+              <span>About WeGrow B-School</span>
             </div>
-            <h2 className="lp-section-title">TAG Group Programme Overview</h2>
+            <h2 className="lp-section-title">Empowering Regional Businesses & Future Leaders</h2>
             <p className="lp-section-subtitle">
-              Purpose-built practical leadership curriculum prepared by WeGrow B School.
+              Pioneering practical executive capability, structured management education, and owner-independent business consulting.
             </p>
           </div>
 
-          {/* 1. Understanding TAG Group's Requirement */}
-          <div className="lp-req-box">
-            <div className="lp-req-header">
-              <div className="lp-step-num">1</div>
-              <h3>Understanding TAG Group's Requirement</h3>
-            </div>
-            <p className="lp-req-text">
-              TAG Group is planning a structured leadership development programme for approximately{' '}
-              <strong>25 middle-management participants</strong> from varied business verticals.
-              WeGrow B School proposes a focused, practical <strong>one-day programme</strong> designed
-              around the group's requirements, with guided learning, workplace scenarios, peer
-              discussions, and team-based activities.
-            </p>
-            <div className="lp-approach-callout">
-              <strong>Programme approach:</strong> This is a purpose-built programme for TAG Group.
-              The proposal presents the planned curriculum, learning activities, and intended outcomes.
-            </div>
-          </div>
-
-          {/* 2. Programme Overview Cards */}
-          <div style={{ marginBottom: 28 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 18 }}>
-              <div className="lp-step-num">2</div>
-              <h3 style={{ fontSize: 20, fontWeight: 800, color: '#0C1D36', margin: 0 }}>
-                Programme Overview
-              </h3>
+          {/* Executive Intro & Key Institutional Metrics */}
+          <div className="lp-about-intro-card">
+            <div className="lp-about-intro-left">
+              <h3>Bridging Practical Leadership Wisdom & Industrial Enterprise Growth</h3>
+              <p>
+                <strong>WeGrow B-School</strong> is Tamil Nadu's dedicated practical management institution and corporate
+                growth consultancy firm headquartered in Sivakasi with our premier academic campus in Srivilliputhur.
+                We work closely with business promoters, second-generation entrepreneurs, and corporate leadership
+                teams across Southern Tamil Nadu's thriving industrial clusters including Sivakasi, Srivilliputhur,
+                Virudhunagar, Rajapalayam, and Madurai.
+              </p>
+              <p>
+                Unlike purely academic institutions, our programmes and advisory engagements are anchored in
+                real-world workplace scenarios, actionable management frameworks, operational SOPs, and structured
+                leadership habits designed to produce immediate, measurable business impact.
+              </p>
             </div>
 
-            <div className="lp-overview-cards-grid">
-              {/* Card 1 */}
-              <div className="lp-overview-card">
-                <div className="lp-overview-icon">
-                  <FileText size={20} />
-                </div>
-                <div className="lp-overview-label">PROGRAMME</div>
-                <div className="lp-overview-title">Practical Leadership Development</div>
-                <div className="lp-overview-sub">Middle-management focus</div>
+            <div className="lp-about-metrics-grid">
+              <div className="lp-metric-tile">
+                <div className="lp-metric-num">500+</div>
+                <div className="lp-metric-label">Leaders Coached</div>
               </div>
-
-              {/* Card 2 */}
-              <div className="lp-overview-card">
-                <div className="lp-overview-icon">
-                  <Users size={20} />
-                </div>
-                <div className="lp-overview-label">PARTICIPANTS</div>
-                <div className="lp-overview-title">25 Participants</div>
-                <div className="lp-overview-sub">Middle-management professionals</div>
+              <div className="lp-metric-tile">
+                <div className="lp-metric-num">40+</div>
+                <div className="lp-metric-label">Corporate Workshops</div>
               </div>
-
-              {/* Card 3 */}
-              <div className="lp-overview-card">
-                <div className="lp-overview-icon">
-                  <Calendar size={20} />
-                </div>
-                <div className="lp-overview-label">DURATION</div>
-                <div className="lp-overview-title">1 Day</div>
-                <div className="lp-overview-sub">Hands-on intensive programme</div>
+              <div className="lp-metric-tile">
+                <div className="lp-metric-num">2</div>
+                <div className="lp-metric-label">Active Campuses</div>
               </div>
-
-              {/* Card 4 */}
-              <div className="lp-overview-card">
-                <div className="lp-overview-icon">
-                  <Clock size={20} />
-                </div>
-                <div className="lp-overview-label">DAILY TIMING</div>
-                <div className="lp-overview-title">9:30 AM – 5:30 PM</div>
-                <div className="lp-overview-sub">Interactive learning & drills</div>
-              </div>
-
-              {/* Card 5 */}
-              <div className="lp-overview-card">
-                <div className="lp-overview-icon">
-                  <MapPin size={20} />
-                </div>
-                <div className="lp-overview-label">PROPOSED VENUE</div>
-                <div className="lp-overview-title">TAG Group Conference Hall</div>
-                <div className="lp-overview-sub">Amathur; open space for activities</div>
+              <div className="lp-metric-tile">
+                <div className="lp-metric-num">100%</div>
+                <div className="lp-metric-label">Workplace Scenarios</div>
               </div>
             </div>
           </div>
 
-          {/* 3. Programme Goals - 6 Outcomes */}
-          <div id="programme-goals">
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
-              <div className="lp-step-num">3</div>
-              <h3 style={{ fontSize: 20, fontWeight: 800, color: '#0C1D36', margin: 0 }}>
-                Programme Goals
-              </h3>
+          {/* Vision & Mission Cards */}
+          <div className="lp-vm-grid">
+            {/* Vision */}
+            <div className="lp-vm-card">
+              <div className="lp-vm-header">
+                <div className="lp-vm-icon-box">
+                  <Compass size={24} />
+                </div>
+                <div className="lp-vm-title-wrap">
+                  <span>OUR ASPIRATION</span>
+                  <h3>Our Vision</h3>
+                </div>
+              </div>
+              <p className="lp-vm-statement">
+                "To be the foremost regional business leadership academy and transformation partner in South India —
+                enabling emerging businesses, manufacturing leaders, and family enterprises to scale into
+                owner-independent, enduring corporations."
+              </p>
+              <ul className="lp-vm-list">
+                <li>
+                  <span className="lp-vm-bullet">✦</span>
+                  <span>Championing regional industrial competitiveness across printing, manufacturing, fireworks, and FMCG sectors.</span>
+                </li>
+                <li>
+                  <span className="lp-vm-bullet">✦</span>
+                  <span>Fostering smooth second-generation leadership transition and modern corporate governance.</span>
+                </li>
+                <li>
+                  <span className="lp-vm-bullet">✦</span>
+                  <span>Institutionalizing scalable, owner-independent management systems.</span>
+                </li>
+              </ul>
             </div>
-            <p style={{ color: '#718096', fontSize: 14.5, margin: '0 0 22px', fontWeight: 600 }}>
-              Six measurable outcomes the programme is built to deliver:
-            </p>
 
-            <div className="lp-goals-grid">
-              {/* Goal 1 */}
-              <div className="lp-goal-card">
-                <div className="lp-goal-icon-box">
-                  <TrendingUp size={22} />
+            {/* Mission */}
+            <div className="lp-vm-card">
+              <div className="lp-vm-header">
+                <div className="lp-vm-icon-box">
+                  <Target size={24} />
                 </div>
-                <div className="lp-goal-content">
-                  <h4>TRANSITION</h4>
-                  <p>Help managers transition from functional expertise to effective people leadership.</p>
+                <div className="lp-vm-title-wrap">
+                  <span>OUR PURPOSE</span>
+                  <h3>Our Mission</h3>
                 </div>
               </div>
+              <p className="lp-vm-statement">
+                "To deliver actionable, scenario-driven management education, executive coaching, and operational
+                consulting that instills disciplined systems, cross-functional collaboration, and a high-performance
+                culture across every tier of management."
+              </p>
+              <ul className="lp-vm-list">
+                <li>
+                  <span className="lp-vm-bullet">✦</span>
+                  <span>Bridging functional execution with modern people leadership and delegation frameworks.</span>
+                </li>
+                <li>
+                  <span className="lp-vm-bullet">✦</span>
+                  <span>Establishing measurable accountability, structured SOPs, and KPI-driven performance reviews.</span>
+                </li>
+                <li>
+                  <span className="lp-vm-bullet">✦</span>
+                  <span>Cultivating strategic decision-making, ethical leadership, and continuous learning habits.</span>
+                </li>
+              </ul>
+            </div>
+          </div>
 
-              {/* Goal 2 */}
-              <div className="lp-goal-card">
-                <div className="lp-goal-icon-box">
-                  <MessageSquare size={22} />
+          {/* Business Transformation & Consultancy Practice */}
+          <div className="lp-consultancy-block">
+            <div className="lp-consultancy-header">
+              <div className="lp-pill-badge" style={{ background: '#FFF1E8', color: '#E86014' }}>
+                <Briefcase size={13} />
+                <span>Consultancy Practice</span>
+              </div>
+              <h3>Business Transformation Practice</h3>
+              <p>
+                Our hands-on consultancy engagements partner with business promoters and executive teams to build
+                resilient systems across three fundamental pillars: People, Process, and Technology.
+              </p>
+            </div>
+
+            <div className="lp-pillars-grid">
+              {/* Pillar 1: People */}
+              <div className="lp-pillar-card">
+                <div className="lp-pillar-icon-box">
+                  <Users size={24} />
                 </div>
-                <div className="lp-goal-content">
-                  <h4>COMMUNICATION</h4>
-                  <p>Strengthen communication, delegation, feedback and team motivation.</p>
-                </div>
+                <div className="lp-pillar-tag">PILLAR 01 • PEOPLE</div>
+                <h4>People & Leadership Transformation</h4>
+                <p>
+                  Transitioning functional supervisors into inspiring people leaders. We establish delegation frameworks,
+                  role clarity, feedback loops, and accountability scorecards.
+                </p>
+                <ul className="lp-pillar-deliverables">
+                  <li><span className="lp-pillar-check">✓</span> Middle-management leadership pipelines</li>
+                  <li><span className="lp-pillar-check">✓</span> Structured delegation & accountability SOPs</li>
+                  <li><span className="lp-pillar-check">✓</span> KPI-based performance review mechanisms</li>
+                </ul>
               </div>
 
-              {/* Goal 3 */}
-              <div className="lp-goal-card">
-                <div className="lp-goal-icon-box">
-                  <Shield size={22} />
+              {/* Pillar 2: Process */}
+              <div className="lp-pillar-card">
+                <div className="lp-pillar-icon-box">
+                  <TrendingUp size={24} />
                 </div>
-                <div className="lp-goal-content">
-                  <h4>ACCOUNTABILITY</h4>
-                  <p>Build accountability, ownership and performance-review habits.</p>
-                </div>
+                <div className="lp-pillar-tag">PILLAR 02 • PROCESS</div>
+                <h4>Process & Operational Excellence</h4>
+                <p>
+                  Streamlining operations to eliminate dependency on individual memory. We engineer departmental
+                  Standard Operating Procedures (SOPs) and lean manufacturing practices.
+                </p>
+                <ul className="lp-pillar-deliverables">
+                  <li><span className="lp-pillar-check">✓</span> Departmental Standard Operating Procedures</li>
+                  <li><span className="lp-pillar-check">✓</span> Supply chain & production cycle optimization</li>
+                  <li><span className="lp-pillar-check">✓</span> Quality assurance & waste reduction systems</li>
+                </ul>
               </div>
 
-              {/* Goal 4 */}
-              <div className="lp-goal-card">
-                <div className="lp-goal-icon-box">
-                  <Compass size={22} />
+              {/* Pillar 3: Technology */}
+              <div className="lp-pillar-card">
+                <div className="lp-pillar-icon-box">
+                  <Building2 size={24} />
                 </div>
-                <div className="lp-goal-content">
-                  <h4>DECISIONS</h4>
-                  <p>Improve decision-making, problem-solving and conflict handling.</p>
-                </div>
+                <div className="lp-pillar-tag">PILLAR 03 • TECHNOLOGY</div>
+                <h4>Technology & Digital Visibility</h4>
+                <p>
+                  Equipping business owners and leaders with real-time operational visibility through custom management
+                  dashboards, automated attendance portals, and workflow systems.
+                </p>
+                <ul className="lp-pillar-deliverables">
+                  <li><span className="lp-pillar-check">✓</span> Custom management & attendance portals</li>
+                  <li><span className="lp-pillar-check">✓</span> Real-time executive dashboards & MIS</li>
+                  <li><span className="lp-pillar-check">✓</span> Digital tool adoption & shop-floor visibility</li>
+                </ul>
               </div>
+            </div>
+          </div>
 
-              {/* Goal 5 */}
-              <div className="lp-goal-card">
-                <div className="lp-goal-icon-box">
-                  <Users size={22} />
-                </div>
-                <div className="lp-goal-content">
-                  <h4>COLLABORATION</h4>
-                  <p>Encourage collaboration among managers from different business units.</p>
-                </div>
+          {/* Dual Campus Network */}
+          <div className="lp-campuses-grid">
+            <div className="lp-campus-card">
+              <div className="lp-campus-icon">
+                <Building2 size={24} />
               </div>
+              <div className="lp-campus-info">
+                <h4>Sivakasi Campus — Corporate Advisory Centre</h4>
+                <p>
+                  193/1A, Ground Floor, Ayyapan Kovil Opp. Police Station Road, Sivakasi – 626 123.
+                  Executive training boardroom & consulting hub.
+                </p>
+              </div>
+            </div>
 
-              {/* Goal 6 */}
-              <div className="lp-goal-card">
-                <div className="lp-goal-icon-box">
-                  <Target size={22} />
-                </div>
-                <div className="lp-goal-content">
-                  <h4>ACTION PLANS</h4>
-                  <p>Identify priority development needs and create practical individual action plans.</p>
-                </div>
+            <div className="lp-campus-card">
+              <div className="lp-campus-icon">
+                <Building2 size={24} />
+              </div>
+              <div className="lp-campus-info">
+                <h4>Srivilliputhur Campus — Academic & Leadership Hub</h4>
+                <p>
+                  129, North Car Street, Upstairs Pathras Kids & Gift Shop, Srivilliputtur – 626 125.
+                  Comprehensive management library, seminar halls & classroom suites.
+                </p>
               </div>
             </div>
           </div>
@@ -2096,13 +2502,13 @@ export const EventLandingPage: React.FC = () => {
               <div className="lp-venue-icon-circle">
                 <MapPin size={22} />
               </div>
-              <span className="lp-venue-lbl">PROPOSED VENUE</span>
-              <div className="lp-venue-val">TAG Group Conference Hall</div>
+              <span className="lp-venue-lbl">EVENT VENUE</span>
+              <div className="lp-venue-val">TAG Knowledge Centre</div>
               <div className="lp-venue-sub" style={{ fontSize: 13 }}>
-                Amathur; open space reserved for interactive team drills
+                Amathur; spacious executive facility reserved for interactive leadership drills
               </div>
               <a
-                href="https://maps.google.com/?q=Amathur+TAG+Group"
+                href="https://maps.google.com/?q=TAG+Knowledge+Centre+Amathur"
                 target="_blank"
                 rel="noreferrer"
                 className="lp-venue-link"
@@ -2138,7 +2544,7 @@ export const EventLandingPage: React.FC = () => {
           <div className="lp-reg-heading">
             <h2>Reserve Your Programme Seat</h2>
             <p>
-              Strictly limited to 25 middle-management professionals to ensure interactive scenario discussions.
+              Interactive middle-management leadership development programme structured around workplace scenarios.
             </p>
           </div>
 
@@ -2155,6 +2561,44 @@ export const EventLandingPage: React.FC = () => {
                 </p>
 
                 <div className="lp-success-summary">
+                  {/* Generated Employee Passcode */}
+                  <div
+                    className="lp-summary-row"
+                    style={{
+                      background: '#FFF1E8',
+                      margin: '2px -6px 12px',
+                      padding: '12px 14px',
+                      borderRadius: 12,
+                      border: '1.5px solid rgba(232, 96, 20, 0.35)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between'
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontSize: 11, fontWeight: 800, color: '#C2410C', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                        YOUR GATE ENTRY PASSCODE
+                      </div>
+                      <div style={{ fontSize: 12, color: '#64748B', marginTop: 2 }}>
+                        Show this passcode at reception gate
+                      </div>
+                    </div>
+                    <span
+                      style={{
+                        fontSize: 20,
+                        fontWeight: 900,
+                        color: '#EA580C',
+                        letterSpacing: '0.06em',
+                        background: '#FFFFFF',
+                        padding: '4px 12px',
+                        borderRadius: 8,
+                        boxShadow: '0 2px 6px rgba(234, 88, 12, 0.15)'
+                      }}
+                    >
+                      {submittedData.passCode || 'WG-LDP-001'}
+                    </span>
+                  </div>
+
                   <div className="lp-summary-row">
                     <span className="label">Nominee Name</span>
                     <span className="val">{submittedData.fullName}</span>
@@ -2172,6 +2616,10 @@ export const EventLandingPage: React.FC = () => {
                     <span className="val">{submittedData.department}</span>
                   </div>
                   <div className="lp-summary-row">
+                    <span className="label">Experience</span>
+                    <span className="val">{submittedData.experience || formData.experience || '3 – 5 Years'}</span>
+                  </div>
+                  <div className="lp-summary-row">
                     <span className="label">Programme</span>
                     <span className="val">Leadership in Action (1 Day)</span>
                   </div>
@@ -2181,7 +2629,7 @@ export const EventLandingPage: React.FC = () => {
                   </div>
                   <div className="lp-summary-row">
                     <span className="label">Venue</span>
-                    <span className="val">TAG Group Conference Hall, Amathur</span>
+                    <span className="val">TAG Knowledge Centre, Amathur</span>
                   </div>
                 </div>
 
@@ -2300,7 +2748,7 @@ export const EventLandingPage: React.FC = () => {
                     )}
                   </div>
 
-                  {/* Department */}
+                  {/* Field: Department */}
                   <div className="lp-form-group">
                     <label className="lp-form-label">Department / Vertical</label>
                     <select
@@ -2319,6 +2767,29 @@ export const EventLandingPage: React.FC = () => {
                     </select>
                   </div>
 
+                  {/* Field: Total Work Experience */}
+                  <div className="lp-form-group">
+                    <label className="lp-form-label">
+                      Total Work Experience <span className="req">*</span>
+                    </label>
+                    <select
+                      name="experience"
+                      value={formData.experience}
+                      onChange={handleInputChange}
+                      className="lp-form-select"
+                    >
+                      <option value="Less than 1 Year">Less than 1 Year</option>
+                      <option value="1 – 3 Years">1 – 3 Years</option>
+                      <option value="3 – 5 Years">3 – 5 Years</option>
+                      <option value="5 – 10 Years">5 – 10 Years</option>
+                      <option value="10 – 15 Years">10 – 15 Years</option>
+                      <option value="15+ Years">15+ Years</option>
+                    </select>
+                    {errors.experience && (
+                      <span style={{ color: '#DC2626', fontSize: 12.5, fontWeight: 600 }}>{errors.experience}</span>
+                    )}
+                  </div>
+
                   {/* Submit Button */}
                   <button type="submit" disabled={isSubmitting} className="lp-form-submit-btn">
                     {isSubmitting ? (
@@ -2331,7 +2802,7 @@ export const EventLandingPage: React.FC = () => {
                   </button>
 
                   <div style={{ textAlign: 'center', fontSize: 12, color: '#718096', marginTop: 4 }}>
-                    🔒 Limited to 25 Middle-Management Seats. Programme coordinated by WeGrow B School.
+                    🔒 Interactive Leadership Programme coordinated by WeGrow B School.
                   </div>
                 </div>
               </form>
@@ -2343,8 +2814,8 @@ export const EventLandingPage: React.FC = () => {
       {/* ================= COMPREHENSIVE DUAL-BRANCH FOOTER ================= */}
       <Footer
         scrollToHero={() => scrollTo('hero')}
-        scrollToOverview={() => scrollTo('programme-overview')}
-        scrollToGoals={() => scrollTo('programme-goals')}
+        scrollToAbout={() => scrollTo('about')}
+        scrollToOverview={() => scrollTo('about')}
         scrollToCarousel={() => scrollTo('carousel')}
         scrollToVenue={() => scrollTo('venue')}
         scrollToRegister={() => scrollTo('register')}
