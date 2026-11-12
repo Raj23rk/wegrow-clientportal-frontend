@@ -46,289 +46,40 @@ export interface AttendeeRecord {
   experience?: string;
 }
 
-// Initial 25 TAG Group Middle-Management Nominees
-const SEED_ATTENDEES: AttendeeRecord[] = [
-  {
-    id: 'att_01',
-    passCode: 'WG-LDP-001',
-    fullName: 'Krisshiya R.B',
-    phone: '9994010131',
-    email: 'krisshiya.rb@anamalais.in',
-    companyName: 'TAG Group',
-    designation: 'Operations Head',
-    department: 'Operations',
-    registeredAt: '2026-11-09 10:15 AM',
-    codeSentWhatsApp: true,
-    codeSentEmail: true,
-    isCheckedIn: true,
-    checkInTime: '09:12 AM',
-    feedbackFilled: true,
-    feedbackRating: 5
-  },
-  {
-    id: 'att_02',
-    passCode: 'WG-LDP-002',
-    fullName: 'Sujay Sarvesh R.B',
-    phone: '9994010132',
-    email: 'sujay.sarvesh@anamalais.in',
-    companyName: 'TAG Group',
-    designation: 'Strategic Planning Lead',
-    department: 'Operations',
-    registeredAt: '2026-11-09 10:20 AM',
-    codeSentWhatsApp: true,
-    codeSentEmail: true,
-    isCheckedIn: true,
-    checkInTime: '09:18 AM',
-    feedbackFilled: true,
-    feedbackRating: 5
-  },
-  {
-    id: 'att_03',
-    passCode: 'WG-LDP-003',
-    fullName: 'R. Soundararajan',
-    phone: '9842188231',
-    email: 'soundar.r@taggroup.in',
-    companyName: 'TAG Group',
-    designation: 'Senior Plant Manager',
-    department: 'Manufacturing & Plant',
-    registeredAt: '2026-11-09 11:05 AM',
-    codeSentWhatsApp: true,
-    codeSentEmail: true,
-    isCheckedIn: true,
-    checkInTime: '09:22 AM',
-    feedbackFilled: true,
-    feedbackRating: 4
-  },
-  {
-    id: 'att_04',
-    passCode: 'WG-LDP-004',
-    fullName: 'M. Karthikeyan',
-    phone: '9789456123',
-    email: 'karthik.m@taggroup.in',
-    companyName: 'TAG Group',
-    designation: 'Supply Chain Director',
-    department: 'Supply Chain & Logistics',
-    registeredAt: '2026-11-09 11:30 AM',
-    codeSentWhatsApp: true,
-    codeSentEmail: true,
-    isCheckedIn: true,
-    checkInTime: '09:25 AM',
-    feedbackFilled: false
-  },
-  {
-    id: 'att_05',
-    passCode: 'WG-LDP-005',
-    fullName: 'P. Meenakshi Sundaram',
-    phone: '9843322110',
-    email: 'meenakshi.p@taggroup.in',
-    companyName: 'TAG Group',
-    designation: 'Quality Assurance Head',
-    department: 'Manufacturing & Plant',
-    registeredAt: '2026-11-09 11:45 AM',
-    codeSentWhatsApp: true,
-    codeSentEmail: false,
-    isCheckedIn: true,
-    checkInTime: '09:28 AM',
-    feedbackFilled: false
-  },
-  {
-    id: 'att_06',
-    passCode: 'WG-LDP-006',
-    fullName: 'S. Anand Kumar',
-    phone: '9443155880',
-    email: 'anand.s@taggroup.in',
-    companyName: 'TAG Group',
-    designation: 'Customer Experience Lead',
-    department: 'Sales & Customer Experience',
-    registeredAt: '2026-11-09 12:10 PM',
-    codeSentWhatsApp: true,
-    codeSentEmail: true,
-    isCheckedIn: false,
-    feedbackFilled: false
-  },
-  {
-    id: 'att_07',
-    passCode: 'WG-LDP-007',
-    fullName: 'V. Divya Lakshmi',
-    phone: '9944887766',
-    email: 'divya.v@taggroup.in',
-    companyName: 'TAG Group',
-    designation: 'HR & People Operations Manager',
-    department: 'HR & Administration',
-    registeredAt: '2026-11-09 12:40 PM',
-    codeSentWhatsApp: true,
-    codeSentEmail: true,
-    isCheckedIn: true,
-    checkInTime: '09:15 AM',
-    feedbackFilled: true,
-    feedbackRating: 5
-  },
-  {
-    id: 'att_08',
-    passCode: 'WG-LDP-008',
-    fullName: 'K. Rajesh Kannan',
-    phone: '9360123456',
-    email: 'rajesh.k@taggroup.in',
-    companyName: 'TAG Group',
-    designation: 'Maintenance & Safety Head',
-    department: 'Manufacturing & Plant',
-    registeredAt: '2026-11-09 01:15 PM',
-    codeSentWhatsApp: true,
-    codeSentEmail: true,
-    isCheckedIn: false,
-    feedbackFilled: false
-  },
-  {
-    id: 'att_09',
-    passCode: 'WG-LDP-009',
-    fullName: 'A. Balaji Swaminathan',
-    phone: '9840223344',
-    email: 'balaji.a@taggroup.in',
-    companyName: 'TAG Group',
-    designation: 'Finance Controller',
-    department: 'Finance & Accounts',
-    registeredAt: '2026-11-09 02:00 PM',
-    codeSentWhatsApp: true,
-    codeSentEmail: false,
-    isCheckedIn: true,
-    checkInTime: '09:30 AM',
-    feedbackFilled: false
-  },
-  {
-    id: 'att_10',
-    passCode: 'WG-LDP-010',
-    fullName: 'S. Priyadharshini',
-    phone: '9788112233',
-    email: 'priya.s@taggroup.in',
-    companyName: 'TAG Group',
-    designation: 'Continuous Improvement Manager',
-    department: 'Operations',
-    registeredAt: '2026-11-09 02:30 PM',
-    codeSentWhatsApp: true,
-    codeSentEmail: true,
-    isCheckedIn: false,
-    feedbackFilled: false
-  },
-  {
-    id: 'att_11',
-    passCode: 'WG-LDP-011',
-    fullName: 'N. Vigneshwaran',
-    phone: '9488334455',
-    email: 'vignesh.n@taggroup.in',
-    companyName: 'TAG Group',
-    designation: 'Senior Production Supervisor',
-    department: 'Manufacturing & Plant',
-    registeredAt: '2026-11-09 03:00 PM',
-    codeSentWhatsApp: true,
-    codeSentEmail: true,
-    isCheckedIn: true,
-    checkInTime: '09:20 AM',
-    feedbackFilled: true,
-    feedbackRating: 4
-  },
-  {
-    id: 'att_12',
-    passCode: 'WG-LDP-012',
-    fullName: 'T. Subhashini',
-    phone: '9940556677',
-    email: 'subha.t@taggroup.in',
-    companyName: 'TAG Group',
-    designation: 'IT Systems & ERP Administrator',
-    department: 'Operations',
-    registeredAt: '2026-11-09 03:25 PM',
-    codeSentWhatsApp: true,
-    codeSentEmail: true,
-    isCheckedIn: false,
-    feedbackFilled: false
-  },
-  {
-    id: 'att_13',
-    passCode: 'WG-LDP-013',
-    fullName: 'G. Murugan',
-    phone: '9841778899',
-    email: 'murugan.g@taggroup.in',
-    companyName: 'TAG Group',
-    designation: 'Logistics Fleet Coordinator',
-    department: 'Supply Chain & Logistics',
-    registeredAt: '2026-11-09 04:10 PM',
-    codeSentWhatsApp: true,
-    codeSentEmail: false,
-    isCheckedIn: true,
-    checkInTime: '09:32 AM',
-    feedbackFilled: false
-  },
-  {
-    id: 'att_14',
-    passCode: 'WG-LDP-014',
-    fullName: 'K. Sangeetha',
-    phone: '9361223344',
-    email: 'sangeetha.k@taggroup.in',
-    companyName: 'TAG Group',
-    designation: 'Talent Development Partner',
-    department: 'HR & Administration',
-    registeredAt: '2026-11-09 04:30 PM',
-    codeSentWhatsApp: true,
-    codeSentEmail: true,
-    isCheckedIn: false,
-    feedbackFilled: false
-  },
-  {
-    id: 'att_15',
-    passCode: 'WG-LDP-015',
-    fullName: 'D. Saravanan',
-    phone: '9843667788',
-    email: 'saravanan.d@taggroup.in',
-    companyName: 'TAG Group',
-    designation: 'Procurement Manager',
-    department: 'Supply Chain & Logistics',
-    registeredAt: '2026-11-09 05:00 PM',
-    codeSentWhatsApp: true,
-    codeSentEmail: true,
-    isCheckedIn: true,
-    checkInTime: '09:27 AM',
-    feedbackFilled: true,
-    feedbackRating: 5
-  }
-];
-
 export const AdminAttendancePage: React.FC = () => {
   const navigate = useNavigate();
 
-  // Load attendees from storage or seed defaults
+  // Clean initial state (no static dummy attendees)
   const [attendees, setAttendees] = useState<AttendeeRecord[]>(() => {
     try {
+      // Purge any legacy static dummy data from previous sessions
       const saved = localStorage.getItem('wg_attendance_records');
       if (saved) {
-        return JSON.parse(saved);
-      }
-      // Check if event landing registrations exist
-      const publicRegsStr = localStorage.getItem('wg_event_registrations');
-      if (publicRegsStr) {
-        const publicRegs = JSON.parse(publicRegsStr);
-        if (Array.isArray(publicRegs) && publicRegs.length > 0) {
-          const mapped: AttendeeRecord[] = publicRegs.map((r, i) => ({
-            id: r.id || 'reg_' + i,
-            passCode: `WG-LDP-${String(i + 1).padStart(3, '0')}`,
-            fullName: r.fullName || 'Nominee ' + (i + 1),
-            phone: r.phone || '9876543210',
-            email: r.email || `${(r.fullName || 'nominee').toLowerCase().replace(/\s+/g, '.')}@taggroup.in`,
-            companyName: r.companyName || 'TAG Group',
-            designation: r.designation || 'Middle Manager',
-            department: r.department || 'Operations',
-            registeredAt: r.registeredAt ? new Date(r.registeredAt).toLocaleDateString() : 'Today',
-            codeSentWhatsApp: true,
-            codeSentEmail: true,
-            isCheckedIn: false,
-            feedbackFilled: false
-          }));
-          return [...mapped, ...SEED_ATTENDEES.slice(mapped.length)];
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          // Strictly exclude old hardcoded dummy records
+          const realOnly = parsed.filter(
+            (p: any) =>
+              p &&
+              p.fullName !== 'Krisshiya R.B' &&
+              p.fullName !== 'Sujay Sarvesh R.B' &&
+              p.fullName !== 'R. Soundararajan' &&
+              !String(p.id).startsWith('att_')
+          );
+          if (realOnly.length !== parsed.length) {
+            localStorage.setItem('wg_attendance_records', JSON.stringify(realOnly));
+          }
+          return realOnly;
         }
       }
-      return SEED_ATTENDEES;
+      return [];
     } catch {
-      return SEED_ATTENDEES;
+      return [];
     }
   });
+
+  // Loading state
+  const [isLoading, setIsLoading] = useState(true);
 
   // Filters & Search
   const [searchQuery, setSearchQuery] = useState('');
@@ -374,10 +125,24 @@ export const AdminAttendancePage: React.FC = () => {
     if (!silent) setIsRefreshing(true);
     try {
       const res = await api.attendance.getAll();
-      if (res && Array.isArray(res.attendees) && res.attendees.length > 0) {
-        setAttendees(res.attendees);
+      if (res && Array.isArray(res.attendees)) {
+        // Exclude any legacy dummy seed records if still in DB
+        const realAttendees = res.attendees.filter(
+          (p: any) =>
+            p &&
+            p.fullName !== 'Krisshiya R.B' &&
+            p.fullName !== 'Sujay Sarvesh R.B' &&
+            !String(p.id || p._id).startsWith('att_')
+        );
+        setAttendees(realAttendees);
         setApiStatus('connected');
-        if (!silent) showToast(`✓ Live API Connected: Refreshed ${res.attendees.length} attendees from MongoDB`);
+        if (!silent) {
+          showToast(
+            realAttendees.length > 0
+              ? `✓ Live API Connected: Refreshed ${realAttendees.length} attendees from MongoDB`
+              : '✓ Live API Connected: 0 attendees registered'
+          );
+        }
       } else {
         setApiStatus('connected');
       }
@@ -387,10 +152,19 @@ export const AdminAttendancePage: React.FC = () => {
       if (!silent) showToast('Backend API unreachable. Operating in cached mode.');
     } finally {
       setIsRefreshing(false);
+      setIsLoading(false);
     }
   };
 
   useEffect(() => {
+    // Purge any legacy dummy records from localStorage on mount
+    try {
+      const saved = localStorage.getItem('wg_attendance_records');
+      if (saved && saved.includes('Krisshiya R.B')) {
+        localStorage.removeItem('wg_attendance_records');
+      }
+    } catch {}
+
     fetchAttendeesFromApi(true);
   }, []);
 
@@ -1806,11 +1580,104 @@ export const AdminAttendancePage: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredAttendees.length === 0 ? (
+              {isLoading ? (
                 <tr>
-                  <td colSpan={9} style={{ textAlign: 'center', padding: '48px 20px', color: '#64748B' }}>
-                    <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>No attendees found</div>
-                    <div style={{ fontSize: 13 }}>Try clearing filters or search query.</div>
+                  <td colSpan={9} style={{ textAlign: 'center', padding: '64px 20px', color: '#64748B' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+                      <RefreshCw size={26} className="spin" style={{ color: '#E86014' }} />
+                      <span style={{ fontSize: 15, fontWeight: 700, color: '#0F172A' }}>Loading Attendees from Database...</span>
+                      <span style={{ fontSize: 13, color: '#94A3B8' }}>Connecting to live MongoDB cluster</span>
+                    </div>
+                  </td>
+                </tr>
+              ) : filteredAttendees.length === 0 ? (
+                <tr>
+                  <td colSpan={9} style={{ textAlign: 'center', padding: '56px 20px', color: '#64748B' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+                      <div
+                        style={{
+                          width: 52,
+                          height: 52,
+                          borderRadius: '50%',
+                          background: '#FFF1E8',
+                          color: '#E86014',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}
+                      >
+                        <Users size={26} />
+                      </div>
+                      <span style={{ fontSize: 16, fontWeight: 800, color: '#0F172A' }}>
+                        {attendees.length === 0 ? 'No Attendees Registered Yet' : 'No Matching Attendees Found'}
+                      </span>
+                      <span style={{ fontSize: 13.5, maxWidth: 440, color: '#64748B', lineHeight: 1.5 }}>
+                        {attendees.length === 0
+                          ? 'Nominations submitted through the Event Landing Page form or manually added via "+ Add Attendee" will appear here in real time.'
+                          : 'No attendees match your current search query or filter. Try clearing filters.'}
+                      </span>
+                      {attendees.length === 0 ? (
+                        <div style={{ display: 'flex', gap: 12, marginTop: 6 }}>
+                          <button
+                            type="button"
+                            onClick={() => setAddModalOpen(true)}
+                            style={{
+                              background: '#0C1D36',
+                              color: '#FFFFFF',
+                              border: 'none',
+                              padding: '9px 18px',
+                              borderRadius: 10,
+                              fontWeight: 700,
+                              fontSize: 13,
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 6
+                            }}
+                          >
+                            <UserPlus size={15} /> Add Attendee
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => window.open('/landing#register', '_blank')}
+                            style={{
+                              background: '#FFFFFF',
+                              color: '#E86014',
+                              border: '1px solid #E86014',
+                              padding: '9px 18px',
+                              borderRadius: 10,
+                              fontWeight: 700,
+                              fontSize: 13,
+                              cursor: 'pointer'
+                            }}
+                          >
+                            Open Nomination Form ↗
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSearchQuery('');
+                            setFilterDepartment('ALL');
+                            setFilterStatus('ALL');
+                          }}
+                          style={{
+                            background: '#F1F5F9',
+                            color: '#0F172A',
+                            border: '1px solid #CBD5E1',
+                            padding: '7px 16px',
+                            borderRadius: 8,
+                            fontWeight: 700,
+                            fontSize: 12.5,
+                            cursor: 'pointer',
+                            marginTop: 4
+                          }}
+                        >
+                          Clear Filters
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ) : (
