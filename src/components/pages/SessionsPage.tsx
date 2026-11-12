@@ -74,7 +74,7 @@ export const SessionsPage: React.FC<SessionsPageProps> = ({ onOpenSession, onGiv
 
               {s.image && (
                 <div style={{ margin: '12px 0 8px', borderRadius: 8, overflow: 'hidden', border: '1px solid var(--line-2)' }}>
-                  <img src={s.image} alt={s.title} style={{ width: '100%', height: 140, objectFit: 'cover', display: 'block' }} />
+                  <img src={s.image} alt={s.title} style={{ width: '100%', height: 'auto', objectFit: 'contain', display: 'block' }} />
                 </div>
               )}
 

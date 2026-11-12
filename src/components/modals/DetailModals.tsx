@@ -66,7 +66,7 @@ export const SessionModal: React.FC<{
             <img
               src={s.image}
               alt={s.title}
-              style={{ width: '100%', maxHeight: 240, objectFit: 'cover', display: 'block' }}
+              style={{ width: '100%', height: 'auto', objectFit: 'contain', display: 'block' }}
             />
           </div>
         )}
