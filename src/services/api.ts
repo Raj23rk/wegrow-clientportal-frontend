@@ -15,6 +15,13 @@ export function resolveApiBase(): string {
         return envUrl.replace(/\/$/, '');
       }
       return 'http://localhost:3000/api';
+    } else {
+      // Production on Vercel / Netlify / custom domain:
+      // If envUrl is missing or accidentally contains localhost, always route to Render production backend
+      if (!envUrl || envUrl.includes('localhost') || envUrl.includes('127.0.0.1')) {
+        return 'https://wegrowclientportal.onrender.com/api';
+      }
+      return envUrl.replace(/\/$/, '');
     }
   }
 
