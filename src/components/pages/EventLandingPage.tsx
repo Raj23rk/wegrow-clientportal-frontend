@@ -117,7 +117,7 @@ export const EventLandingPage: React.FC = () => {
   const [formData, setFormData] = useState({
     fullName: '',
     phone: '',
-    companyName: 'TAG Group',
+    companyName: '',
     designation: '',
     department: 'Operations',
     experience: '3 – 5 Years'
@@ -265,7 +265,7 @@ export const EventLandingPage: React.FC = () => {
     setFormData({
       fullName: '',
       phone: '',
-      companyName: 'TAG Group',
+      companyName: '',
       designation: '',
       department: 'Operations',
       experience: '3 – 5 Years'

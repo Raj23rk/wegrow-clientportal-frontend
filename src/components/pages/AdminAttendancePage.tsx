@@ -118,7 +118,7 @@ export const AdminAttendancePage: React.FC<{ isClientView?: boolean }> = ({ isCl
     fullName: '',
     phone: '',
     email: '',
-    companyName: 'TAG Group',
+    companyName: '',
     designation: '',
     department: 'Operations'
   });
@@ -443,7 +443,7 @@ export const AdminAttendancePage: React.FC<{ isClientView?: boolean }> = ({ isCl
           fullName: '',
           phone: '',
           email: '',
-          companyName: 'TAG Group',
+          companyName: '',
           designation: '',
           department: 'Operations'
         });
@@ -479,7 +479,7 @@ export const AdminAttendancePage: React.FC<{ isClientView?: boolean }> = ({ isCl
       fullName: '',
       phone: '',
       email: '',
-      companyName: 'TAG Group',
+      companyName: '',
       designation: '',
       department: 'Operations'
     });
