@@ -276,9 +276,9 @@ export const EventLandingPage: React.FC = () => {
   const getGoogleCalendarUrl = () => {
     const title = encodeURIComponent('Leadership in Action - TAG Group Programme');
     const details = encodeURIComponent(
-      'Practical Leadership Development Programme for TAG Group middle-management team.\nVenue: TAG Knowledge Centre, Amathur\nDate: 18 November 2026\nTiming: 9:30 AM – 5:30 PM\nContact: +91 93443 37331'
+      'Practical Leadership Development Programme for TAG Group middle-management team.\nVenue: Eicher Trucks and Buses - Anamallais Agencies, Madurai, Nagari\nDate: 18 November 2026\nTiming: 9:30 AM – 5:30 PM\nContact: +91 93443 37331'
     );
-    const location = encodeURIComponent('TAG Knowledge Centre, Amathur');
+    const location = encodeURIComponent('Eicher Trucks and Buses - Anamallais Agencies, Madurai, Nagari');
     return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=20261118T040000Z/20261118T120000Z&details=${details}&location=${location}`;
   };
 
@@ -286,7 +286,7 @@ export const EventLandingPage: React.FC = () => {
     const code = submittedData?.passCode ? `\nPasscode: ${submittedData.passCode}` : '';
     const exp = submittedData?.experience ? `\nExperience: ${submittedData.experience}` : (formData.experience ? `\nExperience: ${formData.experience}` : '');
     const message = encodeURIComponent(
-      `Hello WeGrow Team! I have registered for the Leadership in Action Programme (TAG Group) scheduled for 18 November 2026 at TAG Knowledge Centre, Amathur.\nName: ${submittedData?.fullName || formData.fullName}\nGroup: ${submittedData?.companyName || formData.companyName}\nDesignation: ${submittedData?.designation || formData.designation}${exp}${code}`
+      `Hello WeGrow Team! I have registered for the Leadership in Action Programme (TAG Group) scheduled for 18 November 2026 at Eicher Trucks and Buses - Anamallais Agencies, Madurai, Nagari.\nName: ${submittedData?.fullName || formData.fullName}\nGroup: ${submittedData?.companyName || formData.companyName}\nDesignation: ${submittedData?.designation || formData.designation}${exp}${code}`
     );
     return `https://wa.me/919344337331?text=${message}`;
   };
@@ -2126,7 +2126,7 @@ export const EventLandingPage: React.FC = () => {
                     <Clock size={16} />
                   </div>
                   <div className="lp-sched-text">
-                    <span className="lp-sched-label">DAILY TIMING</span>
+                    <span className="lp-sched-label">TIME</span>
                     <span className="lp-sched-value">9:30 AM – 5:30 PM</span>
                   </div>
                 </div>
@@ -2138,7 +2138,7 @@ export const EventLandingPage: React.FC = () => {
                   </div>
                   <div className="lp-sched-text">
                     <span className="lp-sched-label">EVENT VENUE</span>
-                    <span className="lp-sched-value">TAG Knowledge Centre, Amathur</span>
+                    <span className="lp-sched-value">Eicher Trucks and Buses - Anamallais Agencies, Madurai, Nagari</span>
                   </div>
                 </div>
               </div>
@@ -2629,7 +2629,7 @@ export const EventLandingPage: React.FC = () => {
                   </div>
                   <div className="lp-summary-row">
                     <span className="label">Venue</span>
-                    <span className="val">TAG Knowledge Centre, Amathur</span>
+                    <span className="val">Eicher Trucks and Buses - Anamallais Agencies, Madurai, Nagari</span>
                   </div>
                 </div>
 
@@ -2722,7 +2722,7 @@ export const EventLandingPage: React.FC = () => {
                       name="companyName"
                       value={formData.companyName}
                       onChange={handleInputChange}
-                      placeholder="e.g. TAG Group / The Anamalais Group"
+                      placeholder="e.g. Anamalais Toyota"
                       className="lp-form-input"
                     />
                     {errors.companyName && (

@@ -89,7 +89,7 @@ export const Footer: React.FC<FooterProps> = ({
       action: () => {
         const title = encodeURIComponent('Leadership in Action - TAG Group Programme');
         const details = encodeURIComponent(
-          'Practical Leadership Development Programme for TAG Group middle-management team.\nVenue: TAG Knowledge Centre, Amathur\nDate: 18 November 2026\nDaily Timing: 9:30 AM – 5:30 PM\nContact: +91 93443 37331'
+          'Practical Leadership Development Programme for TAG Group middle-management team.\nVenue: TAG Knowledge Centre, Amathur\nDate: 18 November 2026\nTIMING: 9:30 AM – 5:30 PM\nContact: +91 93443 37331'
         );
         const location = encodeURIComponent('TAG Knowledge Centre, Amathur');
         window.open(`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=20261118T040000Z/20261118T120000Z&details=${details}&location=${location}`, '_blank');
