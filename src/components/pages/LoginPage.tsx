@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePortal } from '../../context/PortalContext';
-import { WeGrowLogo } from '../common/Icons';
+import { WeGrowLogo, Icon } from '../common/Icons';
 
 export const LoginPage: React.FC<{ onForgotPw: () => void }> = ({ onForgotPw }) => {
   const { login, loading } = usePortal();
@@ -9,6 +9,7 @@ export const LoginPage: React.FC<{ onForgotPw: () => void }> = ({ onForgotPw }) 
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -337,16 +338,43 @@ export const LoginPage: React.FC<{ onForgotPw: () => void }> = ({ onForgotPw }) 
 
           <div className="field">
             <label htmlFor="pw">Password</label>
-            <input
-              className="input"
-              id="pw"
-              type="password"
-              autoComplete="current-password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', width: '100%' }}>
+              <input
+                className="input"
+                id="pw"
+                type={showPassword ? 'text' : 'password'}
+                autoComplete="current-password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                style={{ paddingRight: '44px' }}
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                style={{
+                  position: 'absolute',
+                  right: '10px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '6px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: showPassword ? 'var(--brand)' : '#8E8EA0',
+                  borderRadius: '6px',
+                  transition: 'color 0.15s ease'
+                }}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                title={showPassword ? 'Hide password' : 'Show password'}
+              >
+                <Icon name={showPassword ? 'eyeOff' : 'eye'} size={18} />
+              </button>
+            </div>
           </div>
 
           <div className="row-between" style={{ margin: '4px 0 22px' }}>

@@ -46,6 +46,25 @@ export interface AttendeeRecord {
   experience?: string;
 }
 
+// Full set of dummy seed names to strictly exclude from production attendance list
+const DUMMY_SEED_NAMES = new Set([
+  'Krisshiya R.B',
+  'Sujay Sarvesh R.B',
+  'R. Soundararajan',
+  'M. Karthikeyan',
+  'P. Meenakshi Sundaram',
+  'S. Anand Kumar',
+  'V. Divya Lakshmi',
+  'K. Rajesh Kannan',
+  'A. Balaji Swaminathan',
+  'S. Priyadharshini',
+  'N. Vigneshwaran',
+  'T. Subhashini',
+  'G. Murugan',
+  'K. Sangeetha',
+  'D. Saravanan'
+]);
+
 export const AdminAttendancePage: React.FC = () => {
   const navigate = useNavigate();
 
@@ -61,9 +80,7 @@ export const AdminAttendancePage: React.FC = () => {
           const realOnly = parsed.filter(
             (p: any) =>
               p &&
-              p.fullName !== 'Krisshiya R.B' &&
-              p.fullName !== 'Sujay Sarvesh R.B' &&
-              p.fullName !== 'R. Soundararajan' &&
+              !DUMMY_SEED_NAMES.has(p.fullName?.trim()) &&
               !String(p.id).startsWith('att_')
           );
           if (realOnly.length !== parsed.length) {
@@ -130,8 +147,7 @@ export const AdminAttendancePage: React.FC = () => {
         const realAttendees = res.attendees.filter(
           (p: any) =>
             p &&
-            p.fullName !== 'Krisshiya R.B' &&
-            p.fullName !== 'Sujay Sarvesh R.B' &&
+            !DUMMY_SEED_NAMES.has(p.fullName?.trim()) &&
             !String(p.id || p._id).startsWith('att_')
         );
         setAttendees(realAttendees);
@@ -160,8 +176,14 @@ export const AdminAttendancePage: React.FC = () => {
     // Purge any legacy dummy records from localStorage on mount
     try {
       const saved = localStorage.getItem('wg_attendance_records');
-      if (saved && saved.includes('Krisshiya R.B')) {
-        localStorage.removeItem('wg_attendance_records');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          const cleaned = parsed.filter(
+            (p: any) => p && !DUMMY_SEED_NAMES.has(p.fullName?.trim()) && !String(p.id || p._id).startsWith('att_')
+          );
+          localStorage.setItem('wg_attendance_records', JSON.stringify(cleaned));
+        }
       }
     } catch {}
 
