@@ -215,6 +215,10 @@ export const App: React.FC = () => {
             }
           />
           <Route
+            path="/attendance"
+            element={<AdminAttendancePage isClientView={true} />}
+          />
+          <Route
             path="/reports"
             element={<ReportsPage onOpenReport={(id) => setActiveReportId(id)} />}
           />

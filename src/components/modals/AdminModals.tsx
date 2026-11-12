@@ -80,14 +80,15 @@ export const AddClientModal: React.FC<{
       setError('Login email is required.');
       return;
     }
-    if (!password.trim()) {
-      setError('Portal password is required.');
-      return;
-    }
-    if (end <= start) {
+
+    if (start && end && end <= start) {
       setError('Consulting end date must be after the start date.');
       return;
     }
+
+    const finalPassword = password.trim() || 'client123';
+    const finalStart = start || TODAY;
+    const finalEnd = end || addDays(TODAY, 180);
 
     try {
       setLoading(true);
@@ -107,10 +108,10 @@ export const AddClientModal: React.FC<{
         contact: contact.trim(),
         contactTitle: contactTitle.trim() || 'Managing Director',
         email: email.trim().toLowerCase(),
-        password: password.trim(),
+        password: finalPassword,
         phone: phone.trim() || '+91 98765 43210',
-        start,
-        end,
+        start: finalStart,
+        end: finalEnd,
         consultant: consultant.trim(),
         areas: areas.length ? areas : ['People', 'Process', 'Technology', 'Operations', 'Management']
       });
@@ -314,28 +315,22 @@ export const AddClientModal: React.FC<{
           <div className="full fhead">Engagement</div>
 
           <div className="field">
-            <label htmlFor="ac_start">
-              Consulting start <span style={{ color: 'var(--bad)' }}>*</span>
-            </label>
+            <label htmlFor="ac_start">Consulting start</label>
             <input
               type="date"
               className="input"
               id="ac_start"
-              required
               value={start}
               onChange={(e) => setStart(e.target.value)}
             />
           </div>
 
           <div className="field">
-            <label htmlFor="ac_end">
-              Consulting end <span style={{ color: 'var(--bad)' }}>*</span>
-            </label>
+            <label htmlFor="ac_end">Consulting end</label>
             <input
               type="date"
               className="input"
               id="ac_end"
-              required
               value={end}
               onChange={(e) => setEnd(e.target.value)}
             />
@@ -739,8 +734,34 @@ export const ScheduleSessionModal: React.FC<{
     if (!file) return;
     setSessionImageName(file.name);
     const reader = new FileReader();
-    reader.onload = () => {
-      setSessionImage(reader.result as string);
+    reader.onload = (loadEvt) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const maxDim = 1200;
+        let width = img.width;
+        let height = img.height;
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressed = canvas.toDataURL('image/jpeg', 0.85);
+          setSessionImage(compressed);
+        } else {
+          setSessionImage(loadEvt.target?.result as string);
+        }
+      };
+      img.src = loadEvt.target?.result as string;
     };
     reader.readAsDataURL(file);
   };
@@ -851,6 +872,127 @@ export const ScheduleSessionModal: React.FC<{
               placeholder="e.g. Monthly Business Review & Performance Check"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
+            />
+          </div>
+
+          {/* Prominently Placed Session Photo / Image Upload */}
+          <div className="field full" style={{ margin: '2px 0 6px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+              <label htmlFor="ss_image_file" style={{ fontWeight: 600, fontSize: 13, margin: 0, cursor: 'pointer' }}>
+                Session Cover Image / Visual <span className="tiny muted">(Optional)</span>
+              </label>
+              {sessionImage && (
+                <button
+                  type="button"
+                  className="tiny"
+                  style={{ background: 'none', border: 'none', color: 'var(--bad)', cursor: 'pointer', fontWeight: 600 }}
+                  onClick={() => {
+                    setSessionImage(null);
+                    setSessionImageName('');
+                  }}
+                >
+                  ✕ Remove image
+                </button>
+              )}
+            </div>
+
+            {sessionImage ? (
+              <div
+                style={{
+                  position: 'relative',
+                  borderRadius: 10,
+                  overflow: 'hidden',
+                  border: '1px solid var(--line-2)',
+                  maxHeight: 180,
+                  background: '#0B0F19'
+                }}
+              >
+                <img
+                  src={sessionImage}
+                  alt="Session Visual"
+                  style={{ width: '100%', maxHeight: 180, objectFit: 'cover', display: 'block' }}
+                />
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    padding: '8px 12px',
+                    background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 100%)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between'
+                  }}
+                >
+                  <span style={{ color: '#fff', fontSize: 12, fontWeight: 600 }}>
+                    {sessionImageName || 'Cover image attached'}
+                  </span>
+                  <label
+                    htmlFor="ss_image_file"
+                    className="btn sm ghost"
+                    style={{
+                      background: 'rgba(255,255,255,0.2)',
+                      color: '#fff',
+                      fontSize: 11,
+                      padding: '3px 10px',
+                      cursor: 'pointer',
+                      borderRadius: 6
+                    }}
+                  >
+                    Change photo
+                  </label>
+                </div>
+              </div>
+            ) : (
+              <label
+                className="filedrop"
+                htmlFor="ss_image_file"
+                style={{
+                  border: '2px dashed var(--line-2)',
+                  borderRadius: 10,
+                  padding: '16px 14px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 12,
+                  cursor: 'pointer',
+                  background: 'var(--surface-2)',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                <div
+                  style={{
+                    width: 38,
+                    height: 38,
+                    borderRadius: '50%',
+                    background: 'var(--brand-soft)',
+                    color: 'var(--brand)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0
+                  }}
+                >
+                  <Icon name="photos" />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <span style={{ fontWeight: 600, fontSize: 13, color: 'var(--ink)' }}>
+                    Upload session cover image
+                  </span>
+                  <span className="tiny muted">
+                    PNG, JPG, or WebP. Auto-compressed for crisp display.
+                  </span>
+                </div>
+              </label>
+            )}
+
+            <input
+              type="file"
+              id="ss_image_file"
+              accept="image/*"
+              style={{ display: 'none' }}
+              onChange={handleImageUpload}
             />
           </div>
 
@@ -983,44 +1125,6 @@ export const ScheduleSessionModal: React.FC<{
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
             />
-          </div>
-
-          <div className="field full">
-            <label>Session photo / image</label>
-            <label className="filedrop" htmlFor="ss_image_file">
-              <Icon name="photos" />
-              <span>{sessionImageName ? sessionImageName : (sessionImage ? 'Change session image' : 'Upload session image / banner')}</span>
-              <input
-                type="file"
-                id="ss_image_file"
-                accept="image/*"
-                onChange={handleImageUpload}
-              />
-            </label>
-            <span className="tiny muted">Upload a cover image or photo for this session (PNG, JPG, WebP).</span>
-            {sessionImage && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 10 }}>
-                <img
-                  src={sessionImage}
-                  alt="Session visual"
-                  style={{ width: 84, height: 54, objectFit: 'cover', borderRadius: 8, border: '1px solid var(--line-2)' }}
-                />
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                  <span className="small" style={{ fontWeight: 600 }}>{sessionImageName || 'Uploaded session image'}</span>
-                  <button
-                    type="button"
-                    className="btn sm ghost"
-                    style={{ width: 'fit-content', padding: '2px 8px', fontSize: 12, color: 'var(--bad)' }}
-                    onClick={() => {
-                      setSessionImage(null);
-                      setSessionImageName('');
-                    }}
-                  >
-                    Remove image
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
 
           <div className="field full">

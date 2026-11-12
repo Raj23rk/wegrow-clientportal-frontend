@@ -17,6 +17,7 @@ const NAV_ITEMS = [
   { path: '/dashboard', label: 'Dashboard', icon: 'dashboard' },
   { path: '/action-plan', label: 'Action Plan', icon: 'plan' },
   { path: '/sessions', label: 'Sessions', icon: 'sessions' },
+  { path: '/attendance', label: 'Attendance', icon: 'check' },
   { path: '/reports', label: 'Reports & Summaries', icon: 'reports' },
   { path: '/updates', label: 'Business Updates', icon: 'updates' },
   { path: '/analytics', label: 'Analytics', icon: 'analytics' },
@@ -88,8 +89,8 @@ export const Shell: React.FC<ShellProps> = ({
     }
     if (idx === 0) return null;
     if (idx === 2) return <div className="nav-group">Engagement</div>;
-    if (idx === 6) return <div className="nav-group">Schedule &amp; media</div>;
-    if (idx === 11) return <div className="nav-group">Account</div>;
+    if (idx === 7) return <div className="nav-group">Schedule &amp; media</div>;
+    if (idx === 12) return <div className="nav-group">Account</div>;
     return null;
   };
 
@@ -317,17 +318,17 @@ export const Shell: React.FC<ShellProps> = ({
                   className="avatar"
                   style={isAdmin ? { background: 'var(--brand-soft)', color: 'var(--brand)' } : {}}
                 >
-                  {user?.name
-                    ? user.name
-                        .split(' ')
-                        .map((x) => x[0])
-                        .slice(0, 2)
-                        .join('')
-                    : 'DT'}
+                  {(user?.name || (isAdmin ? 'Dr. Thavabalan' : client?.contact || client?.company || 'Client'))
+                    .split(' ')
+                    .filter(Boolean)
+                    .map((x) => x[0])
+                    .slice(0, 2)
+                    .join('')
+                    .toUpperCase()}
                 </span>
                 <span className="who">
-                  <b>{user?.name || (isAdmin ? 'Dr. Thavabalan' : 'Client')}</b>
-                  <span>{isAdmin ? 'WeGrow Consultant' : client?.company}</span>
+                  <b>{user?.name || (isAdmin ? 'Dr. Thavabalan' : client?.contact || client?.company || 'Client')}</b>
+                  <span>{isAdmin ? (user?.title || 'Lead Consultant, WeGrow') : (client?.contactTitle ? `${client.contactTitle} · ${client.company}` : client?.company || 'Client Portal')}</span>
                 </span>
               </button>
             </div>
@@ -335,6 +336,14 @@ export const Shell: React.FC<ShellProps> = ({
 
           {menuOpen && (
             <div className="dropdown" role="menu">
+              <div style={{ padding: '10px 14px', borderBottom: '1px solid var(--line)', marginBottom: 6 }}>
+                <div style={{ fontWeight: 700, fontSize: 13.5, color: 'var(--ink)' }}>
+                  {user?.name || (isAdmin ? 'Dr. Thavabalan' : client?.contact || client?.company || 'Client')}
+                </div>
+                <div style={{ fontSize: 11.5, color: 'var(--ink-3)', marginTop: 2 }}>
+                  {isAdmin ? (user?.title || 'Lead Consultant, WeGrow') : (client?.contactTitle ? `${client.contactTitle} · ${client.company}` : client?.company || 'Client Portal')}
+                </div>
+              </div>
               {isAdmin && onOpenAddClient && (
                 <button
                   type="button"

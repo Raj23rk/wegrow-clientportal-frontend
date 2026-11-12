@@ -2080,7 +2080,9 @@ table.t tr.click:hover td { background: var(--surface-2); }
   .mobile-only { display: grid; }
   .desk-only { display: none !important; }
   .g2, .gal-feature { grid-template-columns: 1fr; }
-  .userbtn .who { display: none; }
+  .userbtn .who { display: flex; flex-direction: column; max-width: 130px; }
+  .userbtn .who b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .userbtn .who span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .cobrand .cname { display: none; }
   .content { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
   .bottomnav {

@@ -65,7 +65,7 @@ const DUMMY_SEED_NAMES = new Set([
   'D. Saravanan'
 ]);
 
-export const AdminAttendancePage: React.FC = () => {
+export const AdminAttendancePage: React.FC<{ isClientView?: boolean }> = ({ isClientView = false }) => {
   const navigate = useNavigate();
 
   // Clean initial state (no static dummy attendees)
@@ -1376,7 +1376,7 @@ export const AdminAttendancePage: React.FC = () => {
           <div className="att-title-wrap">
             <h1 style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
               Leadership in Action Attendance
-              <span className="att-live-pill">Live Event 2026</span>
+              <span className="att-live-pill">{isClientView ? 'Client View' : 'Live Event 2026'}</span>
               <span
                 className={`att-api-badge ${apiStatus === 'connected' ? 'online' : apiStatus === 'checking' ? 'checking' : 'offline'}`}
                 title={
