@@ -220,7 +220,7 @@ export const AdminOverviewPage: React.FC<{
       <div className="pagehead">
         <div>
           <h1 className="serif" style={{ fontSize: 32, fontWeight: 500, margin: '0 0 4px' }}>
-            {greeting()}, {user?.name?.split(' ')[0] || 'Consultant'}
+            {greeting()}, {user?.name || 'Dr. Thavabalan'}
           </h1>
           <p>
             {fmtL(TODAY)} · {cl.length} active client portal{cl.length === 1 ? '' : 's'}
@@ -1574,10 +1574,18 @@ export const AdminSessionsPage: React.FC<{
             {upcoming.length > 0 ? (
               upcoming.map(({ c, s }) => (
                 <div key={s.id} className="li">
-                  <div className="datebox">
-                    <b>{D(s.date).getDate()}</b>
-                    <span>{MON[D(s.date).getMonth()]}</span>
-                  </div>
+                  {s.image ? (
+                    <img
+                      src={s.image}
+                      alt={s.title}
+                      style={{ width: 44, height: 44, objectFit: 'cover', borderRadius: 8, flexShrink: 0 }}
+                    />
+                  ) : (
+                    <div className="datebox">
+                      <b>{D(s.date).getDate()}</b>
+                      <span>{MON[D(s.date).getMonth()]}</span>
+                    </div>
+                  )}
                   <div className="grow">
                     <div className="ttl">{s.title}</div>
                     <div className="sub">

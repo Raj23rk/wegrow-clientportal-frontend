@@ -309,7 +309,7 @@ export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         {
           id: `N${Date.now()}`,
           cat: 'Important',
-          text: `Welcome to your WeGrow portal, ${(data.contact || '').split(' ')[0] || 'Client'}. Your 6-month plan will appear here.`,
+          text: `Welcome to your WeGrow portal, ${data.contact || 'Client'}. Your 6-month plan will appear here.`,
           date: TODAY,
           read: false,
           link: '/action-plan'

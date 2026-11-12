@@ -727,10 +727,23 @@ export const ScheduleSessionModal: React.FC<{
     (initialSession?.objectives || []).join('\n')
   );
   const [notes, setNotes] = useState(initialSession?.notes || '');
+  const [sessionImage, setSessionImage] = useState<string | null>(initialSession?.image || null);
+  const [sessionImageName, setSessionImageName] = useState<string>('');
   const [notify, setNotify] = useState(true);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setSessionImageName(file.name);
+    const reader = new FileReader();
+    reader.onload = () => {
+      setSessionImage(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -767,7 +780,8 @@ export const ScheduleSessionModal: React.FC<{
         status,
         agenda,
         objectives,
-        notes: notes.trim()
+        notes: notes.trim(),
+        image: sessionImage || undefined
       };
 
       if (initialSession) {
@@ -969,6 +983,44 @@ export const ScheduleSessionModal: React.FC<{
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
             />
+          </div>
+
+          <div className="field full">
+            <label>Session photo / image</label>
+            <label className="filedrop" htmlFor="ss_image_file">
+              <Icon name="photos" />
+              <span>{sessionImageName ? sessionImageName : (sessionImage ? 'Change session image' : 'Upload session image / banner')}</span>
+              <input
+                type="file"
+                id="ss_image_file"
+                accept="image/*"
+                onChange={handleImageUpload}
+              />
+            </label>
+            <span className="tiny muted">Upload a cover image or photo for this session (PNG, JPG, WebP).</span>
+            {sessionImage && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 10 }}>
+                <img
+                  src={sessionImage}
+                  alt="Session visual"
+                  style={{ width: 84, height: 54, objectFit: 'cover', borderRadius: 8, border: '1px solid var(--line-2)' }}
+                />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <span className="small" style={{ fontWeight: 600 }}>{sessionImageName || 'Uploaded session image'}</span>
+                  <button
+                    type="button"
+                    className="btn sm ghost"
+                    style={{ width: 'fit-content', padding: '2px 8px', fontSize: 12, color: 'var(--bad)' }}
+                    onClick={() => {
+                      setSessionImage(null);
+                      setSessionImageName('');
+                    }}
+                  >
+                    Remove image
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="field full">

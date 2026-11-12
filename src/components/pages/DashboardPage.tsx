@@ -11,6 +11,11 @@ import {
   daysBetween
 } from '../../utils/date';
 
+const getGreeting = () => {
+  const h = new Date().getHours();
+  return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+};
+
 interface DashboardPageProps {
   onNavigate: (page: string) => void;
   onOpenAction: (id: string) => void;
@@ -156,7 +161,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
               opacity="0.8"
             />
           </svg>
-          <h1>Good morning, {client.contact.split(' ')[0]}</h1>
+          <h1>{getGreeting()}, {client.contact || client.company}</h1>
           <p>
             Here is where {client.company} stands in month {currentMonthPlan.n} of 6 — {currentMonthPlan.theme.toLowerCase()}.
           </p>

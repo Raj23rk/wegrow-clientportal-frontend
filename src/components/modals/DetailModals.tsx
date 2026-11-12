@@ -61,6 +61,16 @@ export const SessionModal: React.FC<{
       </div>
 
       <div className="mb">
+        {s.image && (
+          <div style={{ marginBottom: 18, borderRadius: 10, overflow: 'hidden', border: '1px solid var(--line-2)' }}>
+            <img
+              src={s.image}
+              alt={s.title}
+              style={{ width: '100%', maxHeight: 240, objectFit: 'cover', display: 'block' }}
+            />
+          </div>
+        )}
+
         <dl className="kv">
           <dt>Consultant</dt>
           <dd>{s.consultant}</dd>

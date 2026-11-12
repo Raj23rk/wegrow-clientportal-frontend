@@ -76,6 +76,7 @@ export interface Session {
   notes?: string;
   summary?: SessionSummary | null;
   attachments: any[];
+  image?: string;
 }
 
 export interface ReportItem {
