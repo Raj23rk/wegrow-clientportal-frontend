@@ -2506,7 +2506,7 @@ export const EventLandingPage: React.FC = () => {
                 <MapPin size={22} />
               </div>
               <span className="lp-venue-lbl">EVENT VENUE</span>
-              <div className="lp-venue-val">TAG Knowledge Centre</div>
+              <div className="lp-venue-val">Anamallais Eicher</div>
               <div className="lp-venue-sub" style={{ fontSize: 13 }}>
                 Eicher Trucks and Buses - Anamallais Agencies, Nagari, Madurai
               </div>
