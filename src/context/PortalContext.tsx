@@ -76,7 +76,7 @@ export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const [theme, setThemeState] = useState<'light' | 'dark' | 'system'>(() => {
     try {
-      return (localStorage.getItem('wg:theme') as any) || 'system';
+      return (sessionStorage.getItem('wg:theme') as any) || 'system';
     } catch (e) {
       return 'system';
     }
@@ -84,7 +84,7 @@ export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const [collapsed, setCollapsedState] = useState<boolean>(() => {
     try {
-      return localStorage.getItem('wg:collapsed') === 'true';
+      return sessionStorage.getItem('wg:collapsed') === 'true';
     } catch (e) {
       return false;
     }
@@ -198,10 +198,10 @@ export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   useEffect(() => {
     if (theme === 'system') {
       document.documentElement.removeAttribute('data-theme');
-      try { localStorage.removeItem('wg:theme'); } catch (e) {}
+      try { sessionStorage.removeItem('wg:theme'); } catch (e) {}
     } else {
       document.documentElement.setAttribute('data-theme', theme);
-      try { localStorage.setItem('wg:theme', theme); } catch (e) {}
+      try { sessionStorage.setItem('wg:theme', theme); } catch (e) {}
     }
   }, [theme]);
 
@@ -259,13 +259,13 @@ export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
       setClients(map);
       try {
-        localStorage.setItem('wg:custom_clients', JSON.stringify(map));
+        sessionStorage.setItem('wg:custom_clients', JSON.stringify(map));
       } catch (e) {}
     } catch (err: any) {
       console.error('Failed to fetch admin clients:', err);
       try {
         const stored: Record<string, ClientData> = JSON.parse(
-          localStorage.getItem('wg:custom_clients') || '{}'
+          sessionStorage.getItem('wg:custom_clients') || '{}'
         );
         if (Object.keys(stored).length > 0) {
           setClients(stored);
@@ -289,7 +289,11 @@ export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     let mounted = true;
 
     async function initSession() {
-      const token = localStorage.getItem('wg:token');
+      try {
+        window.localStorage.removeItem('wg:token');
+        window.localStorage.removeItem('wg:custom_clients');
+      } catch {}
+      const token = sessionStorage.getItem('wg:token');
       if (!token) {
         if (mounted) setLoading(false);
         return;
@@ -389,7 +393,7 @@ export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const setCollapsed = (c: boolean) => {
     setCollapsedState(c);
     try {
-      localStorage.setItem('wg:collapsed', String(c));
+      sessionStorage.setItem('wg:collapsed', String(c));
     } catch (e) {}
   };
 
@@ -499,7 +503,7 @@ export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setClients((prev) => {
       const updated = { ...prev, [newId]: newClient };
       try {
-        localStorage.setItem('wg:custom_clients', JSON.stringify(updated));
+        sessionStorage.setItem('wg:custom_clients', JSON.stringify(updated));
       } catch (err) {}
       return updated;
     });
@@ -519,7 +523,7 @@ export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       const next = { ...prev };
       delete next[cid];
       try {
-        localStorage.setItem('wg:custom_clients', JSON.stringify(next));
+        sessionStorage.setItem('wg:custom_clients', JSON.stringify(next));
       } catch (err) {}
       return next;
     });
@@ -601,7 +605,7 @@ export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setClients((prev) => {
       const merged = { ...prev, [targetCid]: updatedClient };
       try {
-        localStorage.setItem('wg:custom_clients', JSON.stringify(merged));
+        sessionStorage.setItem('wg:custom_clients', JSON.stringify(merged));
       } catch (err) {}
       return merged;
     });
@@ -659,7 +663,7 @@ export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setClients((prev) => {
       const merged = { ...prev, [targetCid]: updatedClient };
       try {
-        localStorage.setItem('wg:custom_clients', JSON.stringify(merged));
+        sessionStorage.setItem('wg:custom_clients', JSON.stringify(merged));
       } catch (err) {}
       return merged;
     });
@@ -693,7 +697,7 @@ export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setClients((prev) => {
       const merged = { ...prev, [targetCid]: updatedClient };
       try {
-        localStorage.setItem('wg:custom_clients', JSON.stringify(merged));
+        sessionStorage.setItem('wg:custom_clients', JSON.stringify(merged));
       } catch (err) {}
       return merged;
     });
@@ -738,7 +742,7 @@ export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setClients((prev) => {
       const merged = { ...prev, [targetCid]: updatedClient };
       try {
-        localStorage.setItem('wg:custom_clients', JSON.stringify(merged));
+        sessionStorage.setItem('wg:custom_clients', JSON.stringify(merged));
       } catch (err) {}
       return merged;
     });
@@ -950,7 +954,7 @@ export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       );
     }
     try {
-      const reg: string[] = JSON.parse(localStorage.getItem(`wg:reg:${client.id}`) || '[]');
+      const reg: string[] = JSON.parse(sessionStorage.getItem(`wg:reg:${client.id}`) || '[]');
       return reg.includes(eventId);
     } catch (e) {
       return false;
@@ -961,7 +965,7 @@ export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     if (!client) return false;
     try {
       const res = await api.portal.toggleEventRegistration(client.id, eventId);
-      let reg: string[] = JSON.parse(localStorage.getItem(`wg:reg:${client.id}`) || '[]');
+      let reg: string[] = JSON.parse(sessionStorage.getItem(`wg:reg:${client.id}`) || '[]');
       if (res.registered) {
         if (!reg.includes(eventId)) reg.push(eventId);
         showToast('You are registered');
@@ -969,7 +973,7 @@ export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         reg = reg.filter((id) => id !== eventId);
         showToast('Registration cancelled');
       }
-      localStorage.setItem(`wg:reg:${client.id}`, JSON.stringify(reg));
+      sessionStorage.setItem(`wg:reg:${client.id}`, JSON.stringify(reg));
       await fetchClientData(client.id);
       return res.registered;
     } catch (err: any) {

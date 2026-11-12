@@ -2,7 +2,7 @@ import { User, ClientData, SessionFeedback, BusinessUpdate } from '../types';
 
 export function resolveApiBase(): string {
   if (typeof window !== 'undefined') {
-    const override = localStorage.getItem('wg:api_url');
+    const override = sessionStorage.getItem('wg:api_url');
     if (override && override.trim()) return override.trim().replace(/\/$/, '');
   }
 
@@ -37,7 +37,7 @@ export function getSecondaryApiBase(): string {
 }
 
 function getAuthHeader(): Record<string, string> {
-  const token = localStorage.getItem('wg:token');
+  const token = sessionStorage.getItem('wg:token');
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
@@ -188,7 +188,7 @@ export const api = {
         body: JSON.stringify({ email, pass })
       });
       if (data.access_token) {
-        localStorage.setItem('wg:token', data.access_token);
+        sessionStorage.setItem('wg:token', data.access_token);
       }
       return data;
     },
@@ -198,7 +198,7 @@ export const api = {
     },
 
     logout() {
-      localStorage.removeItem('wg:token');
+      sessionStorage.removeItem('wg:token');
     }
   },
 

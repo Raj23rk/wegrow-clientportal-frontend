@@ -220,10 +220,10 @@ export const EventLandingPage: React.FC = () => {
 
         // Cache locally as well
         try {
-          const existingStr = localStorage.getItem('wg_event_registrations');
+          const existingStr = sessionStorage.getItem('wg_event_registrations');
           const list: RegistrationData[] = existingStr ? JSON.parse(existingStr) : [];
           list.push(record);
-          localStorage.setItem('wg_event_registrations', JSON.stringify(list));
+          sessionStorage.setItem('wg_event_registrations', JSON.stringify(list));
         } catch {}
 
         setIsSubmitting(false);
@@ -238,7 +238,7 @@ export const EventLandingPage: React.FC = () => {
     // Fallback: Generate WG-LDP-xxx locally if backend is temporarily unreachable
     let fallbackCode = 'WG-LDP-001';
     try {
-      const existingStr = localStorage.getItem('wg_event_registrations');
+      const existingStr = sessionStorage.getItem('wg_event_registrations');
       const list: RegistrationData[] = existingStr ? JSON.parse(existingStr) : [];
       const nextNum = list.length + 1;
       fallbackCode = `WG-LDP-${String(nextNum).padStart(3, '0')}`;
@@ -249,7 +249,7 @@ export const EventLandingPage: React.FC = () => {
         registeredAt: new Date().toISOString()
       };
       list.push(record);
-      localStorage.setItem('wg_event_registrations', JSON.stringify(list));
+      sessionStorage.setItem('wg_event_registrations', JSON.stringify(list));
       setSubmittedData(record);
     } catch (err) {
       console.warn('Could not save to localStorage', err);

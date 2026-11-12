@@ -72,7 +72,7 @@ export const AdminAttendancePage: React.FC<{ isClientView?: boolean }> = ({ isCl
   const [attendees, setAttendees] = useState<AttendeeRecord[]>(() => {
     try {
       // Purge any legacy static dummy data from previous sessions
-      const saved = localStorage.getItem('wg_attendance_records');
+      const saved = sessionStorage.getItem('wg_attendance_records');
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) {
@@ -84,7 +84,7 @@ export const AdminAttendancePage: React.FC<{ isClientView?: boolean }> = ({ isCl
               !String(p.id).startsWith('att_')
           );
           if (realOnly.length !== parsed.length) {
-            localStorage.setItem('wg_attendance_records', JSON.stringify(realOnly));
+            sessionStorage.setItem('wg_attendance_records', JSON.stringify(realOnly));
           }
           return realOnly;
         }
@@ -175,14 +175,14 @@ export const AdminAttendancePage: React.FC<{ isClientView?: boolean }> = ({ isCl
   useEffect(() => {
     // Purge any legacy dummy records from localStorage on mount
     try {
-      const saved = localStorage.getItem('wg_attendance_records');
+      const saved = sessionStorage.getItem('wg_attendance_records');
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) {
           const cleaned = parsed.filter(
             (p: any) => p && !DUMMY_SEED_NAMES.has(p.fullName?.trim()) && !String(p.id || p._id).startsWith('att_')
           );
-          localStorage.setItem('wg_attendance_records', JSON.stringify(cleaned));
+          sessionStorage.setItem('wg_attendance_records', JSON.stringify(cleaned));
         }
       }
     } catch {}
@@ -193,7 +193,7 @@ export const AdminAttendancePage: React.FC<{ isClientView?: boolean }> = ({ isCl
   // Sync to localStorage as offline cache
   useEffect(() => {
     try {
-      localStorage.setItem('wg_attendance_records', JSON.stringify(attendees));
+      sessionStorage.setItem('wg_attendance_records', JSON.stringify(attendees));
     } catch (e) {
       console.warn('Could not persist attendance', e);
     }
