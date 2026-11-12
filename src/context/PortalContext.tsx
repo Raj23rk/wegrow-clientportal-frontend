@@ -299,8 +299,20 @@ export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         const profile = await api.auth.getProfile();
         if (mounted && profile) {
           setUser(profile);
-          if (profile.role === 'client' && profile.clientId) {
-            await fetchClientData(profile.clientId);
+          if (profile.role === 'client') {
+            if (profile.clientId) {
+              await fetchClientData(profile.clientId);
+            } else {
+              try {
+                const list = await api.clients.getAll();
+                if (Array.isArray(list) && list.length > 0) {
+                  const matched =
+                    list.find((c) => c.email?.toLowerCase() === profile.email?.toLowerCase()) ||
+                    list[0];
+                  if (matched) setClient(matched);
+                }
+              } catch {}
+            }
           } else if (profile.role === 'admin') {
             await fetchAdminClients();
           }
@@ -335,8 +347,20 @@ export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setUser(res.user);
       setPreviewAsState(null);
 
-      if (res.user.role === 'client' && res.user.clientId) {
-        await fetchClientData(res.user.clientId);
+      if (res.user.role === 'client') {
+        if (res.user.clientId) {
+          await fetchClientData(res.user.clientId);
+        } else {
+          try {
+            const list = await api.clients.getAll();
+            if (Array.isArray(list) && list.length > 0) {
+              const matched =
+                list.find((c) => c.email?.toLowerCase() === res.user.email?.toLowerCase()) ||
+                list[0];
+              if (matched) setClient(matched);
+            }
+          } catch {}
+        }
       } else if (res.user.role === 'admin') {
         await fetchAdminClients();
       }

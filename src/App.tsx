@@ -103,12 +103,98 @@ export const App: React.FC = () => {
     }
   }, [navigate]);
 
-  if (loading && !user) {
+  if (loading && (!user || (user.role === 'client' && !client))) {
     return (
-      <div style={{ display: 'grid', placeItems: 'center', minHeight: '100vh', background: 'var(--bg)' }}>
-        <div style={{ textAlign: 'center' }}>
-          <div className="serif" style={{ fontSize: 26, marginBottom: 8 }}>WeGrow Client Portal</div>
-          <div className="small muted">Connecting to database…</div>
+      <div
+        style={{
+          display: 'grid',
+          placeItems: 'center',
+          minHeight: '100vh',
+          background: 'radial-gradient(circle at top, rgba(232, 96, 20, 0.08), transparent 55%), var(--bg)',
+          padding: 24,
+        }}
+      >
+        <style>{`
+          @keyframes wgSpin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+          @keyframes wgPulse {
+            0%, 100% { opacity: 0.55; transform: scale(0.96); }
+            50% { opacity: 1; transform: scale(1.04); }
+          }
+          @keyframes wgShimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(220%); }
+          }
+        `}</style>
+        <div
+          style={{
+            textAlign: 'center',
+            background: 'var(--surface, #ffffff)',
+            border: '1px solid var(--border, rgba(12, 29, 54, 0.1))',
+            borderRadius: 20,
+            padding: '36px 44px',
+            boxShadow: '0 18px 45px rgba(12, 29, 54, 0.08)',
+            maxWidth: 420,
+            width: '100%',
+          }}
+        >
+          <div
+            style={{
+              position: 'relative',
+              width: 56,
+              height: 56,
+              margin: '0 auto 18px',
+              display: 'grid',
+              placeItems: 'center',
+            }}
+          >
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                borderRadius: '50%',
+                border: '3px solid rgba(232, 96, 20, 0.18)',
+                borderTopColor: '#E86014',
+                animation: 'wgSpin 0.9s linear infinite',
+              }}
+            />
+            <div
+              style={{
+                width: 22,
+                height: 22,
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, #0C1D36, #E86014)',
+                animation: 'wgPulse 1.4s ease-in-out infinite',
+              }}
+            />
+          </div>
+          <div className="serif" style={{ fontSize: 25, fontWeight: 700, marginBottom: 6 }}>
+            WeGrow Client Portal
+          </div>
+          <div className="small muted" style={{ marginBottom: 18 }}>
+            {user ? 'Loading your transformation dossier…' : 'Connecting to database…'}
+          </div>
+          <div
+            style={{
+              height: 5,
+              borderRadius: 999,
+              background: 'rgba(12, 29, 54, 0.08)',
+              overflow: 'hidden',
+              position: 'relative',
+            }}
+          >
+            <div
+              style={{
+                width: '45%',
+                height: '100%',
+                borderRadius: 999,
+                background: 'linear-gradient(90deg, #0C1D36, #E86014)',
+                animation: 'wgShimmer 1.3s ease-in-out infinite',
+              }}
+            />
+          </div>
         </div>
       </div>
     );
