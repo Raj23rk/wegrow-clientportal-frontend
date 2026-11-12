@@ -1869,6 +1869,48 @@ table.t tr.click:hover td { background: var(--surface-2); }
   box-shadow: var(--shadow);
   animation: rise .2s ease;
 }
+
+/* Toast Leave Confirmation */
+.toast-leave-scrim {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  z-index: 99998;
+  animation: fadeIn .18s ease;
+}
+
+.toast-leave-confirm {
+  position: fixed;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 99999;
+  background: linear-gradient(135deg, #181428 0%, #241d3b 100%);
+  color: #FFFFFF;
+  padding: 16px 20px;
+  border-radius: 16px;
+  box-shadow: 0 24px 50px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  max-width: 560px;
+  width: calc(100% - 32px);
+  animation: rise .22s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .toast-leave-confirm {
+    bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 14px 16px;
+  }
+}
 .fb-banner {
   display: flex;
   gap: 16px;

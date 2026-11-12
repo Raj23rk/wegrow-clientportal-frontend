@@ -176,7 +176,7 @@ export const AdminOverviewPage: React.FC<{
   onOpenBroadcast,
   onOpenSessionSummary
 }) => {
-  const { clients, user } = usePortal();
+  const { clients, user, safeNavigate } = usePortal();
   const navigate = useNavigate();
   const cl = Object.values(clients).filter((c) => c.status !== 'Archived');
 
@@ -350,7 +350,7 @@ export const AdminOverviewPage: React.FC<{
                   <button
                     className="btn sm ghost"
                     style={{ marginTop: 8 }}
-                    onClick={() => navigate('/admin/tasks')}
+                    onClick={() => safeNavigate('/admin/tasks', 'Task board')}
                   >
                     See all on the task board
                   </button>
@@ -360,7 +360,7 @@ export const AdminOverviewPage: React.FC<{
               <div className="card" style={{ padding: '8px 0' }}>
                 <div className="card-head" style={{ padding: '14px 22px 0' }}>
                   <h3>Client portfolio</h3>
-                  <button className="btn sm ghost" onClick={() => navigate('/admin/clients')}>
+                  <button className="btn sm ghost" onClick={() => safeNavigate('/admin/clients', 'Clients')}>
                     All clients
                   </button>
                 </div>
@@ -384,7 +384,7 @@ export const AdminOverviewPage: React.FC<{
                           <tr
                             key={c.id}
                             className="click"
-                            onClick={() => navigate(`/admin/client/${c.id}/overview`)}
+                            onClick={() => safeNavigate(`/admin/client/${c.id}/overview`, c.company)}
                           >
                             <td>
                               <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
@@ -429,7 +429,7 @@ export const AdminOverviewPage: React.FC<{
               <div className="card">
                 <div className="card-head">
                   <h3>Upcoming sessions</h3>
-                  <button className="btn sm ghost" onClick={() => navigate('/admin/sessions')}>
+                  <button className="btn sm ghost" onClick={() => safeNavigate('/admin/sessions', 'Session schedule')}>
                     Schedule
                   </button>
                 </div>
@@ -460,7 +460,7 @@ export const AdminOverviewPage: React.FC<{
               <div className="card">
                 <div className="card-head">
                   <h3>Latest feedback</h3>
-                  <button className="btn sm ghost" onClick={() => navigate('/admin/feedback')}>
+                  <button className="btn sm ghost" onClick={() => safeNavigate('/admin/feedback', 'Feedback')}>
                     All feedback
                   </button>
                 </div>
@@ -504,7 +504,7 @@ export const AdminClientsPage: React.FC<{
   onNavigate: (page: string) => void;
   onOpenAddClient: () => void;
 }> = ({ onNavigate, onOpenAddClient }) => {
-  const { clients, setPreviewAs } = usePortal();
+  const { clients, setPreviewAs, safeNavigate } = usePortal();
   const navigate = useNavigate();
   const cl = Object.values(clients).filter((c) => c.status !== 'Archived');
 
@@ -575,15 +575,17 @@ export const AdminClientsPage: React.FC<{
                 <div style={{ display: 'flex', gap: 8, marginTop: 16, flexWrap: 'wrap' }}>
                   <button
                     className="btn sm primary"
-                    onClick={() => navigate(`/admin/client/${c.id}/overview`)}
+                    onClick={() => safeNavigate(`/admin/client/${c.id}/overview`, c.company)}
                   >
                     Manage portal
                   </button>
                   <button
                     className="btn sm"
                     onClick={() => {
-                      setPreviewAs(c.id);
-                      navigate('/dashboard');
+                      safeNavigate('/dashboard', c.company, () => {
+                        setPreviewAs(c.id);
+                        navigate('/dashboard');
+                      });
                     }}
                   >
                     <Icon name="eye" /> Preview
@@ -627,7 +629,7 @@ export const AdminClientWorkspacePage: React.FC<{
   onOpenSessionSummary
 }) => {
   const { id, tab: routeTab } = useParams<{ id: string; tab?: string }>();
-  const { clients, setPreviewAs, updateTaskStatus, deleteActionItem, deleteSession, showToast, refreshData } = usePortal();
+  const { clients, setPreviewAs, updateTaskStatus, deleteActionItem, deleteSession, showToast, refreshData, safeNavigate } = usePortal();
   const navigate = useNavigate();
 
   const c = id ? clients[id] : null;
@@ -642,7 +644,7 @@ export const AdminClientWorkspacePage: React.FC<{
       <div className="card empty" style={{ padding: '40px 24px', textAlign: 'center' }}>
         <h3>Client not found</h3>
         <p className="muted">This client does not exist or has been archived.</p>
-        <button className="btn sm" onClick={() => navigate('/admin/clients')}>
+        <button className="btn sm" onClick={() => safeNavigate('/admin/clients', 'Clients')}>
           Back to all clients
         </button>
       </div>
@@ -686,7 +688,7 @@ export const AdminClientWorkspacePage: React.FC<{
     <>
       <button
         className="btn sm ghost"
-        onClick={() => navigate('/admin/clients')}
+        onClick={() => safeNavigate('/admin/clients', 'Clients')}
         style={{ marginBottom: 12 }}
       >
         <Icon name="chevL" /> All clients
@@ -712,8 +714,10 @@ export const AdminClientWorkspacePage: React.FC<{
           <button
             className="btn"
             onClick={() => {
-              setPreviewAs(cid);
-              navigate('/dashboard');
+              safeNavigate('/dashboard', c.company, () => {
+                setPreviewAs(cid);
+                navigate('/dashboard');
+              });
             }}
           >
             <Icon name="eye" /> Preview portal

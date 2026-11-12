@@ -1,7 +1,14 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { ClientData, User, SessionFeedback, BusinessUpdate, ActionItem, ActionStatus, ActionComment, Session, MonthPlan, ScoreHistoryPoint, DeptPerformance } from '../types';
 import { api } from '../services/api';
 import { TODAY, addDays } from '../utils/date';
+
+export interface LeaveConfirmationState {
+  targetPath?: string;
+  label?: string;
+  onConfirm?: () => void;
+}
 
 interface PortalContextType {
   user: User | null;
@@ -13,6 +20,11 @@ interface PortalContextType {
   sidebarOpen: boolean;
   loading: boolean;
   toastMessage: string | null;
+  leaveConfirm: LeaveConfirmationState | null;
+  confirmLeave: (request: LeaveConfirmationState) => void;
+  cancelLeave: () => void;
+  executeLeave: () => void;
+  safeNavigate: (to: string, label?: string, onConfirm?: () => void) => void;
   login: (email: string, pass: string, remember: boolean) => Promise<boolean>;
   logout: () => void;
   setTheme: (t: 'light' | 'dark' | 'system') => void;
@@ -78,6 +90,70 @@ export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [leaveConfirm, setLeaveConfirm] = useState<LeaveConfirmationState | null>(null);
+
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const confirmLeave = (request: LeaveConfirmationState) => {
+    setLeaveConfirm(request);
+  };
+
+  const cancelLeave = () => {
+    setLeaveConfirm(null);
+  };
+
+  const executeLeave = () => {
+    if (leaveConfirm) {
+      const { onConfirm, targetPath } = leaveConfirm;
+      setLeaveConfirm(null);
+      if (onConfirm) {
+        onConfirm();
+      } else if (targetPath) {
+        navigate(targetPath);
+        window.scrollTo(0, 0);
+      }
+    }
+  };
+
+  const safeNavigate = (to: string, label?: string, onConfirm?: () => void) => {
+    const current = location.pathname;
+    const target = to.startsWith('/') ? to : `/${to}`;
+
+    if (current === target && !onConfirm) {
+      window.scrollTo(0, 0);
+      return;
+    }
+
+    setLeaveConfirm({
+      targetPath: target,
+      label,
+      onConfirm
+    });
+  };
+
+  // Close leave confirmation on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && leaveConfirm) {
+        setLeaveConfirm(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [leaveConfirm]);
+
+  // Window beforeunload prompt when navigating away or closing window
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (user && location.pathname !== '/login') {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [user, location.pathname]);
 
   useEffect(() => {
     if (theme === 'system') {
@@ -860,7 +936,12 @@ export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         isRegisteredForEvent,
         markUpdateRead,
         showToast,
-        refreshData
+        refreshData,
+        leaveConfirm,
+        confirmLeave,
+        cancelLeave,
+        executeLeave,
+        safeNavigate
       }}
     >
       {children}
@@ -868,6 +949,87 @@ export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         <div className="toast" role="status">
           {toastMessage}
         </div>
+      )}
+
+      {/* Leave Page Confirmation Toast */}
+      {leaveConfirm && (
+        <>
+          <div className="toast-leave-scrim" onClick={cancelLeave} />
+          <div
+            className="toast-leave-confirm"
+            role="alertdialog"
+            aria-live="assertive"
+            aria-modal="true"
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: '50%',
+                  background: 'rgba(245, 158, 11, 0.18)',
+                  border: '1px solid rgba(245, 158, 11, 0.35)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#FBBF24',
+                  fontSize: 18,
+                  fontWeight: 700,
+                  flexShrink: 0
+                }}
+              >
+                !
+              </div>
+              <div>
+                <div style={{ fontWeight: 700, fontSize: '14.5px', color: '#FFFFFF', letterSpacing: '-0.01em' }}>
+                  Are you sure you want to leave this page?
+                </div>
+                <div style={{ fontSize: '12px', color: '#B3ACD0', marginTop: 2 }}>
+                  {leaveConfirm.label
+                    ? `Navigating to ${leaveConfirm.label}. Confirm to leave or stay on this page.`
+                    : 'Confirm to leave or click cancel to stay on this page.'}
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+              <button
+                type="button"
+                onClick={cancelLeave}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  border: '1px solid rgba(255, 255, 255, 0.16)',
+                  color: '#E2E8F0',
+                  padding: '8px 14px',
+                  borderRadius: '8px',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'background 0.15s ease'
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={executeLeave}
+                style={{
+                  background: 'linear-gradient(135deg, #FF6B00 0%, #E05300 100%)',
+                  border: 'none',
+                  color: '#FFFFFF',
+                  padding: '8px 16px',
+                  borderRadius: '8px',
+                  fontSize: '13px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 14px rgba(255, 107, 0, 0.4)'
+                }}
+              >
+                Leave page
+              </button>
+            </div>
+          </div>
+        </>
       )}
     </PortalContext.Provider>
   );

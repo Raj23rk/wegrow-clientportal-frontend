@@ -51,7 +51,7 @@ import {
 } from './components/modals/AdminModals';
 
 export const App: React.FC = () => {
-  const { user, client, previewAs, loading } = usePortal();
+  const { user, client, previewAs, loading, safeNavigate } = usePortal();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -151,9 +151,10 @@ export const App: React.FC = () => {
     );
   }
 
-  const navigateTo = (path: string) => {
-    navigate(path.startsWith('/') ? path : `/${path}`);
-    window.scrollTo(0, 0);
+  const navigateTo = (path: string, label?: string) => {
+    const fullPath = path.startsWith('/') ? path : `/${path}`;
+    if (location.pathname === fullPath) return;
+    safeNavigate(fullPath, label);
   };
 
   return (

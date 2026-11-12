@@ -63,7 +63,8 @@ export const Shell: React.FC<ShellProps> = ({
     setCollapsed,
     sidebarOpen,
     setSidebarOpen,
-    logout
+    logout,
+    safeNavigate
   } = usePortal();
 
   const [menuOpen, setMenuOpen] = useState(false);
@@ -92,10 +93,13 @@ export const Shell: React.FC<ShellProps> = ({
     return null;
   };
 
-  const handleNavClick = (path: string) => {
-    navigate(path);
+  const handleNavClick = (path: string, label?: string) => {
     setSidebarOpen(false);
-    window.scrollTo(0, 0);
+    if (location.pathname === path) {
+      window.scrollTo(0, 0);
+      return;
+    }
+    safeNavigate(path, label);
   };
 
   return (
@@ -107,8 +111,10 @@ export const Shell: React.FC<ShellProps> = ({
           </span>
           <button
             onClick={() => {
-              setPreviewAs(null);
-              navigate('/admin');
+              safeNavigate('/admin', 'Consultant Console', () => {
+                setPreviewAs(null);
+                navigate('/admin');
+              });
             }}
           >
             Exit preview
@@ -138,7 +144,7 @@ export const Shell: React.FC<ShellProps> = ({
                   <button
                     type="button"
                     className={`nav-btn ${isActive ? 'on' : ''}`}
-                    onClick={() => handleNavClick(item.path)}
+                    onClick={() => handleNavClick(item.path, item.label)}
                     title={item.label}
                   >
                     <Icon name={item.icon} />
@@ -163,9 +169,11 @@ export const Shell: React.FC<ShellProps> = ({
                     type="button"
                     className="nav-btn"
                     onClick={() => {
-                      setPreviewAs(c.id);
-                      navigate('/dashboard');
                       setSidebarOpen(false);
+                      safeNavigate('/dashboard', c.company, () => {
+                        setPreviewAs(c.id);
+                        navigate('/dashboard');
+                      });
                     }}
                     title={c.company}
                   >
@@ -182,8 +190,11 @@ export const Shell: React.FC<ShellProps> = ({
               type="button"
               className="nav-btn"
               onClick={() => {
-                logout();
-                navigate('/login');
+                setSidebarOpen(false);
+                safeNavigate('/login', 'Log out', () => {
+                  logout();
+                  navigate('/login');
+                });
               }}
               title="Log out"
               style={{ marginTop: 'auto' }}
@@ -288,7 +299,7 @@ export const Shell: React.FC<ShellProps> = ({
               {client && (
                 <button
                   className="iconbtn"
-                  onClick={() => handleNavClick('/notifications')}
+                  onClick={() => handleNavClick('/notifications', 'Notifications')}
                   aria-label="Notifications"
                 >
                   <Icon name="bell" />
@@ -350,8 +361,8 @@ export const Shell: React.FC<ShellProps> = ({
                 <>
                   <button
                     onClick={() => {
-                      handleNavClick('/profile');
                       setMenuOpen(false);
+                      handleNavClick('/profile', 'Profile');
                     }}
                   >
                     <Icon name="user" />
@@ -359,8 +370,8 @@ export const Shell: React.FC<ShellProps> = ({
                   </button>
                   <button
                     onClick={() => {
-                      handleNavClick('/settings');
                       setMenuOpen(false);
+                      handleNavClick('/settings', 'Settings');
                     }}
                   >
                     <Icon name="settings" />
@@ -380,8 +391,10 @@ export const Shell: React.FC<ShellProps> = ({
               <button
                 onClick={() => {
                   setMenuOpen(false);
-                  logout();
-                  navigate('/login');
+                  safeNavigate('/login', 'Log out', () => {
+                    logout();
+                    navigate('/login');
+                  });
                 }}
               >
                 <Icon name="logout" />
@@ -415,7 +428,7 @@ export const Shell: React.FC<ShellProps> = ({
             <button
               key={item.path}
               className={location.pathname === item.path ? 'on' : ''}
-              onClick={() => handleNavClick(item.path)}
+              onClick={() => handleNavClick(item.path, item.label)}
             >
               <Icon name={item.icon} />
               {item.label}
