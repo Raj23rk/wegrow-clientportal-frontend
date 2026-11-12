@@ -48,12 +48,12 @@ const CAROUSEL_SLIDES = [
     title: 'The WeGrow Growth Plan Workshop',
     desc: 'Intensive strategic execution, operational systems, and management frameworks in the smart boardroom.'
   },
-  {
-    src: '/images/gallery-mentors.jpg',
-    tag: 'STRATEGY LEADERS',
-    title: 'Interactive Strategy & Growth Masterclass',
-    desc: 'Hands-on mentorship guiding middle managers and business leaders into structured leadership.'
-  },
+  // {
+  //   src: '/images/gallery-mentors.jpg',
+  //   tag: 'STRATEGY LEADERS',
+  //   title: 'Interactive Strategy & Growth Masterclass',
+  //   desc: 'Hands-on mentorship guiding middle managers and business leaders into structured leadership.'
+  // },
   {
     src: '/images/gallery-session.jpg',
     tag: 'WORKPLACE SCENARIOS',
@@ -69,7 +69,7 @@ const CAROUSEL_SLIDES = [
   {
     src: '/images/gallery-founders.jpg',
     tag: 'CAMPUS MILESTONES',
-    title: 'WeGrow B School Leadership Team',
+    title: 'WeGrow B School Bussiness Meetup',
     desc: 'Committed to practical, owner-independent business growth: People • Process • Technology.'
   }
 ];
@@ -276,7 +276,7 @@ export const EventLandingPage: React.FC = () => {
   const getGoogleCalendarUrl = () => {
     const title = encodeURIComponent('Leadership in Action - TAG Group Programme');
     const details = encodeURIComponent(
-      'Practical Leadership Development Programme for TAG Group middle-management team.\nVenue: TAG Knowledge Centre, Amathur\nDate: 18 November 2026\nDaily Timing: 9:30 AM – 5:30 PM\nContact: +91 93443 37331'
+      'Practical Leadership Development Programme for TAG Group middle-management team.\nVenue: TAG Knowledge Centre, Amathur\nDate: 18 November 2026\nTiming: 9:30 AM – 5:30 PM\nContact: +91 93443 37331'
     );
     const location = encodeURIComponent('TAG Knowledge Centre, Amathur');
     return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=20261118T040000Z/20261118T120000Z&details=${details}&location=${location}`;
@@ -2115,7 +2115,7 @@ export const EventLandingPage: React.FC = () => {
                     <Calendar size={16} />
                   </div>
                   <div className="lp-sched-text">
-                    <span className="lp-sched-label">PROPOSED DATE</span>
+                    <span className="lp-sched-label">DATE</span>
                     <span className="lp-sched-value">18 November 2026</span>
                   </div>
                 </div>
@@ -2471,7 +2471,7 @@ export const EventLandingPage: React.FC = () => {
               <div className="lp-venue-icon-circle">
                 <Calendar size={22} />
               </div>
-              <span className="lp-venue-lbl">PROPOSED DATE</span>
+              <span className="lp-venue-lbl">DATE</span>
               <div className="lp-venue-val">18 November 2026</div>
               <div className="lp-venue-sub">Wednesday • 1-Day Intensive Programme</div>
               <a
@@ -2489,7 +2489,7 @@ export const EventLandingPage: React.FC = () => {
               <div className="lp-venue-icon-circle">
                 <Clock size={22} />
               </div>
-              <span className="lp-venue-lbl">DAILY TIMING</span>
+              <span className="lp-venue-lbl">TIMING</span>
               <div className="lp-venue-val">9:30 AM to 5:30 PM</div>
               <div className="lp-venue-sub">Full Day Hands-on Sessions</div>
               <span className="lp-venue-link" style={{ cursor: 'default', color: '#718096' }}>
