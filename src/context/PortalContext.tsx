@@ -21,6 +21,8 @@ interface PortalContextType {
   loading: boolean;
   toastMessage: string | null;
   leaveConfirm: LeaveConfirmationState | null;
+  isFormDirty: boolean;
+  setFormDirty: (dirty: boolean) => void;
   confirmLeave: (request: LeaveConfirmationState) => void;
   cancelLeave: () => void;
   executeLeave: () => void;
@@ -91,6 +93,7 @@ export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [leaveConfirm, setLeaveConfirm] = useState<LeaveConfirmationState | null>(null);
+  const [isFormDirty, setFormDirty] = useState<boolean>(false);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -107,6 +110,7 @@ export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     if (leaveConfirm) {
       const { onConfirm, targetPath } = leaveConfirm;
       setLeaveConfirm(null);
+      setFormDirty(false);
       if (onConfirm) {
         onConfirm();
       } else if (targetPath) {
@@ -125,12 +129,48 @@ export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       return;
     }
 
+    if (!isFormDirty) {
+      if (onConfirm) {
+        onConfirm();
+      } else {
+        navigate(target);
+        window.scrollTo(0, 0);
+      }
+      return;
+    }
+
     setLeaveConfirm({
       targetPath: target,
       label,
       onConfirm
     });
   };
+
+  // Track dirty state for any uncompleted <form> on the page
+  useEffect(() => {
+    const handleFormInput = (e: Event) => {
+      const target = e.target as HTMLElement | null;
+      if (target && target.closest('form')) {
+        setFormDirty(true);
+      }
+    };
+    const handleFormSubmit = () => {
+      setFormDirty(false);
+    };
+    document.addEventListener('input', handleFormInput, true);
+    document.addEventListener('change', handleFormInput, true);
+    document.addEventListener('submit', handleFormSubmit, true);
+    return () => {
+      document.removeEventListener('input', handleFormInput, true);
+      document.removeEventListener('change', handleFormInput, true);
+      document.removeEventListener('submit', handleFormSubmit, true);
+    };
+  }, []);
+
+  // Reset form dirty state when route changes
+  useEffect(() => {
+    setFormDirty(false);
+  }, [location.pathname]);
 
   // Close leave confirmation on Escape key
   useEffect(() => {
@@ -143,17 +183,17 @@ export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [leaveConfirm]);
 
-  // Window beforeunload prompt when navigating away or closing window
+  // Window beforeunload prompt only when a form has unsaved/uncompleted input
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (user && location.pathname !== '/login') {
+      if (isFormDirty && user && location.pathname !== '/login') {
         e.preventDefault();
         e.returnValue = '';
       }
     };
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [user, location.pathname]);
+  }, [isFormDirty, user, location.pathname]);
 
   useEffect(() => {
     if (theme === 'system') {
@@ -185,22 +225,52 @@ export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const fetchAdminClients = useCallback(async () => {
     try {
-      const list = await api.clients.getAll();
+      const [list, allSessions] = await Promise.all([
+        api.clients.getAll(),
+        api.admin.getSessions().catch(() => [])
+      ]);
+
+      const sessionsByClient: Record<string, Session[]> = {};
+      if (Array.isArray(allSessions)) {
+        allSessions.forEach((raw: any) => {
+          const cid = raw.clientId;
+          if (!cid) return;
+          if (!sessionsByClient[cid]) sessionsByClient[cid] = [];
+          sessionsByClient[cid].push({
+            ...raw,
+            id: raw.sessionId || raw.id || raw._id,
+            sessionId: raw.sessionId || raw.id || raw._id,
+            agenda: Array.isArray(raw.agenda) ? raw.agenda : [],
+            objectives: Array.isArray(raw.objectives) ? raw.objectives : [],
+            attachments: Array.isArray(raw.attachments) ? raw.attachments : []
+          });
+        });
+      }
+
       const map: Record<string, ClientData> = {};
       list.forEach((c) => {
-        map[c.id || (c as any).clientId] = c;
+        const cid = c.id || (c as any).clientId;
+        const sessions =
+          c.sessions && c.sessions.length > 0
+            ? c.sessions
+            : sessionsByClient[cid] || [];
+        map[cid] = { ...c, sessions };
       });
+
+      setClients(map);
+      try {
+        localStorage.setItem('wg:custom_clients', JSON.stringify(map));
+      } catch (e) {}
+    } catch (err: any) {
+      console.error('Failed to fetch admin clients:', err);
       try {
         const stored: Record<string, ClientData> = JSON.parse(
           localStorage.getItem('wg:custom_clients') || '{}'
         );
-        Object.entries(stored).forEach(([k, v]) => {
-          map[k] = { ...v, ...(map[k] || {}) };
-        });
+        if (Object.keys(stored).length > 0) {
+          setClients(stored);
+        }
       } catch (e) {}
-      setClients(map);
-    } catch (err: any) {
-      console.error('Failed to fetch admin clients:', err);
     }
   }, []);
 
@@ -938,6 +1008,8 @@ export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         showToast,
         refreshData,
         leaveConfirm,
+        isFormDirty,
+        setFormDirty,
         confirmLeave,
         cancelLeave,
         executeLeave,

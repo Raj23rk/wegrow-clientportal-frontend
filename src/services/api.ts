@@ -266,6 +266,11 @@ export const api = {
       });
     },
 
+    async getSessions(clientId?: string): Promise<any[]> {
+      const qs = clientId ? `?clientId=${encodeURIComponent(clientId)}` : '';
+      return request<any[]>(`/admin/sessions${qs}`);
+    },
+
     async createSession(clientId: string, session: any): Promise<any> {
       return request(`/admin/clients/${clientId}/sessions`, {
         method: 'POST',

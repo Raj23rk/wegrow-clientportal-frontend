@@ -86,7 +86,9 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
     .sort((a, b) => a.due.localeCompare(b.due));
   const nextAction = openActionsList[0];
 
-  const nextSession = client.sessions.find((s) => s.date >= TODAY);
+  const nextSession =
+    client.sessions.find((s) => s.status === 'Upcoming') ||
+    client.sessions.find((s) => s.date >= TODAY);
   const lastSession = [...client.sessions].reverse().find((s) => s.date < TODAY);
 
   const isSessionEvaluated = (s: any) =>

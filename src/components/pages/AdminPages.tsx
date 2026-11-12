@@ -50,7 +50,7 @@ const isOverdue = (a: any) =>
   a.status !== 'Completed' && a.due && a.due < TODAY;
 
 const nextSession = (c: ClientData) =>
-  (c.sessions || []).find((s) => s.date >= TODAY && s.status === 'Upcoming');
+  (c.sessions || []).find((s) => s.status === 'Upcoming');
 
 const actionCounts = (c: ClientData) => {
   const r: Record<string, number> = {
@@ -185,11 +185,10 @@ export const AdminOverviewPage: React.FC<{
   );
   const overdueCount = openActions.filter(isOverdue).length;
 
-  const in14 = addDays(TODAY, 14);
   const upcomingSessions = cl
     .flatMap((c) =>
       (c.sessions || [])
-        .filter((s) => s.status === 'Upcoming' && s.date >= TODAY && s.date <= in14)
+        .filter((s) => s.status === 'Upcoming')
         .map((s) => ({ c, s }))
     )
     .sort((a, b) => a.s.date.localeCompare(b.s.date));
@@ -1542,7 +1541,7 @@ export const AdminSessionsPage: React.FC<{
   const allSessions = cl.flatMap((c) => (c.sessions || []).map((s) => ({ c, s })));
 
   const upcoming = allSessions
-    .filter((x) => x.s.status === 'Upcoming' && x.s.date >= TODAY)
+    .filter((x) => x.s.status === 'Upcoming')
     .sort((a, b) => a.s.date.localeCompare(b.s.date));
 
   const needSummary = allSessions
