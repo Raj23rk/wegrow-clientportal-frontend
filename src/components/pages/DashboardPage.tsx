@@ -161,7 +161,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
               opacity="0.8"
             />
           </svg>
-          <h1>{getGreeting()}, {client.contact || client.company}</h1>
+          <h1>{getGreeting()}, {user?.name || client.contact || client.company}</h1>
           <p>
             Here is where {client.company} stands in month {currentMonthPlan.n} of 6 — {currentMonthPlan.theme.toLowerCase()}.
           </p>

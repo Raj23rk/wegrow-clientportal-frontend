@@ -738,7 +738,7 @@ export const ScheduleSessionModal: React.FC<{
       const img = new Image();
       img.onload = () => {
         const canvas = document.createElement('canvas');
-        const maxDim = 1200;
+        const maxDim = 800;
         let width = img.width;
         let height = img.height;
         if (width > maxDim || height > maxDim) {
@@ -755,7 +755,13 @@ export const ScheduleSessionModal: React.FC<{
         const ctx = canvas.getContext('2d');
         if (ctx) {
           ctx.drawImage(img, 0, 0, width, height);
-          const compressed = canvas.toDataURL('image/jpeg', 0.85);
+          let quality = 0.75;
+          let compressed = canvas.toDataURL('image/jpeg', quality);
+          // Optimize size under 85KB to ensure instant upload and zero 413 errors
+          while (compressed.length > 85000 && quality > 0.3) {
+            quality -= 0.1;
+            compressed = canvas.toDataURL('image/jpeg', quality);
+          }
           setSessionImage(compressed);
         } else {
           setSessionImage(loadEvt.target?.result as string);
