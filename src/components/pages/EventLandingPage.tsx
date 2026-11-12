@@ -276,7 +276,7 @@ export const EventLandingPage: React.FC = () => {
   const getGoogleCalendarUrl = () => {
     const title = encodeURIComponent('Leadership in Action - TAG Group Programme');
     const details = encodeURIComponent(
-      'Practical Leadership Development Programme for TAG Group middle-management team.\nVenue: Eicher Trucks and Buses - Anamallais Agencies, Madurai, Nagari\nDate: 18 November 2026\nTiming: 9:30 AM – 5:30 PM\nContact: +91 93443 37331'
+      'Practical Leadership Development Programme for TAG Group middle-management team.\nVenue: Eicher Trucks and Buses - Anamallais Agencies,Nagari, Madurai\nDate: 18 November 2026\nTiming: 9:30 AM – 5:30 PM\nContact: +91 93443 37331'
     );
     const location = encodeURIComponent('Eicher Trucks and Buses - Anamallais Agencies, Madurai, Nagari');
     return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=20261118T040000Z/20261118T120000Z&details=${details}&location=${location}`;
@@ -2508,10 +2508,10 @@ export const EventLandingPage: React.FC = () => {
               <span className="lp-venue-lbl">EVENT VENUE</span>
               <div className="lp-venue-val">TAG Knowledge Centre</div>
               <div className="lp-venue-sub" style={{ fontSize: 13 }}>
-                Amathur; spacious executive facility reserved for interactive leadership drills
+                Eicher Trucks and Buses - Anamallais Agencies, Nagari, Madurai
               </div>
               <a
-                href="https://maps.google.com/?q=TAG+Knowledge+Centre+Amathur"
+                href="https://www.google.com/maps/search/?api=1&query=Eicher+Trucks+and+Buses+-+Anamallais+Agencies,+Madurai,+Nagari"
                 target="_blank"
                 rel="noreferrer"
                 className="lp-venue-link"
@@ -2537,6 +2537,29 @@ export const EventLandingPage: React.FC = () => {
                 Chat on WhatsApp <MessageCircle size={13} />
               </a>
             </div>
+          </div>
+
+          {/* Embedded Google Map */}
+          <div
+            style={{
+              marginTop: 28,
+              borderRadius: 20,
+              overflow: 'hidden',
+              border: '1px solid var(--lp-border)',
+              boxShadow: 'var(--lp-shadow-md)',
+              background: '#FFFFFF',
+            }}
+          >
+            <iframe
+              title="Event Venue - Eicher Trucks and Buses, Anamallais Agencies, Madurai, Nagari"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3929.0514957022788!2d78.01809!3d10.012605299999999!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3b00d1ff00ffcb9b%3A0x7cbda88cfc18d9c0!2sEicher%20Trucks%20and%20Buses%20-%20Anamallais%20Agencies%2C%20Madurai%2C%20Nagari!5e0!3m2!1sen!2sin!4v1794486762394!5m2!1sen!2sin"
+              width="100%"
+              height="380"
+              style={{ border: 0, display: 'block' }}
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="strict-origin-when-cross-origin"
+            />
           </div>
         </div>
       </section>
