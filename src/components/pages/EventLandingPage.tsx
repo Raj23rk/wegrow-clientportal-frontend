@@ -569,8 +569,8 @@ export const EventLandingPage: React.FC = () => {
 
         .lp-hero-grid {
           display: grid;
-          grid-template-columns: 1.28fr 0.72fr;
-          gap: 40px;
+          grid-template-columns: 1.18fr 0.82fr;
+          gap: 48px;
           align-items: center;
         }
 
@@ -666,21 +666,22 @@ export const EventLandingPage: React.FC = () => {
           display: flex;
           align-items: center;
           gap: 16px;
-          margin-bottom: 36px;
+          margin-bottom: 0;
           flex-wrap: wrap;
         }
 
         .lp-hero-schedule-bar {
-          display: inline-flex;
+          display: flex;
           align-items: center;
+          justify-content: space-between;
           gap: 0;
-          padding: 10px 18px;
+          padding: 14px 28px;
           background: #FFFFFF;
           border: 1px solid var(--lp-border);
-          border-radius: 18px;
+          border-radius: 20px;
           box-shadow: 0 10px 28px -6px rgba(12, 29, 54, 0.07), 0 2px 6px rgba(12, 29, 54, 0.03);
-          max-width: 100%;
-          margin-top: 8px;
+          width: 100%;
+          margin-top: 36px;
           box-sizing: border-box;
           flex-wrap: nowrap;
         }
@@ -688,8 +689,8 @@ export const EventLandingPage: React.FC = () => {
         .lp-sched-block {
           display: flex;
           align-items: center;
-          gap: 10px;
-          padding: 4px 16px;
+          gap: 12px;
+          padding: 4px 24px;
         }
 
         .lp-sched-block:first-child {
@@ -698,6 +699,7 @@ export const EventLandingPage: React.FC = () => {
 
         .lp-sched-block:last-child {
           padding-right: 0;
+          flex: 1;
         }
 
         .lp-sched-block:not(:last-child) {
@@ -750,7 +752,7 @@ export const EventLandingPage: React.FC = () => {
         /* Mascot Card */
         .lp-hero-right {
           display: flex;
-          justify-content: center;
+          justify-content: flex-end;
           position: relative;
         }
 
@@ -1727,6 +1729,7 @@ export const EventLandingPage: React.FC = () => {
           }
           .lp-hero-right {
             order: -1;
+            justify-content: center;
           }
           .lp-mascot-card {
             max-width: 340px;
@@ -2106,42 +2109,6 @@ export const EventLandingPage: React.FC = () => {
                   About WeGrow & Event
                 </button>
               </div>
-
-              {/* Executive Event Schedule Card */}
-              <div className="lp-hero-schedule-bar">
-                {/* Date */}
-                <div className="lp-sched-block">
-                  <div className="lp-sched-icon-box">
-                    <Calendar size={16} />
-                  </div>
-                  <div className="lp-sched-text">
-                    <span className="lp-sched-label">DATE</span>
-                    <span className="lp-sched-value">18 November 2026</span>
-                  </div>
-                </div>
-
-                {/* Timing */}
-                <div className="lp-sched-block">
-                  <div className="lp-sched-icon-box">
-                    <Clock size={16} />
-                  </div>
-                  <div className="lp-sched-text">
-                    <span className="lp-sched-label">TIME</span>
-                    <span className="lp-sched-value">9:30 AM – 5:30 PM</span>
-                  </div>
-                </div>
-
-                {/* Venue */}
-                <div className="lp-sched-block">
-                  <div className="lp-sched-icon-box">
-                    <MapPin size={16} />
-                  </div>
-                  <div className="lp-sched-text">
-                    <span className="lp-sched-label">EVENT VENUE</span>
-                    <span className="lp-sched-value">Eicher Trucks and Buses - Anamallais Agencies, Madurai, Nagari</span>
-                  </div>
-                </div>
-              </div>
             </div>
 
             {/* Right Column: Mascot Card matching Image 1 */}
@@ -2153,6 +2120,42 @@ export const EventLandingPage: React.FC = () => {
                   className="lp-mascot-img"
                   loading="eager"
                 />
+              </div>
+            </div>
+          </div>
+
+          {/* Executive Event Schedule Card */}
+          <div className="lp-hero-schedule-bar">
+            {/* Date */}
+            <div className="lp-sched-block">
+              <div className="lp-sched-icon-box">
+                <Calendar size={16} />
+              </div>
+              <div className="lp-sched-text">
+                <span className="lp-sched-label">DATE</span>
+                <span className="lp-sched-value">18 November 2026</span>
+              </div>
+            </div>
+
+            {/* Timing */}
+            <div className="lp-sched-block">
+              <div className="lp-sched-icon-box">
+                <Clock size={16} />
+              </div>
+              <div className="lp-sched-text">
+                <span className="lp-sched-label">TIME</span>
+                <span className="lp-sched-value">9:30 AM – 5:30 PM</span>
+              </div>
+            </div>
+
+            {/* Venue */}
+            <div className="lp-sched-block">
+              <div className="lp-sched-icon-box">
+                <MapPin size={16} />
+              </div>
+              <div className="lp-sched-text">
+                <span className="lp-sched-label">EVENT VENUE</span>
+                <span className="lp-sched-value">Eicher Trucks and Buses - Anamallais Agencies, Madurai, Nagari</span>
               </div>
             </div>
           </div>
