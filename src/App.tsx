@@ -28,6 +28,7 @@ import {
 } from './components/pages/AdminPages';
 import { AdminAttendancePage } from './components/pages/AdminAttendancePage';
 import { EventLandingPage } from './components/pages/EventLandingPage';
+import { Lead360ViewerPage } from './components/pages/Lead360ViewerPage';
 import {
   SessionModal,
   ActionModal,
@@ -102,6 +103,11 @@ export const App: React.FC = () => {
       navigate(path, { replace: true });
     }
   }, [navigate]);
+
+  // Direct Public Workbook Viewer routes (zero delay, direct display upon QR scan)
+  if (['/lead-360', '/lead360', '/workbook', '/anaamalais-toyota'].includes(location.pathname)) {
+    return <Lead360ViewerPage />;
+  }
 
   if (loading && (!user || (user.role === 'client' && !client))) {
     return (
