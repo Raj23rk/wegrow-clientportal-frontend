@@ -2000,7 +2000,6 @@ export const EventLandingPage: React.FC = () => {
                     {isRegistrationClosed ? 'Registration Status' : 'Register'}
                   </a>
                 </li>
-                <li><a href="/feedback-form" onClick={e => { e.preventDefault(); navigate('/feedback-form'); }}>Feedback Form</a></li>
               </ul>
             </nav>
 
@@ -2056,10 +2055,7 @@ export const EventLandingPage: React.FC = () => {
           <a href="#carousel" onClick={e => { e.preventDefault(); scrollTo('carousel'); }}>Campus Moments</a>
           <a href="#venue" onClick={e => { e.preventDefault(); scrollTo('venue'); }}>Venue & Timing</a>
           <a href="#register" onClick={e => { e.preventDefault(); scrollTo('register'); }} style={{ color: '#E86014', fontWeight: 800 }}>
-            Register Seat Now →
-          </a>
-          <a href="/feedback-form" onClick={e => { e.preventDefault(); navigate('/feedback-form'); }} style={{ color: '#9333EA', fontWeight: 700 }}>
-            📝 Participant Feedback Form
+            {isRegistrationClosed ? 'Registration Status' : 'Register Seat Now →'}
           </a>
           <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: 12, paddingTop: 20 }}>
             <button
