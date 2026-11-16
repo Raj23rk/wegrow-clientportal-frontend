@@ -95,7 +95,7 @@ export const Lead360ViewerPage: React.FC = () => {
               </span>
             </div>
             <span style={{ fontSize: '11px', color: 'rgba(255, 255, 255, 0.65)' }}>
-              30-Day Leadership Implementation • 29 Pages
+              30-Day Leadership Implementation • 45 Pages
             </span>
           </div>
         </div>
