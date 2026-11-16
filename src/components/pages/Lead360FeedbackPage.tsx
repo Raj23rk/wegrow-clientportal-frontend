@@ -1105,16 +1105,6 @@ export const Lead360FeedbackPage: React.FC = () => {
                         className="fb-input"
                       />
                     </div>
-
-                    <div className="fb-field-group" style={{ gridColumn: '1 / -1' }}>
-                      <label className="fb-label">TRAINER</label>
-                      <input
-                        type="text"
-                        value={participant.trainer}
-                        onChange={(e) => setParticipant({ ...participant, trainer: e.target.value })}
-                        className="fb-input"
-                      />
-                    </div>
                   </div>
                 </div>
 
@@ -1444,28 +1434,6 @@ export const Lead360FeedbackPage: React.FC = () => {
                         placeholder="e.g. Practical case studies, delegation frameworks, peer discussions..."
                         value={comments.mostUseful}
                         onChange={(e) => setComments({ ...comments, mostUseful: e.target.value })}
-                        className="fb-textarea"
-                      />
-                    </div>
-
-                    <div className="fb-field-group">
-                      <label className="fb-label">What did you find least useful?</label>
-                      <textarea
-                        rows={2}
-                        placeholder="e.g. Any specific concept that wasn't relevant..."
-                        value={comments.leastUseful}
-                        onChange={(e) => setComments({ ...comments, leastUseful: e.target.value })}
-                        className="fb-textarea"
-                      />
-                    </div>
-
-                    <div className="fb-field-group">
-                      <label className="fb-label">How can it be improved?</label>
-                      <textarea
-                        rows={2}
-                        placeholder="e.g. More role-playing time, follow-up milestone sessions..."
-                        value={comments.howCanImprove}
-                        onChange={(e) => setComments({ ...comments, howCanImprove: e.target.value })}
                         className="fb-textarea"
                       />
                     </div>
