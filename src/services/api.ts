@@ -441,10 +441,19 @@ export const api = {
       });
     },
 
-    async toggleFeedback(id: string, feedbackFilled?: boolean, rating?: number): Promise<{ success: boolean; attendee: any; stats: any }> {
+    async toggleFeedback(
+      id: string,
+      feedbackFilled?: boolean,
+      rating?: number,
+      notes?: string
+    ): Promise<{ success: boolean; attendee: any; stats: any }> {
       return request(`/attendance/${id}/feedback`, {
         method: 'PATCH',
-        body: JSON.stringify({ feedbackFilled, feedbackRating: rating })
+        body: JSON.stringify({
+          feedbackFilled,
+          feedbackRating: rating,
+          feedbackNotes: notes
+        })
       });
     },
 

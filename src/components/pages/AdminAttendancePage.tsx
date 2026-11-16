@@ -8,6 +8,7 @@ import {
   Download,
   RefreshCw,
   Search,
+  
   Filter,
   Copy,
   Check,
@@ -126,6 +127,62 @@ export const AdminAttendancePage: React.FC<{ isClientView?: boolean }> = ({ isCl
   });
 
   const [detailModalAttendee, setDetailModalAttendee] = useState<AttendeeRecord | null>(null);
+
+  // Feedback Fill/Edit Modal State (Both Admin & User side)
+  const [feedbackModalAttendee, setFeedbackModalAttendee] = useState<AttendeeRecord | null>(null);
+  const [feedbackRatingInput, setFeedbackRatingInput] = useState<number>(5);
+  const [feedbackNotesInput, setFeedbackNotesInput] = useState<string>('');
+  const [isSavingFeedback, setIsSavingFeedback] = useState(false);
+
+  const openFeedbackModal = (attendee: AttendeeRecord) => {
+    setFeedbackModalAttendee(attendee);
+    setFeedbackRatingInput(attendee.feedbackRating || 5);
+    setFeedbackNotesInput(attendee.feedbackNotes || '');
+  };
+
+  const handleSaveFeedback = async (markFilled: boolean = true) => {
+    if (!feedbackModalAttendee) return;
+    setIsSavingFeedback(true);
+    const targetId = feedbackModalAttendee.id;
+    const newRating = markFilled ? feedbackRatingInput : undefined;
+    const newNotes = markFilled ? feedbackNotesInput.trim() : '';
+
+    setAttendees((prev) =>
+      prev.map((a) =>
+        a.id === targetId
+          ? {
+              ...a,
+              feedbackFilled: markFilled,
+              feedbackRating: newRating,
+              feedbackNotes: newNotes
+            }
+          : a
+      )
+    );
+
+    if (detailModalAttendee && detailModalAttendee.id === targetId) {
+      setDetailModalAttendee((prev) =>
+        prev
+          ? {
+              ...prev,
+              feedbackFilled: markFilled,
+              feedbackRating: newRating,
+              feedbackNotes: newNotes
+            }
+          : null
+      );
+    }
+
+    try {
+      await api.attendance.toggleFeedback(targetId, markFilled, newRating, newNotes);
+      showToast(markFilled ? '✓ Feedback saved & recorded!' : '✓ Feedback reset to Pending');
+    } catch (err) {
+      console.warn('API feedback save fallback:', err);
+    } finally {
+      setIsSavingFeedback(false);
+      setFeedbackModalAttendee(null);
+    }
+  };
 
   // Live API Connection State & Notifications
   const [apiStatus, setApiStatus] = useState<'connected' | 'checking' | 'offline'>('checking');
@@ -1835,16 +1892,16 @@ export const AdminAttendancePage: React.FC<{ isClientView?: boolean }> = ({ isCl
                       )}
                     </td>
 
-                    {/* Feedback Form Status Toggle */}
+                    {/* Feedback Form Status Toggle & Fill Modal */}
                     <td style={{ textAlign: 'center' }}>
                       <button
                         type="button"
                         className={`att-feedback-toggle ${a.feedbackFilled ? 'filled' : 'unfilled'}`}
-                        onClick={() => handleToggleFeedback(a.id)}
-                        title="Click to toggle feedback status"
+                        onClick={() => openFeedbackModal(a)}
+                        title={a.feedbackFilled ? 'View / edit feedback' : 'Click to fill feedback'}
                       >
-                        <Star size={11} />
-                        <span>{a.feedbackFilled ? 'Filled (5★)' : 'Pending'}</span>
+                        <Star size={11} fill={a.feedbackFilled ? '#16A34A' : 'none'} />
+                        <span>{a.feedbackFilled ? `Filled (${a.feedbackRating || 5}★)` : 'Pending'}</span>
                       </button>
                     </td>
 
@@ -2197,12 +2254,35 @@ export const AdminAttendancePage: React.FC<{ isClientView?: boolean }> = ({ isCl
                   <span style={{ color: '#64748B', fontSize: 13 }}>Registered At:</span>
                   <span style={{ fontWeight: 700 }}>{detailModalAttendee.registeredAt}</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0' }}>
                   <span style={{ color: '#64748B', fontSize: 13 }}>Post-Event Feedback:</span>
-                  <span style={{ fontWeight: 700, color: detailModalAttendee.feedbackFilled ? '#16A34A' : '#64748B' }}>
-                    {detailModalAttendee.feedbackFilled ? '✓ Completed (5★)' : 'Not Submitted'}
-                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontWeight: 700, color: detailModalAttendee.feedbackFilled ? '#16A34A' : '#64748B' }}>
+                      {detailModalAttendee.feedbackFilled ? `✓ Completed (${detailModalAttendee.feedbackRating || 5}★)` : 'Not Submitted'}
+                    </span>
+                    <button
+                      type="button"
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#C2410C',
+                        fontWeight: 700,
+                        fontSize: 12,
+                        cursor: 'pointer',
+                        textDecoration: 'underline'
+                      }}
+                      onClick={() => openFeedbackModal(detailModalAttendee)}
+                    >
+                      {detailModalAttendee.feedbackFilled ? 'View / Edit' : '+ Fill Feedback'}
+                    </button>
+                  </div>
                 </div>
+                {detailModalAttendee.feedbackNotes && (
+                  <div style={{ marginTop: 8, padding: '8px 12px', background: '#FFFFFF', borderRadius: 8, border: '1px solid #E2E8F0', fontSize: 12.5 }}>
+                    <span style={{ fontWeight: 600, color: '#475569' }}>Feedback Note: </span>
+                    <span style={{ color: '#0F172A', fontStyle: 'italic' }}>"{detailModalAttendee.feedbackNotes}"</span>
+                  </div>
+                )}
               </div>
 
               {/* Dispatch Links */}
@@ -2250,6 +2330,108 @@ export const AdminAttendancePage: React.FC<{ isClientView?: boolean }> = ({ isCl
                   <Mail size={16} /> Send via Email
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ATTENDEE FEEDBACK FILL/EDIT MODAL */}
+      {feedbackModalAttendee && (
+        <div className="att-modal-overlay" onClick={() => setFeedbackModalAttendee(null)}>
+          <div
+            className="att-modal-card"
+            style={{ maxWidth: 440 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: 18, color: '#0C1D36', fontWeight: 700 }}>
+                  Record Feedback
+                </h3>
+                <p style={{ margin: '2px 0 0', fontSize: 12, color: '#64748B' }}>
+                  {feedbackModalAttendee.fullName} • {feedbackModalAttendee.department}
+                </p>
+              </div>
+              <button
+                type="button"
+                className="att-modal-close"
+                onClick={() => setFeedbackModalAttendee(null)}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
+                Rating (1 - 5 Stars)
+              </label>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    type="button"
+                    onClick={() => setFeedbackRatingInput(star)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      padding: 4,
+                      fontSize: 26,
+                      color: star <= feedbackRatingInput ? '#EAB308' : '#CBD5E1',
+                      transition: 'transform 0.15s'
+                    }}
+                  >
+                    ★
+                  </button>
+                ))}
+                <span style={{ fontSize: 13, fontWeight: 700, color: '#0C1D36', marginLeft: 6 }}>
+                  {feedbackRatingInput} / 5 Stars
+                </span>
+              </div>
+            </div>
+
+            <div style={{ marginBottom: 18 }}>
+              <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#334155', marginBottom: 6 }}>
+                Feedback Notes & Key Takeaways
+              </label>
+              <textarea
+                value={feedbackNotesInput}
+                onChange={(e) => setFeedbackNotesInput(e.target.value)}
+                placeholder="Participant comments, key takeaways, or suggestions..."
+                rows={3}
+                style={{
+                  width: '100%',
+                  padding: '10px 12px',
+                  borderRadius: 10,
+                  border: '1px solid #CBD5E1',
+                  fontSize: 13,
+                  outline: 'none',
+                  boxSizing: 'border-box'
+                }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button
+                type="button"
+                className="btn primary"
+                style={{ flex: 2, height: 40, borderRadius: 8 }}
+                onClick={() => handleSaveFeedback(true)}
+                disabled={isSavingFeedback}
+              >
+                {isSavingFeedback ? 'Saving…' : '✓ Save Feedback'}
+              </button>
+              {feedbackModalAttendee.feedbackFilled && (
+                <button
+                  type="button"
+                  className="btn outline"
+                  style={{ flex: 1, height: 40, borderRadius: 8, color: '#EF4444', borderColor: '#FCA5A5' }}
+                  onClick={() => handleSaveFeedback(false)}
+                  disabled={isSavingFeedback}
+                >
+                  Reset
+                </button>
+              )}
             </div>
           </div>
         </div>

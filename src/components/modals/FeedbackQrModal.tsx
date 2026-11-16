@@ -153,7 +153,7 @@ export const FeedbackQrModal: React.FC<FeedbackQrModalProps> = ({ onClose }) => 
                     color: '#FBD38D'
                   }}
                 >
-                  LEAD 360° PROGRAMME
+                  LEADERSHIP IN ACTION
                 </span>
                 <Sparkles size={11} color="#FBD38D" />
               </div>

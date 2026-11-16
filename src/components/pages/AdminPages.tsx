@@ -5,6 +5,8 @@ import { Icon, ClientLogo } from '../common/Icons';
 import { fmt, fmtS, fmtL, TODAY, D, MON, addDays } from '../../utils/date';
 import { ClientData, ActionStatus, ActionPriority, BusinessUpdate } from '../../types';
 import { HorizontalBars, LineChart } from '../common/Charts';
+import { api } from '../../services/api';
+import { FeedbackQrModal } from '../modals/FeedbackQrModal';
 
 // -------------------------------------------------------------
 // HELPERS
@@ -1711,28 +1713,138 @@ export const AdminFeedbackPage: React.FC = () => {
   const { clients } = usePortal();
   const cl = Object.values(clients).filter((c) => c.status !== 'Archived');
 
-  const allFeedback = cl
-    .flatMap((c) =>
-      (c.feedback || []).map((f) => ({
-        c,
-        f,
-        s: (c.sessions || []).find((x) => x.id === f.session)
-      }))
-    )
-    .sort((a, b) => (b.f.date || '').localeCompare(a.f.date || ''));
+  const [eventFeedbacks, setEventFeedbacks] = useState<any[]>([]);
+  const [loadingFeedbacks, setLoadingFeedbacks] = useState<boolean>(true);
+  const [activeFilter, setActiveFilter] = useState<'all' | 'event' | 'session'>('all');
+  const [showQrModal, setShowQrModal] = useState<boolean>(false);
+
+  const loadFeedbacks = async () => {
+    try {
+      // 1. Read locally cached feedbacks first
+      const cached =
+        localStorage.getItem('leadership_in_action_feedbacks') ||
+        localStorage.getItem('lead360_submitted_feedbacks');
+      let localList: any[] = cached ? JSON.parse(cached) : [];
+
+      // 2. Fetch from database API
+      try {
+        const res = await api.attendance.getFeedbackForms();
+        if (res && res.feedbacks && Array.isArray(res.feedbacks)) {
+          const apiIds = new Set(res.feedbacks.map((x: any) => x.id || x._id));
+          const extra = localList.filter((l: any) => !l.id || !apiIds.has(l.id));
+          localList = [...res.feedbacks, ...extra];
+        }
+      } catch (err) {
+        console.warn('API getFeedbackForms fallback to local cache:', err);
+      }
+
+      setEventFeedbacks(localList);
+    } catch (e) {
+      console.error('Failed to load feedbacks:', e);
+    } finally {
+      setLoadingFeedbacks(false);
+    }
+  };
+
+  useEffect(() => {
+    loadFeedbacks();
+
+    const handleNewFeedback = () => loadFeedbacks();
+    window.addEventListener('feedback_submitted', handleNewFeedback);
+    window.addEventListener('storage', handleNewFeedback);
+
+    return () => {
+      window.removeEventListener('feedback_submitted', handleNewFeedback);
+      window.removeEventListener('storage', handleNewFeedback);
+    };
+  }, []);
+
+  const ratingMap: Record<string, number> = {
+    'Excellent': 5,
+    'Very good': 4,
+    'Good': 3,
+    'Average': 2,
+    'Poor': 1
+  };
+
+  // Normalized participant event feedbacks (Leadership in Action)
+  const normalizedEventFeedbacks = eventFeedbacks.map((f, idx) => {
+    const numericRating =
+      typeof f.rating === 'number'
+        ? f.rating
+        : ratingMap[f.overallRating] || 5;
+
+    return {
+      type: 'event' as const,
+      id: f.id || f._id || `evt-${idx}`,
+      title: f.programmeTitle || 'Leadership in Action',
+      participantName: f.name || 'Anonymous Participant',
+      designation: f.designation || 'Participant',
+      department: f.department || 'Operations',
+      company: f.companyName || 'The Anaamalaiss Group(TAG)',
+      trainer: f.trainer || 'WeGrow B School Lead Trainer',
+      date: f.date || (f.submittedAt ? f.submittedAt.slice(0, 10) : TODAY),
+      rating: numericRating,
+      overallRating: f.overallRating || 'Excellent',
+      duration: f.programmeDuration || 'Right',
+      recommend: f.recommend || 'Yes',
+      useful: f.mostUseful || '',
+      improve: f.howCanImprove || f.leastUseful || '',
+      futureTopics: f.futureTopics || '',
+      comments: f.otherComments || '',
+      raw: f
+    };
+  });
+
+  // Normalized client portal session feedbacks
+  const normalizedSessionFeedbacks = cl.flatMap((c) =>
+    (c.feedback || []).map((f) => {
+      const s = (c.sessions || []).find((x) => x.id === f.session);
+      return {
+        type: 'session' as const,
+        id: (f as any).id || `${c.id}-${f.session}`,
+        title: s ? s.title : 'Consulting Session',
+        participantName: c.contact || c.company,
+        designation: c.contactTitle || 'Leadership',
+        department: 'Executive',
+        company: c.company,
+        trainer: c.consultant || 'Lead Consultant',
+        date: f.date || TODAY,
+        rating: Number(f.rating) || 5,
+        overallRating: Number(f.rating) >= 4 ? 'Excellent' : 'Good',
+        duration: 'Right',
+        recommend: 'Yes',
+        useful: f.useful || '',
+        improve: f.improve || '',
+        futureTopics: '',
+        comments: f.comments || '',
+        raw: f
+      };
+    })
+  );
+
+  const allFeedback = [...normalizedEventFeedbacks, ...normalizedSessionFeedbacks].sort(
+    (a, b) => (b.date || '').localeCompare(a.date || '')
+  );
+
+  const filteredFeedback = allFeedback.filter((item) => {
+    if (activeFilter === 'event') return item.type === 'event';
+    if (activeFilter === 'session') return item.type === 'session';
+    return true;
+  });
 
   const avgRating = allFeedback.length
     ? (
-        allFeedback.reduce((s, x) => s + x.f.rating, 0) / allFeedback.length
+        allFeedback.reduce((s, x) => s + x.rating, 0) / allFeedback.length
       ).toFixed(1)
     : '0';
 
-  const highRatingCount = allFeedback.filter((x) => x.f.rating >= 4).length;
+  const highRatingCount = allFeedback.filter((x) => x.rating >= 4).length;
   const satRate = allFeedback.length
     ? Math.round((highRatingCount / allFeedback.length) * 100)
     : 0;
 
-  const respondedClients = new Set(allFeedback.map((x) => x.c.id)).size;
+  const totalRespondents = allFeedback.length;
 
   return (
     <>
@@ -1741,7 +1853,25 @@ export const AdminFeedbackPage: React.FC = () => {
           <h1 className="serif" style={{ fontSize: 32, fontWeight: 500, margin: '0 0 4px' }}>
             Client feedback
           </h1>
-          <p>Session reviews and ratings submitted directly by client leadership.</p>
+          <p>Participant programme reviews and session ratings submitted directly by client leadership & attendees.</p>
+        </div>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button
+            className="btn outline"
+            onClick={() => setShowQrModal(true)}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+          >
+            <Icon name="qr-code" /> Show Feedback QR
+          </button>
+          <a
+            href="/feedback-form"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn primary"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, textDecoration: 'none' }}
+          >
+            <Icon name="external-link" /> Open Feedback Form
+          </a>
         </div>
       </div>
 
@@ -1749,65 +1879,170 @@ export const AdminFeedbackPage: React.FC = () => {
         <div className="card kpi">
           <div className="k-lbl">Average rating <Icon name="star" /></div>
           <div className="k-val">{avgRating}<small>/5</small></div>
-          <div className="k-sub">{allFeedback.length} total reviews</div>
+          <div className="k-sub">{allFeedback.length} total reviews submitted</div>
         </div>
         <div className="card kpi">
           <div className="k-lbl">Satisfaction rate</div>
           <div className="k-val">{satRate}<small>%</small></div>
-          <div className="k-sub">Rated 4 or 5 stars</div>
+          <div className="k-sub">Rated 4 or 5 stars ({highRatingCount} reviews)</div>
         </div>
         <div className="card kpi">
-          <div className="k-lbl">Clients responded</div>
-          <div className="k-val">{respondedClients}<small>/{cl.length}</small></div>
-          <div className="k-sub">Active client participation</div>
+          <div className="k-lbl">Responses received</div>
+          <div className="k-val">{totalRespondents}<small> total</small></div>
+          <div className="k-sub">
+            {normalizedEventFeedbacks.length} programme · {normalizedSessionFeedbacks.length} session
+          </div>
         </div>
       </div>
 
       <div className="card mt">
-        <div className="card-head">
-          <h3>All feedback entries ({allFeedback.length})</h3>
+        <div className="card-head" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+          <h3>All feedback entries ({filteredFeedback.length})</h3>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
+              onClick={() => setActiveFilter('all')}
+              className={`pill-btn ${activeFilter === 'all' ? 'active' : ''}`}
+              style={{
+                padding: '6px 14px',
+                borderRadius: 20,
+                fontSize: 12,
+                fontWeight: 600,
+                border: '1px solid var(--line-2, #E2E8F0)',
+                background: activeFilter === 'all' ? '#0C1D36' : 'transparent',
+                color: activeFilter === 'all' ? '#FFFFFF' : 'inherit',
+                cursor: 'pointer'
+              }}
+            >
+              All Feedback ({allFeedback.length})
+            </button>
+            <button
+              onClick={() => setActiveFilter('event')}
+              className={`pill-btn ${activeFilter === 'event' ? 'active' : ''}`}
+              style={{
+                padding: '6px 14px',
+                borderRadius: 20,
+                fontSize: 12,
+                fontWeight: 600,
+                border: '1px solid var(--line-2, #E2E8F0)',
+                background: activeFilter === 'event' ? '#E86014' : 'transparent',
+                color: activeFilter === 'event' ? '#FFFFFF' : 'inherit',
+                cursor: 'pointer'
+              }}
+            >
+              Leadership in Action ({normalizedEventFeedbacks.length})
+            </button>
+            <button
+              onClick={() => setActiveFilter('session')}
+              className={`pill-btn ${activeFilter === 'session' ? 'active' : ''}`}
+              style={{
+                padding: '6px 14px',
+                borderRadius: 20,
+                fontSize: 12,
+                fontWeight: 600,
+                border: '1px solid var(--line-2, #E2E8F0)',
+                background: activeFilter === 'session' ? '#0C1D36' : 'transparent',
+                color: activeFilter === 'session' ? '#FFFFFF' : 'inherit',
+                cursor: 'pointer'
+              }}
+            >
+              Session Reviews ({normalizedSessionFeedbacks.length})
+            </button>
+          </div>
         </div>
-        {allFeedback.length > 0 ? (
-          allFeedback.map(({ c, f, s }, i) => (
-            <div key={i} className="li" style={{ alignItems: 'flex-start', padding: '16px 0' }}>
-              <ClientLogo client={c} size={36} />
-              <div className="grow" style={{ marginLeft: 12 }}>
+
+        {filteredFeedback.length > 0 ? (
+          filteredFeedback.map((item, i) => (
+            <div key={item.id || i} className="li" style={{ alignItems: 'flex-start', padding: '16px 0', borderBottom: '1px solid var(--line-2, #F1F5F9)' }}>
+              <div
+                style={{
+                  width: 42,
+                  height: 42,
+                  borderRadius: 12,
+                  background: item.type === 'event' ? 'linear-gradient(135deg, #E86014 0%, #FF8A3D 100%)' : '#0C1D36',
+                  color: '#FFFFFF',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: 700,
+                  fontSize: 16,
+                  flexShrink: 0
+                }}
+              >
+                {item.participantName.charAt(0).toUpperCase()}
+              </div>
+              <div className="grow" style={{ marginLeft: 14 }}>
                 <div className="row-between" style={{ alignItems: 'flex-start' }}>
                   <div>
-                    <div style={{ fontWeight: 700, fontSize: 16 }}>
-                      {s ? s.title : 'Consulting Session'}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                      <span style={{ fontWeight: 700, fontSize: 16, color: '#0C1D36' }}>
+                        {item.participantName}
+                      </span>
+                      {item.designation && (
+                        <span className="tiny muted">({item.designation})</span>
+                      )}
+                      <span
+                        style={{
+                          fontSize: 11,
+                          fontWeight: 700,
+                          padding: '2px 8px',
+                          borderRadius: 6,
+                          background: item.type === 'event' ? 'rgba(232, 96, 20, 0.12)' : 'rgba(12, 29, 54, 0.08)',
+                          color: item.type === 'event' ? '#E86014' : '#0C1D36'
+                        }}
+                      >
+                        {item.title}
+                      </span>
+                      {item.department && (
+                        <span className="badge b-teal">{item.department}</span>
+                      )}
                     </div>
-                    <div className="tiny muted">
-                      {c.company} · {fmtL(f.date || TODAY)} ·{' '}
-                      <span className="badge b-teal">{f.relevance || 'Relevant'}</span>
+                    <div className="tiny muted" style={{ marginTop: 4 }}>
+                      {item.company} · {fmtL(item.date || TODAY)} · Trainer: {item.trainer}
                     </div>
                   </div>
-                  {renderStars(f.rating)}
+                  <div style={{ textAlign: 'right' }}>
+                    {renderStars(item.rating)}
+                    <div style={{ fontSize: 11, fontWeight: 700, color: '#E86014', marginTop: 2 }}>
+                      {item.overallRating}
+                    </div>
+                  </div>
                 </div>
-                {f.useful && (
-                  <div className="small" style={{ marginTop: 8 }}>
-                    <b>What was useful:</b> {f.useful}
+
+                {item.useful && (
+                  <div className="small" style={{ marginTop: 10, background: '#F8FAFC', padding: '8px 12px', borderRadius: 8 }}>
+                    <b style={{ color: '#0C1D36' }}>What was most useful:</b> {item.useful}
                   </div>
                 )}
-                {f.improve && (
-                  <div className="small" style={{ marginTop: 4 }}>
-                    <b>Areas to improve:</b> {f.improve}
+                {item.improve && (
+                  <div className="small" style={{ marginTop: 6, background: '#FFF7ED', padding: '8px 12px', borderRadius: 8 }}>
+                    <b style={{ color: '#C2410C' }}>Suggestions / improvement:</b> {item.improve}
                   </div>
                 )}
-                {f.comments && (
+                {item.futureTopics && (
                   <div className="small muted" style={{ marginTop: 4 }}>
-                    "{f.comments}"
+                    <b>Future topics requested:</b> {item.futureTopics}
+                  </div>
+                )}
+                {item.comments && (
+                  <div className="small muted" style={{ marginTop: 4, fontStyle: 'italic' }}>
+                    "{item.comments}"
                   </div>
                 )}
               </div>
             </div>
           ))
         ) : (
-          <div className="empty">
-            <b>No feedback submitted yet</b> When clients rate completed sessions, reviews appear here.
+          <div className="empty" style={{ padding: '36px 16px', textAlign: 'center' }}>
+            <div style={{ fontSize: 32, marginBottom: 8 }}>📋</div>
+            <b>No feedback entries yet</b>
+            <div className="muted" style={{ fontSize: 13, marginTop: 4 }}>
+              When participants scan the QR code and submit their evaluation form, reviews will appear here automatically.
+            </div>
           </div>
         )}
       </div>
+
+      {showQrModal && <FeedbackQrModal onClose={() => setShowQrModal(false)} />}
     </>
   );
 };

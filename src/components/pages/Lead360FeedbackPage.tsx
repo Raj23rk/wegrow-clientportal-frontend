@@ -11,7 +11,7 @@ import {
   ShieldCheck,
   Check
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { api } from '../../services/api';
 
 const SECTION_A_QUESTIONS = [
@@ -31,7 +31,7 @@ const SECTION_B_QUESTIONS = [
 ];
 
 const SECTION_C_ACTIVITIES = [
-  { id: 'selfAwareness', tag: 'QUESTIONNAIRE', title: 'LEAD 360° Self-Awareness Questionnaire' },
+  { id: 'selfAwareness', tag: 'QUESTIONNAIRE', title: 'Leadership Self-Awareness Questionnaire' },
   { id: 'leadershipStyle', tag: 'QUESTIONNAIRE', title: 'Leadership Style Questionnaire' },
   { id: 'situationalLeadership', tag: 'CASE STUDY', title: 'Situational Leadership' },
   { id: 'workplaceChallenge', tag: 'CASE STUDY', title: 'Workplace Challenge' }
@@ -72,12 +72,13 @@ const RECOMMEND_OPTIONS = ['Yes', 'Maybe', 'No'];
 
 export const Lead360FeedbackPage: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
-  // Participant Metadata
+  // Participant Metadata (supports pre-filling from attendee links)
   const [participant, setParticipant] = useState({
-    name: '',
-    designation: '',
-    department: 'Operations',
+    name: searchParams.get('name') || '',
+    designation: searchParams.get('designation') || '',
+    department: searchParams.get('department') || 'Operations',
     date: '2026-11-19',
     trainer: 'WeGrow B School Lead Trainer'
   });
@@ -139,14 +140,25 @@ export const Lead360FeedbackPage: React.FC = () => {
     e.preventDefault();
     setIsSubmitting(true);
 
+    const ratingMap: Record<string, number> = {
+      'Excellent': 5,
+      'Very good': 4,
+      'Good': 3,
+      'Average': 2,
+      'Poor': 1
+    };
+    const numericRating = ratingMap[overallRating] || 5;
+
     const payload = {
       ...participant,
+      programmeTitle: 'Leadership in Action',
       programmeContent: sectionA,
       trainerFacilitator: sectionB,
       activities: sectionC,
       learningApplication: sectionD,
       arrangementsLogistics: sectionE,
       overallRating,
+      rating: numericRating,
       programmeDuration,
       recommend,
       ...comments,
@@ -159,12 +171,16 @@ export const Lead360FeedbackPage: React.FC = () => {
       console.warn('API feedback submit fallback to local cache:', err);
     }
 
-    // Always cache locally in case network has offline jitter
+    // Always cache locally in case network has offline jitter or until full sync
     try {
-      const existingStr = localStorage.getItem('lead360_submitted_feedbacks');
+      const existingStr = localStorage.getItem('leadership_in_action_feedbacks') || localStorage.getItem('lead360_submitted_feedbacks');
       const list = existingStr ? JSON.parse(existingStr) : [];
-      list.push(payload);
+      list.unshift(payload);
+      localStorage.setItem('leadership_in_action_feedbacks', JSON.stringify(list));
       localStorage.setItem('lead360_submitted_feedbacks', JSON.stringify(list));
+
+      // Notify any active open views (Admin or Client portal tabs)
+      window.dispatchEvent(new CustomEvent('feedback_submitted', { detail: payload }));
     } catch {}
 
     setTimeout(() => {
@@ -620,7 +636,7 @@ export const Lead360FeedbackPage: React.FC = () => {
             <ChevronLeft size={16} /> Return to Event Overview
           </button>
           <span style={{ fontSize: 12, fontWeight: 700, color: '#991B1B' }}>
-            LEAD 360° • Learn. Apply. Lead. Transform.
+            LEADERSHIP IN ACTION • Learn. Apply. Lead. Transform.
           </span>
         </div>
 
@@ -631,7 +647,7 @@ export const Lead360FeedbackPage: React.FC = () => {
               WeGrow <span>B School</span>
             </div>
             <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.8px', color: '#94A3B8' }}>
-              LEAD 360° · PARTICIPANT FEEDBACK FORM
+              LEADERSHIP IN ACTION · PARTICIPANT FEEDBACK FORM
             </div>
           </div>
 
@@ -639,11 +655,11 @@ export const Lead360FeedbackPage: React.FC = () => {
             <div className="fb-header-content">
               <div className="fb-badge-sub">
                 <Sparkles size={13} color="#FBD38D" />
-                LEAD 360° · LEADERSHIP DEVELOPMENT PROGRAMME
+                LEADERSHIP IN ACTION · LEADERSHIP DEVELOPMENT PROGRAMME
               </div>
               <h1 className="fb-main-title">Participant Feedback Form</h1>
               <p className="fb-main-desc">
-                Thank you for attending the LEAD 360° leadership training programme.
+                Thank you for attending the Leadership in Action training programme.
                 Your honest feedback helps us improve future sessions. It takes about 5 minutes.
               </p>
             </div>
@@ -688,7 +704,7 @@ export const Lead360FeedbackPage: React.FC = () => {
             </h2>
 
             <p style={{ fontSize: 15, color: '#475569', maxWidth: 540, margin: '0 auto 24px', lineHeight: 1.6 }}>
-              Your responses help us make every LEAD 360° programme better.
+              Your responses help us make every Leadership in Action programme better.
               WeGrow B School is committed to delivering practical, impactful leadership development.
             </p>
 
@@ -1143,8 +1159,8 @@ export const Lead360FeedbackPage: React.FC = () => {
 
         {/* Footer info */}
         <div style={{ textAlign: 'center', marginTop: 24, fontSize: 12, color: '#94A3B8' }}>
-          <div>LEAD 360° · PARTICIPANT FEEDBACK FORM</div>
-          <div style={{ fontWeight: 700, marginTop: 2 }}>LEAD 360° · Learn. Apply. Lead. Transform.</div>
+          <div>LEADERSHIP IN ACTION · PARTICIPANT FEEDBACK FORM</div>
+          <div style={{ fontWeight: 700, marginTop: 2 }}>LEADERSHIP IN ACTION · Learn. Apply. Lead. Transform.</div>
         </div>
       </div>
     </div>
