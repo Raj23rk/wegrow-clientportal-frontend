@@ -4,11 +4,8 @@ import {
   CheckCircle2,
   ArrowRight,
   Send,
-  Star,
   Award,
   ChevronLeft,
-  Smile,
-  ShieldCheck,
   Check
 } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -70,11 +67,23 @@ const RATING_5_OPTIONS = [
 const DURATION_OPTIONS = ['Short', 'Right', 'Long'];
 const RECOMMEND_OPTIONS = ['Yes', 'Maybe', 'No'];
 
+const STEPS = [
+  { id: 1, title: 'Content', label: 'Section A: Programme Content' },
+  { id: 2, title: 'Trainer', label: 'Section B: Trainer Evaluation' },
+  { id: 3, title: 'Activities', label: 'Section C: Activities & Case Studies' },
+  { id: 4, title: 'Application', label: 'Section D: Learning & Application' },
+  { id: 5, title: 'Overall', label: 'Section E–G: Logistics, Overall & Comments' }
+];
+
 export const Lead360FeedbackPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  // Participant Metadata (supports pre-filling from attendee links)
+  // Wizard Step State (1: Info + Section A, 2: B, 3: C, 4: D, 5: E, F, G)
+  const [currentStep, setCurrentStep] = useState(1);
+  const [fieldErrors, setFieldErrors] = useState<{ name?: string; designation?: string }>({});
+
+  // Participant Metadata
   const [participant, setParticipant] = useState({
     name: searchParams.get('name') || '',
     designation: searchParams.get('designation') || '',
@@ -83,47 +92,16 @@ export const Lead360FeedbackPage: React.FC = () => {
     trainer: 'WeGrow B School Lead Trainer'
   });
 
-  // Section Responses
-  const [sectionA, setSectionA] = useState<Record<string, string>>({
-    q1: 'Strongly agree',
-    q2: 'Strongly agree',
-    q3: 'Strongly agree',
-    q4: 'Strongly agree',
-    q5: 'Strongly agree'
-  });
+  // Section Responses (empty initially so user actively selects their answers)
+  const [sectionA, setSectionA] = useState<Record<string, string>>({});
+  const [sectionB, setSectionB] = useState<Record<string, string>>({});
+  const [sectionC, setSectionC] = useState<Record<string, string>>({});
+  const [sectionD, setSectionD] = useState<Record<string, string>>({});
+  const [sectionE, setSectionE] = useState<Record<string, string>>({});
 
-  const [sectionB, setSectionB] = useState<Record<string, string>>({
-    q1: 'Strongly agree',
-    q2: 'Strongly agree',
-    q3: 'Strongly agree',
-    q4: 'Strongly agree',
-    q5: 'Strongly agree'
-  });
-
-  const [sectionC, setSectionC] = useState<Record<string, string>>({
-    selfAwareness: 'Excellent',
-    leadershipStyle: 'Excellent',
-    situationalLeadership: 'Excellent',
-    workplaceChallenge: 'Excellent'
-  });
-
-  const [sectionD, setSectionD] = useState<Record<string, string>>({
-    q1: 'Strongly agree',
-    q2: 'Strongly agree',
-    q3: 'Strongly agree',
-    q4: 'Strongly agree'
-  });
-
-  const [sectionE, setSectionE] = useState<Record<string, string>>({
-    venueSeating: 'Excellent',
-    audioVisual: 'Excellent',
-    foodRefreshments: 'Excellent',
-    scheduleBreaks: 'Excellent'
-  });
-
-  const [overallRating, setOverallRating] = useState('Excellent');
-  const [programmeDuration, setProgrammeDuration] = useState('Right');
-  const [recommend, setRecommend] = useState('Yes');
+  const [overallRating, setOverallRating] = useState('');
+  const [programmeDuration, setProgrammeDuration] = useState('');
+  const [recommend, setRecommend] = useState('');
 
   const [comments, setComments] = useState({
     mostUseful: '',
@@ -136,8 +114,57 @@ export const Lead360FeedbackPage: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
+  const scrollToFormAnchor = () => {
+    const el = document.getElementById('fb-form-anchor');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const validateStep1 = () => {
+    const errors: { name?: string; designation?: string } = {};
+    if (!participant.name.trim()) {
+      errors.name = 'Participant Name is mandatory';
+    }
+    if (!participant.designation.trim()) {
+      errors.designation = 'Designation is mandatory';
+    }
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleNextStep = (targetStep: number) => {
+    if (currentStep === 1) {
+      if (!validateStep1()) {
+        scrollToFormAnchor();
+        return;
+      }
+    }
+    setFieldErrors({});
+    setCurrentStep(targetStep);
+    scrollToFormAnchor();
+  };
+
+  const handlePrevStep = (targetStep: number) => {
+    setCurrentStep(targetStep);
+    scrollToFormAnchor();
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!participant.name.trim() || !participant.designation.trim()) {
+      setFieldErrors({
+        name: !participant.name.trim() ? 'Participant Name is mandatory' : undefined,
+        designation: !participant.designation.trim() ? 'Designation is mandatory' : undefined
+      });
+      setCurrentStep(1);
+      scrollToFormAnchor();
+      return;
+    }
+
     setIsSubmitting(true);
 
     const ratingMap: Record<string, number> = {
@@ -157,10 +184,10 @@ export const Lead360FeedbackPage: React.FC = () => {
       activities: sectionC,
       learningApplication: sectionD,
       arrangementsLogistics: sectionE,
-      overallRating,
+      overallRating: overallRating || 'Excellent',
       rating: numericRating,
-      programmeDuration,
-      recommend,
+      programmeDuration: programmeDuration || 'Right',
+      recommend: recommend || 'Yes',
       ...comments,
       submittedAt: new Date().toISOString()
     };
@@ -192,6 +219,8 @@ export const Lead360FeedbackPage: React.FC = () => {
 
   const handleReset = () => {
     setSubmitted(false);
+    setCurrentStep(1);
+    setFieldErrors({});
     setParticipant({
       name: '',
       designation: '',
@@ -199,6 +228,14 @@ export const Lead360FeedbackPage: React.FC = () => {
       date: '2026-11-19',
       trainer: 'WeGrow B School Lead Trainer'
     });
+    setSectionA({});
+    setSectionB({});
+    setSectionC({});
+    setSectionD({});
+    setSectionE({});
+    setOverallRating('');
+    setProgrammeDuration('');
+    setRecommend('');
     setComments({
       mostUseful: '',
       leastUseful: '',
@@ -241,7 +278,7 @@ export const Lead360FeedbackPage: React.FC = () => {
         .fb-top-branding {
           display: flex;
           align-items: center;
-          justifyContent: space-between;
+          justify-content: space-between;
           padding: 18px 26px;
           background: #061122;
           border-bottom: 1px solid rgba(255, 255, 255, 0.08);
@@ -264,7 +301,7 @@ export const Lead360FeedbackPage: React.FC = () => {
         .fb-header-body {
           display: flex;
           align-items: center;
-          justifyContent: space-between;
+          justify-content: space-between;
           padding: 26px 30px;
           position: relative;
           background: linear-gradient(135deg, #0A192F 0%, #112240 60%, #1A365D 100%);
@@ -306,7 +343,7 @@ export const Lead360FeedbackPage: React.FC = () => {
           position: relative;
           display: flex;
           align-items: center;
-          justifyContent: center;
+          justify-content: center;
           flex-shrink: 0;
           margin-left: 20px;
         }
@@ -319,7 +356,7 @@ export const Lead360FeedbackPage: React.FC = () => {
           border: 4px solid rgba(255, 255, 255, 0.18);
           display: flex;
           align-items: center;
-          justifyContent: center;
+          justify-content: center;
           overflow: hidden;
           box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
         }
@@ -329,6 +366,93 @@ export const Lead360FeedbackPage: React.FC = () => {
           height: 105px;
           object-fit: contain;
           transform: translateY(4px);
+        }
+
+        /* Stepper Progress Card */
+        .fb-stepper-container {
+          background: #FFFFFF;
+          border-radius: 14px;
+          padding: 16px 20px;
+          margin-bottom: 22px;
+          border: 1px solid #E2E8F0;
+          box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
+        }
+
+        .fb-stepper-progress-track {
+          height: 5px;
+          background: #E2E8F0;
+          border-radius: 4px;
+          margin-bottom: 14px;
+          overflow: hidden;
+        }
+
+        .fb-stepper-progress-fill {
+          height: 100%;
+          background: linear-gradient(90deg, #991B1B 0%, #E86014 100%);
+          transition: width 0.35s ease;
+        }
+
+        .fb-stepper-steps {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 8px;
+        }
+
+        .fb-step-pill {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          background: #F8FAFC;
+          border: 1.5px solid #E2E8F0;
+          padding: 7px 14px;
+          border-radius: 30px;
+          font-size: 12.5px;
+          font-weight: 700;
+          color: #64748B;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+
+        .fb-step-pill:hover {
+          border-color: #CBD5E1;
+          background: #F1F5F9;
+        }
+
+        .fb-step-pill.current {
+          background: #0C1D36;
+          border-color: #0C1D36;
+          color: #FFFFFF;
+          box-shadow: 0 3px 10px rgba(12, 29, 54, 0.2);
+        }
+
+        .fb-step-pill.completed {
+          background: #EFF6FF;
+          border-color: #BFDBFE;
+          color: #1E40AF;
+        }
+
+        .fb-step-pill-num {
+          width: 22px;
+          height: 22px;
+          border-radius: 50%;
+          background: rgba(0, 0, 0, 0.08);
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 11px;
+          font-weight: 800;
+          line-height: 1;
+        }
+
+        .fb-step-pill.current .fb-step-pill-num {
+          background: #E86014;
+          color: #FFFFFF;
+        }
+
+        .fb-step-pill.completed .fb-step-pill-num {
+          background: #2563EB;
+          color: #FFFFFF;
         }
 
         /* Form Card */
@@ -360,6 +484,9 @@ export const Lead360FeedbackPage: React.FC = () => {
           letter-spacing: 0.5px;
           text-transform: uppercase;
           color: #0F172A;
+          display: flex;
+          align-items: center;
+          gap: 4px;
         }
 
         .fb-input, .fb-select, .fb-textarea {
@@ -380,34 +507,54 @@ export const Lead360FeedbackPage: React.FC = () => {
           box-shadow: 0 0 0 3px rgba(232, 96, 20, 0.12);
         }
 
+        .fb-input-error {
+          border-color: #DC2626 !important;
+          background: #FEF2F2 !important;
+        }
+
+        .fb-error-text {
+          font-size: 11.5px;
+          font-weight: 700;
+          color: #DC2626;
+          margin-top: 2px;
+        }
+
         /* Section Headings with Red/Burgundy Badges */
         .fb-sec-header {
           display: flex;
           align-items: center;
-          justifyContent: space-between;
+          justify-content: space-between;
+          flex-wrap: wrap;
+          gap: 12px;
           border-bottom: 2px solid #F1F5F9;
-          padding-bottom: 12px;
-          margin-bottom: 18px;
+          padding-bottom: 14px;
+          margin-bottom: 20px;
         }
 
         .fb-sec-title-wrap {
           display: flex;
           align-items: center;
-          gap: 12px;
+          gap: 14px;
+          flex: 1;
+          min-width: 240px;
         }
 
         .fb-sec-badge {
-          width: 32px;
-          height: 32px;
-          border-radius: 8px;
+          width: 36px;
+          height: 36px;
+          min-width: 36px;
+          border-radius: 9px;
           background: #991B1B;
           color: #FFFFFF;
           display: flex;
           align-items: center;
-          justifyContent: center;
+          justify-content: center;
           font-weight: 800;
           font-size: 16px;
-          box-shadow: 0 3px 8px rgba(153, 27, 27, 0.3);
+          box-shadow: 0 3px 8px rgba(153, 27, 27, 0.25);
+          flex-shrink: 0;
+          line-height: 1;
+          text-align: center;
         }
 
         .fb-sec-title {
@@ -415,12 +562,23 @@ export const Lead360FeedbackPage: React.FC = () => {
           font-weight: 800;
           color: #0F172A;
           margin: 0;
+          line-height: 1.3;
         }
 
         .fb-sec-hint {
-          font-size: 12px;
-          font-weight: 600;
-          color: #64748B;
+          font-size: 11px;
+          font-weight: 800;
+          letter-spacing: 0.6px;
+          text-transform: uppercase;
+          color: #475569;
+          background: #F1F5F9;
+          border: 1px solid #E2E8F0;
+          padding: 5px 12px;
+          border-radius: 20px;
+          display: inline-flex;
+          align-items: center;
+          white-space: nowrap;
+          margin-left: auto;
         }
 
         /* Questionnaire Rows */
@@ -541,11 +699,57 @@ export const Lead360FeedbackPage: React.FC = () => {
           gap: 16px;
         }
 
+        /* Step Action Navigation */
+        .fb-step-actions {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          padding-top: 18px;
+          margin-top: 14px;
+          border-top: 1px solid #F1F5F9;
+        }
+
+        .fb-nav-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 12px 22px;
+          border-radius: 10px;
+          font-size: 14px;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.15s ease;
+          border: none;
+        }
+
+        .fb-nav-btn.primary {
+          background: #0C1D36;
+          color: #FFFFFF;
+          box-shadow: 0 4px 12px rgba(12, 29, 54, 0.2);
+          margin-left: auto;
+        }
+
+        .fb-nav-btn.primary:hover {
+          background: #112240;
+          transform: translateY(-1px);
+        }
+
+        .fb-nav-btn.secondary {
+          background: #F1F5F9;
+          color: #334155;
+          border: 1.5px solid #CBD5E1;
+        }
+
+        .fb-nav-btn.secondary:hover {
+          background: #E2E8F0;
+        }
+
         /* Submit Bar */
         .fb-submit-bar {
           display: flex;
           align-items: center;
-          justifyContent: space-between;
+          justify-content: space-between;
           padding-top: 10px;
         }
 
@@ -601,6 +805,16 @@ export const Lead360FeedbackPage: React.FC = () => {
           .fb-mascot-box {
             margin: 0 0 16px;
           }
+          .fb-stepper-steps {
+            overflow-x: auto;
+            padding-bottom: 4px;
+            justify-content: flex-start;
+          }
+          .fb-step-pill {
+            padding: 5px 10px;
+            font-size: 11px;
+            flex-shrink: 0;
+          }
           .fb-meta-grid {
             grid-template-columns: 1fr;
           }
@@ -610,7 +824,21 @@ export const Lead360FeedbackPage: React.FC = () => {
           .fb-sec-header {
             flex-direction: column;
             align-items: flex-start;
-            gap: 4px;
+            gap: 8px;
+          }
+          .fb-sec-hint {
+            margin-left: 0;
+          }
+          .fb-step-actions {
+            flex-direction: column;
+            align-items: stretch;
+          }
+          .fb-nav-btn {
+            justify-content: center;
+            width: 100%;
+          }
+          .fb-nav-btn.primary {
+            margin-left: 0;
           }
         }
       `}</style>
@@ -671,7 +899,6 @@ export const Lead360FeedbackPage: React.FC = () => {
                   alt="WeGrow Mascot"
                   className="fb-mascot-img"
                   onError={(e) => {
-                    // Fallback to cute thumbs up icon if image load fails
                     (e.target as HTMLElement).style.display = 'none';
                   }}
                 />
@@ -723,7 +950,7 @@ export const Lead360FeedbackPage: React.FC = () => {
               }}
             >
               <Award size={16} color="#E86014" />
-              <span>Overall Rating Given: <b>{overallRating}</b></span>
+              <span>Overall Rating Given: <b>{overallRating || 'Submitted'}</b></span>
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'center', gap: 12 }}>
@@ -764,396 +991,556 @@ export const Lead360FeedbackPage: React.FC = () => {
           </div>
         ) : (
           <form onSubmit={handleSubmit}>
-            {/* Meta Information Card (Page 1 top) */}
-            <div className="fb-card">
-              <div className="fb-meta-grid">
-                <div className="fb-field-group">
-                  <label className="fb-label">NAME (OPTIONAL)</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. R. Soundararajan (Leave blank to stay anonymous)"
-                    value={participant.name}
-                    onChange={(e) => setParticipant({ ...participant, name: e.target.value })}
-                    className="fb-input"
-                  />
+            {/* Step Progress Stepper Bar */}
+            <div id="fb-form-anchor" className="fb-stepper-container">
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                <span style={{ fontSize: 13, fontWeight: 800, color: '#0F172A' }}>
+                  {STEPS[currentStep - 1].label}
+                </span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: '#E86014' }}>
+                  Step {currentStep} of {STEPS.length}
+                </span>
+              </div>
+
+              <div className="fb-stepper-progress-track">
+                <div
+                  className="fb-stepper-progress-fill"
+                  style={{ width: `${((currentStep - 1) / (STEPS.length - 1)) * 100}%` }}
+                />
+              </div>
+
+              <div className="fb-stepper-steps">
+                {STEPS.map((s) => {
+                  const isCurrent = currentStep === s.id;
+                  const isCompleted = currentStep > s.id;
+                  return (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => {
+                        if (isCompleted || s.id < currentStep) {
+                          handlePrevStep(s.id);
+                        } else if (s.id === currentStep + 1) {
+                          handleNextStep(s.id);
+                        }
+                      }}
+                      className={`fb-step-pill ${isCurrent ? 'current' : ''} ${isCompleted ? 'completed' : ''}`}
+                    >
+                      <span className="fb-step-pill-num">
+                        {isCompleted ? <Check size={12} strokeWidth={3} /> : s.id}
+                      </span>
+                      <span className="fb-step-pill-text">{s.title}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* STEP 1: Participant Info & SECTION A (Programme content) */}
+            {currentStep === 1 && (
+              <>
+                {/* Meta Information Card (Page 1 top) */}
+                <div className="fb-card">
+                  <div className="fb-meta-grid">
+                    <div className="fb-field-group">
+                      <label className="fb-label">
+                        NAME *
+                        {fieldErrors.name && <span className="fb-error-text">({fieldErrors.name})</span>}
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. R. Soundararajan"
+                        value={participant.name}
+                        onChange={(e) => {
+                          setParticipant({ ...participant, name: e.target.value });
+                          if (fieldErrors.name) setFieldErrors({ ...fieldErrors, name: undefined });
+                        }}
+                        className={`fb-input ${fieldErrors.name ? 'fb-input-error' : ''}`}
+                      />
+                    </div>
+
+                    <div className="fb-field-group">
+                      <label className="fb-label">
+                        DESIGNATION *
+                        {fieldErrors.designation && <span className="fb-error-text">({fieldErrors.designation})</span>}
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. Middle Manager / Team Lead"
+                        value={participant.designation}
+                        onChange={(e) => {
+                          setParticipant({ ...participant, designation: e.target.value });
+                          if (fieldErrors.designation) setFieldErrors({ ...fieldErrors, designation: undefined });
+                        }}
+                        className={`fb-input ${fieldErrors.designation ? 'fb-input-error' : ''}`}
+                      />
+                    </div>
+
+                    <div className="fb-field-group">
+                      <label className="fb-label">DEPARTMENT *</label>
+                      <select
+                        value={participant.department}
+                        onChange={(e) => setParticipant({ ...participant, department: e.target.value })}
+                        className="fb-select"
+                      >
+                        <option value="Operations">Operations</option>
+                        <option value="Manufacturing & Plant">Manufacturing & Plant</option>
+                        <option value="Sales & Customer Experience">Sales & Customer Experience</option>
+                        <option value="Finance & Accounts">Finance & Accounts</option>
+                        <option value="HR & Administration">HR & Administration</option>
+                        <option value="Supply Chain & Logistics">Supply Chain & Logistics</option>
+                        <option value="Service & Technical">Service & Technical</option>
+                        <option value="Other">Other Vertical</option>
+                      </select>
+                    </div>
+
+                    <div className="fb-field-group">
+                      <label className="fb-label">DATE</label>
+                      <input
+                        type="text"
+                        value={participant.date}
+                        onChange={(e) => setParticipant({ ...participant, date: e.target.value })}
+                        className="fb-input"
+                      />
+                    </div>
+
+                    <div className="fb-field-group" style={{ gridColumn: '1 / -1' }}>
+                      <label className="fb-label">TRAINER</label>
+                      <input
+                        type="text"
+                        value={participant.trainer}
+                        onChange={(e) => setParticipant({ ...participant, trainer: e.target.value })}
+                        className="fb-input"
+                      />
+                    </div>
+                  </div>
                 </div>
 
-                <div className="fb-field-group">
-                  <label className="fb-label">DESIGNATION *</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Middle Manager / Team Lead"
-                    value={participant.designation}
-                    onChange={(e) => setParticipant({ ...participant, designation: e.target.value })}
-                    className="fb-input"
-                  />
+                {/* SECTION A: Programme content */}
+                <div className="fb-card">
+                  <div className="fb-sec-header">
+                    <div className="fb-sec-title-wrap">
+                      <div className="fb-sec-badge">A</div>
+                      <h3 className="fb-sec-title">Programme content</h3>
+                    </div>
+                    <span className="fb-sec-hint">TICK ONE OPTION PER ROW</span>
+                  </div>
+
+                  {SECTION_A_QUESTIONS.map((q) => (
+                    <div key={q.id} className="fb-row-item">
+                      <div className="fb-row-question">
+                        <span className="fb-num">{q.num}</span>
+                        <span className="fb-qtext">{q.text}</span>
+                      </div>
+                      <div className="fb-pills">
+                        {AGREE_OPTIONS.map((opt) => (
+                          <button
+                            key={opt}
+                            type="button"
+                            className={`fb-pill-btn ${sectionA[q.id] === opt ? 'active' : ''}`}
+                            onClick={() => setSectionA({ ...sectionA, [q.id]: opt })}
+                          >
+                            <span className="fb-pill-dot" />
+                            {opt}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+
+                  <div className="fb-step-actions">
+                    <span style={{ fontSize: 13, color: '#64748B', fontWeight: 600 }}>
+                      Section A finished? Click Next to continue.
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleNextStep(2)}
+                      className="fb-nav-btn primary"
+                    >
+                      Next: Trainer Evaluation (Section B) <ArrowRight size={16} />
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* STEP 2: SECTION B (Trainer / facilitator) */}
+            {currentStep === 2 && (
+              <div className="fb-card">
+                <div className="fb-sec-header">
+                  <div className="fb-sec-title-wrap">
+                    <div className="fb-sec-badge">B</div>
+                    <h3 className="fb-sec-title">Trainer / facilitator</h3>
+                  </div>
+                  <span className="fb-sec-hint">TICK ONE OPTION PER ROW</span>
                 </div>
 
-                <div className="fb-field-group">
-                  <label className="fb-label">DEPARTMENT *</label>
-                  <select
-                    value={participant.department}
-                    onChange={(e) => setParticipant({ ...participant, department: e.target.value })}
-                    className="fb-select"
+                {SECTION_B_QUESTIONS.map((q) => (
+                  <div key={q.id} className="fb-row-item">
+                    <div className="fb-row-question">
+                      <span className="fb-num">{q.num}</span>
+                      <span className="fb-qtext">{q.text}</span>
+                    </div>
+                    <div className="fb-pills">
+                      {AGREE_OPTIONS.map((opt) => (
+                        <button
+                          key={opt}
+                          type="button"
+                          className={`fb-pill-btn ${sectionB[q.id] === opt ? 'active' : ''}`}
+                          onClick={() => setSectionB({ ...sectionB, [q.id]: opt })}
+                        >
+                          <span className="fb-pill-dot" />
+                          {opt}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+
+                <div className="fb-step-actions">
+                  <button
+                    type="button"
+                    onClick={() => handlePrevStep(1)}
+                    className="fb-nav-btn secondary"
                   >
-                    <option value="Operations">Operations</option>
-                    <option value="Manufacturing & Plant">Manufacturing & Plant</option>
-                    <option value="Sales & Customer Experience">Sales & Customer Experience</option>
-                    <option value="Finance & Accounts">Finance & Accounts</option>
-                    <option value="HR & Administration">HR & Administration</option>
-                    <option value="Supply Chain & Logistics">Supply Chain & Logistics</option>
-                    <option value="Service & Technical">Service & Technical</option>
-                    <option value="Other">Other Vertical</option>
-                  </select>
-                </div>
-
-                <div className="fb-field-group">
-                  <label className="fb-label">DATE</label>
-                  <input
-                    type="text"
-                    value={participant.date}
-                    onChange={(e) => setParticipant({ ...participant, date: e.target.value })}
-                    className="fb-input"
-                  />
-                </div>
-
-                <div className="fb-field-group" style={{ gridColumn: '1 / -1' }}>
-                  <label className="fb-label">TRAINER</label>
-                  <input
-                    type="text"
-                    value={participant.trainer}
-                    onChange={(e) => setParticipant({ ...participant, trainer: e.target.value })}
-                    className="fb-input"
-                  />
+                    <ChevronLeft size={16} /> Back to Section A
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleNextStep(3)}
+                    className="fb-nav-btn primary"
+                  >
+                    Next: Activities (Section C) <ArrowRight size={16} />
+                  </button>
                 </div>
               </div>
-            </div>
+            )}
 
-            {/* SECTION A: Programme content */}
-            <div className="fb-card">
-              <div className="fb-sec-header">
-                <div className="fb-sec-title-wrap">
-                  <div className="fb-sec-badge">A</div>
-                  <h3 className="fb-sec-title">Programme content</h3>
-                </div>
-                <span className="fb-sec-hint">Tick one option per row</span>
-              </div>
-
-              {SECTION_A_QUESTIONS.map((q) => (
-                <div key={q.id} className="fb-row-item">
-                  <div className="fb-row-question">
-                    <span className="fb-num">{q.num}</span>
-                    <span className="fb-qtext">{q.text}</span>
+            {/* STEP 3: SECTION C (Activities & case studies) */}
+            {currentStep === 3 && (
+              <div className="fb-card">
+                <div className="fb-sec-header">
+                  <div className="fb-sec-title-wrap">
+                    <div className="fb-sec-badge">C</div>
+                    <h3 className="fb-sec-title">Activities & case studies</h3>
                   </div>
-                  <div className="fb-pills">
-                    {AGREE_OPTIONS.map((opt) => (
+                  <span className="fb-sec-hint">HOW USEFUL WAS EACH ACTIVITY?</span>
+                </div>
+
+                {SECTION_C_ACTIVITIES.map((act) => (
+                  <div key={act.id} className="fb-row-item">
+                    <div className="fb-row-question" style={{ alignItems: 'center' }}>
+                      <span className="fb-act-tag">{act.tag}</span>
+                      <span className="fb-qtext">{act.title}</span>
+                    </div>
+                    <div className="fb-pills">
+                      {RATING_5_OPTIONS.map((opt) => (
+                        <button
+                          key={opt}
+                          type="button"
+                          className={`fb-pill-btn ${sectionC[act.id] === opt ? 'active' : ''}`}
+                          onClick={() => setSectionC({ ...sectionC, [act.id]: opt })}
+                        >
+                          <span className="fb-pill-dot" />
+                          {opt}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+
+                <div className="fb-step-actions">
+                  <button
+                    type="button"
+                    onClick={() => handlePrevStep(2)}
+                    className="fb-nav-btn secondary"
+                  >
+                    <ChevronLeft size={16} /> Back to Section B
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleNextStep(4)}
+                    className="fb-nav-btn primary"
+                  >
+                    Next: Learning Application (Section D) <ArrowRight size={16} />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 4: SECTION D (Learning & application) */}
+            {currentStep === 4 && (
+              <div className="fb-card">
+                <div className="fb-sec-header">
+                  <div className="fb-sec-title-wrap">
+                    <div className="fb-sec-badge">D</div>
+                    <h3 className="fb-sec-title">Learning & application</h3>
+                  </div>
+                  <span className="fb-sec-hint">TICK ONE OPTION PER ROW</span>
+                </div>
+
+                {SECTION_D_QUESTIONS.map((q) => (
+                  <div key={q.id} className="fb-row-item">
+                    <div className="fb-row-question">
+                      <span className="fb-num">{q.num}</span>
+                      <span className="fb-qtext">{q.text}</span>
+                    </div>
+                    <div className="fb-pills">
+                      {AGREE_OPTIONS.map((opt) => (
+                        <button
+                          key={opt}
+                          type="button"
+                          className={`fb-pill-btn ${sectionD[q.id] === opt ? 'active' : ''}`}
+                          onClick={() => setSectionD({ ...sectionD, [q.id]: opt })}
+                        >
+                          <span className="fb-pill-dot" />
+                          {opt}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+
+                <div className="fb-step-actions">
+                  <button
+                    type="button"
+                    onClick={() => handlePrevStep(3)}
+                    className="fb-nav-btn secondary"
+                  >
+                    <ChevronLeft size={16} /> Back to Section C
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleNextStep(5)}
+                    className="fb-nav-btn primary"
+                  >
+                    Next: Logistics & Overall (Section E–G) <ArrowRight size={16} />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 5: SECTION E, SECTION F, SECTION G & SUBMIT */}
+            {currentStep === 5 && (
+              <>
+                {/* SECTION E: Arrangements & logistics */}
+                <div className="fb-card">
+                  <div className="fb-sec-header">
+                    <div className="fb-sec-title-wrap">
+                      <div className="fb-sec-badge">E</div>
+                      <h3 className="fb-sec-title">Arrangements & logistics</h3>
+                    </div>
+                    <span className="fb-sec-hint">RATE EACH FACILITY AREA</span>
+                  </div>
+
+                  {SECTION_E_AREAS.map((area) => (
+                    <div key={area.id} className="fb-row-item">
+                      <div className="fb-row-question">
+                        <span className="fb-num">{area.num}</span>
+                        <span className="fb-qtext">{area.title}</span>
+                      </div>
+                      <div className="fb-pills">
+                        {RATING_5_OPTIONS.map((opt) => (
+                          <button
+                            key={opt}
+                            type="button"
+                            className={`fb-pill-btn ${sectionE[area.id] === opt ? 'active' : ''}`}
+                            onClick={() => setSectionE({ ...sectionE, [area.id]: opt })}
+                          >
+                            <span className="fb-pill-dot" />
+                            {opt}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* SECTION F: Overall */}
+                <div className="fb-card">
+                  <div className="fb-sec-header">
+                    <div className="fb-sec-title-wrap">
+                      <div className="fb-sec-badge">F</div>
+                      <h3 className="fb-sec-title">Overall</h3>
+                    </div>
+                  </div>
+
+                  <div className="fb-overall-grid">
+                    {/* 1. Overall rating */}
+                    <div className="fb-overall-box">
+                      <div className="fb-overall-box-title">Overall rating of the programme</div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                        {RATING_5_OPTIONS.map((opt) => (
+                          <button
+                            key={opt}
+                            type="button"
+                            className={`fb-pill-btn ${overallRating === opt ? 'active' : ''}`}
+                            onClick={() => setOverallRating(opt)}
+                            style={{ width: '100%', justifyContent: 'flex-start' }}
+                          >
+                            <span className="fb-pill-dot" />
+                            {opt}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* 2. Programme duration */}
+                    <div className="fb-overall-box">
+                      <div className="fb-overall-box-title">Programme duration</div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                        {DURATION_OPTIONS.map((opt) => (
+                          <button
+                            key={opt}
+                            type="button"
+                            className={`fb-pill-btn ${programmeDuration === opt ? 'active' : ''}`}
+                            onClick={() => setProgrammeDuration(opt)}
+                            style={{ width: '100%', justifyContent: 'flex-start' }}
+                          >
+                            <span className="fb-pill-dot" />
+                            {opt}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* 3. Recommend it? */}
+                    <div className="fb-overall-box">
+                      <div className="fb-overall-box-title">Recommend it?</div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                        {RECOMMEND_OPTIONS.map((opt) => (
+                          <button
+                            key={opt}
+                            type="button"
+                            className={`fb-pill-btn ${recommend === opt ? 'active' : ''}`}
+                            onClick={() => setRecommend(opt)}
+                            style={{ width: '100%', justifyContent: 'flex-start' }}
+                          >
+                            <span className="fb-pill-dot" />
+                            {opt}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* SECTION G: Your comments */}
+                <div className="fb-card">
+                  <div className="fb-sec-header">
+                    <div className="fb-sec-title-wrap">
+                      <div className="fb-sec-badge">G</div>
+                      <h3 className="fb-sec-title">Your comments</h3>
+                    </div>
+                  </div>
+
+                  <div className="fb-comments-grid">
+                    <div className="fb-field-group">
+                      <label className="fb-label">What did you find most useful?</label>
+                      <textarea
+                        rows={3}
+                        placeholder="e.g. Practical case studies, delegation frameworks, peer discussions..."
+                        value={comments.mostUseful}
+                        onChange={(e) => setComments({ ...comments, mostUseful: e.target.value })}
+                        className="fb-textarea"
+                      />
+                    </div>
+
+                    <div className="fb-field-group">
+                      <label className="fb-label">What did you find least useful?</label>
+                      <textarea
+                        rows={2}
+                        placeholder="e.g. Any specific concept that wasn't relevant..."
+                        value={comments.leastUseful}
+                        onChange={(e) => setComments({ ...comments, leastUseful: e.target.value })}
+                        className="fb-textarea"
+                      />
+                    </div>
+
+                    <div className="fb-field-group">
+                      <label className="fb-label">How can it be improved?</label>
+                      <textarea
+                        rows={2}
+                        placeholder="e.g. More role-playing time, follow-up milestone sessions..."
+                        value={comments.howCanImprove}
+                        onChange={(e) => setComments({ ...comments, howCanImprove: e.target.value })}
+                        className="fb-textarea"
+                      />
+                    </div>
+
+                    <div className="fb-field-group">
+                      <label className="fb-label">Topics you would like in future trainings</label>
+                      <textarea
+                        rows={2}
+                        placeholder="e.g. Advanced conflict management, budgeting, cross-team accountability..."
+                        value={comments.futureTopics}
+                        onChange={(e) => setComments({ ...comments, futureTopics: e.target.value })}
+                        className="fb-textarea"
+                      />
+                    </div>
+
+                    <div className="fb-field-group">
+                      <label className="fb-label">Any other comments</label>
+                      <textarea
+                        rows={2}
+                        placeholder="e.g. General impressions or remarks for the WeGrow team..."
+                        value={comments.otherComments}
+                        onChange={(e) => setComments({ ...comments, otherComments: e.target.value })}
+                        className="fb-textarea"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bottom Submit Bar with Previous button */}
+                <div className="fb-card" style={{ background: '#0C1D36', color: '#FFFFFF', border: 'none' }}>
+                  <div className="fb-submit-bar" style={{ flexWrap: 'wrap', gap: 16 }}>
+                    <div>
+                      <div style={{ fontSize: 16, fontWeight: 800, color: '#FFFFFF', marginBottom: 2 }}>
+                        Ready to submit your feedback?
+                      </div>
+                      <div style={{ fontSize: 12.5, color: '#94A3B8' }}>
+                        🔒 WeGrow B School respects your time and confidentiality.
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                       <button
-                        key={opt}
                         type="button"
-                        className={`fb-pill-btn ${sectionA[q.id] === opt ? 'active' : ''}`}
-                        onClick={() => setSectionA({ ...sectionA, [q.id]: opt })}
+                        onClick={() => handlePrevStep(4)}
+                        style={{
+                          background: 'rgba(255, 255, 255, 0.1)',
+                          color: '#FFFFFF',
+                          border: '1px solid rgba(255, 255, 255, 0.2)',
+                          borderRadius: 12,
+                          padding: '12px 20px',
+                          fontSize: 14,
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 6
+                        }}
                       >
-                        <span className="fb-pill-dot" />
-                        {opt}
+                        <ChevronLeft size={16} /> Back to Section D
                       </button>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
 
-            {/* SECTION B: Trainer / facilitator */}
-            <div className="fb-card">
-              <div className="fb-sec-header">
-                <div className="fb-sec-title-wrap">
-                  <div className="fb-sec-badge">B</div>
-                  <h3 className="fb-sec-title">Trainer / facilitator</h3>
-                </div>
-                <span className="fb-sec-hint">Tick one option per row</span>
-              </div>
-
-              {SECTION_B_QUESTIONS.map((q) => (
-                <div key={q.id} className="fb-row-item">
-                  <div className="fb-row-question">
-                    <span className="fb-num">{q.num}</span>
-                    <span className="fb-qtext">{q.text}</span>
-                  </div>
-                  <div className="fb-pills">
-                    {AGREE_OPTIONS.map((opt) => (
-                      <button
-                        key={opt}
-                        type="button"
-                        className={`fb-pill-btn ${sectionB[q.id] === opt ? 'active' : ''}`}
-                        onClick={() => setSectionB({ ...sectionB, [q.id]: opt })}
-                      >
-                        <span className="fb-pill-dot" />
-                        {opt}
+                      <button type="submit" disabled={isSubmitting} className="fb-submit-btn">
+                        {isSubmitting ? (
+                          <>Submitting feedback…</>
+                        ) : (
+                          <>
+                            Submit Feedback <Send size={16} />
+                          </>
+                        )}
                       </button>
-                    ))}
+                    </div>
                   </div>
                 </div>
-              ))}
-            </div>
-
-            {/* SECTION C: Activities & case studies */}
-            <div className="fb-card">
-              <div className="fb-sec-header">
-                <div className="fb-sec-title-wrap">
-                  <div className="fb-sec-badge">C</div>
-                  <h3 className="fb-sec-title">Activities & case studies</h3>
-                </div>
-                <span className="fb-sec-hint">How useful was each activity?</span>
-              </div>
-
-              {SECTION_C_ACTIVITIES.map((act) => (
-                <div key={act.id} className="fb-row-item">
-                  <div className="fb-row-question" style={{ alignItems: 'center' }}>
-                    <span className="fb-act-tag">{act.tag}</span>
-                    <span className="fb-qtext">{act.title}</span>
-                  </div>
-                  <div className="fb-pills">
-                    {RATING_5_OPTIONS.map((opt) => (
-                      <button
-                        key={opt}
-                        type="button"
-                        className={`fb-pill-btn ${sectionC[act.id] === opt ? 'active' : ''}`}
-                        onClick={() => setSectionC({ ...sectionC, [act.id]: opt })}
-                      >
-                        <span className="fb-pill-dot" />
-                        {opt}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* SECTION D: Learning & application */}
-            <div className="fb-card">
-              <div className="fb-sec-header">
-                <div className="fb-sec-title-wrap">
-                  <div className="fb-sec-badge">D</div>
-                  <h3 className="fb-sec-title">Learning & application</h3>
-                </div>
-                <span className="fb-sec-hint">Tick one option per row</span>
-              </div>
-
-              {SECTION_D_QUESTIONS.map((q) => (
-                <div key={q.id} className="fb-row-item">
-                  <div className="fb-row-question">
-                    <span className="fb-num">{q.num}</span>
-                    <span className="fb-qtext">{q.text}</span>
-                  </div>
-                  <div className="fb-pills">
-                    {AGREE_OPTIONS.map((opt) => (
-                      <button
-                        key={opt}
-                        type="button"
-                        className={`fb-pill-btn ${sectionD[q.id] === opt ? 'active' : ''}`}
-                        onClick={() => setSectionD({ ...sectionD, [q.id]: opt })}
-                      >
-                        <span className="fb-pill-dot" />
-                        {opt}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* SECTION E: Arrangements & logistics */}
-            <div className="fb-card">
-              <div className="fb-sec-header">
-                <div className="fb-sec-title-wrap">
-                  <div className="fb-sec-badge">E</div>
-                  <h3 className="fb-sec-title">Arrangements & logistics</h3>
-                </div>
-                <span className="fb-sec-hint">Rate each facility area</span>
-              </div>
-
-              {SECTION_E_AREAS.map((area) => (
-                <div key={area.id} className="fb-row-item">
-                  <div className="fb-row-question">
-                    <span className="fb-num">{area.num}</span>
-                    <span className="fb-qtext">{area.title}</span>
-                  </div>
-                  <div className="fb-pills">
-                    {RATING_5_OPTIONS.map((opt) => (
-                      <button
-                        key={opt}
-                        type="button"
-                        className={`fb-pill-btn ${sectionE[area.id] === opt ? 'active' : ''}`}
-                        onClick={() => setSectionE({ ...sectionE, [area.id]: opt })}
-                      >
-                        <span className="fb-pill-dot" />
-                        {opt}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* SECTION F: Overall */}
-            <div className="fb-card">
-              <div className="fb-sec-header">
-                <div className="fb-sec-title-wrap">
-                  <div className="fb-sec-badge">F</div>
-                  <h3 className="fb-sec-title">Overall</h3>
-                </div>
-              </div>
-
-              <div className="fb-overall-grid">
-                {/* 1. Overall rating */}
-                <div className="fb-overall-box">
-                  <div className="fb-overall-box-title">Overall rating of the programme</div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                    {RATING_5_OPTIONS.map((opt) => (
-                      <button
-                        key={opt}
-                        type="button"
-                        className={`fb-pill-btn ${overallRating === opt ? 'active' : ''}`}
-                        onClick={() => setOverallRating(opt)}
-                        style={{ width: '100%', justifyContent: 'flex-start' }}
-                      >
-                        <span className="fb-pill-dot" />
-                        {opt}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* 2. Programme duration */}
-                <div className="fb-overall-box">
-                  <div className="fb-overall-box-title">Programme duration</div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                    {DURATION_OPTIONS.map((opt) => (
-                      <button
-                        key={opt}
-                        type="button"
-                        className={`fb-pill-btn ${programmeDuration === opt ? 'active' : ''}`}
-                        onClick={() => setProgrammeDuration(opt)}
-                        style={{ width: '100%', justifyContent: 'flex-start' }}
-                      >
-                        <span className="fb-pill-dot" />
-                        {opt}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* 3. Recommend it? */}
-                <div className="fb-overall-box">
-                  <div className="fb-overall-box-title">Recommend it?</div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                    {RECOMMEND_OPTIONS.map((opt) => (
-                      <button
-                        key={opt}
-                        type="button"
-                        className={`fb-pill-btn ${recommend === opt ? 'active' : ''}`}
-                        onClick={() => setRecommend(opt)}
-                        style={{ width: '100%', justifyContent: 'flex-start' }}
-                      >
-                        <span className="fb-pill-dot" />
-                        {opt}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* SECTION G: Your comments */}
-            <div className="fb-card">
-              <div className="fb-sec-header">
-                <div className="fb-sec-title-wrap">
-                  <div className="fb-sec-badge">G</div>
-                  <h3 className="fb-sec-title">Your comments</h3>
-                </div>
-              </div>
-
-              <div className="fb-comments-grid">
-                <div className="fb-field-group">
-                  <label className="fb-label">What did you find most useful?</label>
-                  <textarea
-                    rows={3}
-                    placeholder="e.g. Practical case studies, delegation frameworks, peer discussions..."
-                    value={comments.mostUseful}
-                    onChange={(e) => setComments({ ...comments, mostUseful: e.target.value })}
-                    className="fb-textarea"
-                  />
-                </div>
-
-                <div className="fb-field-group">
-                  <label className="fb-label">What did you find least useful?</label>
-                  <textarea
-                    rows={2}
-                    placeholder="e.g. Any specific concept that wasn't relevant..."
-                    value={comments.leastUseful}
-                    onChange={(e) => setComments({ ...comments, leastUseful: e.target.value })}
-                    className="fb-textarea"
-                  />
-                </div>
-
-                <div className="fb-field-group">
-                  <label className="fb-label">How can it be improved?</label>
-                  <textarea
-                    rows={2}
-                    placeholder="e.g. More role-playing time, follow-up milestone sessions..."
-                    value={comments.howCanImprove}
-                    onChange={(e) => setComments({ ...comments, howCanImprove: e.target.value })}
-                    className="fb-textarea"
-                  />
-                </div>
-
-                <div className="fb-field-group">
-                  <label className="fb-label">Topics you would like in future trainings</label>
-                  <textarea
-                    rows={2}
-                    placeholder="e.g. Advanced conflict management, budgeting, cross-team accountability..."
-                    value={comments.futureTopics}
-                    onChange={(e) => setComments({ ...comments, futureTopics: e.target.value })}
-                    className="fb-textarea"
-                  />
-                </div>
-
-                <div className="fb-field-group">
-                  <label className="fb-label">Any other comments</label>
-                  <textarea
-                    rows={2}
-                    placeholder="e.g. General impressions or remarks for the WeGrow team..."
-                    value={comments.otherComments}
-                    onChange={(e) => setComments({ ...comments, otherComments: e.target.value })}
-                    className="fb-textarea"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Bottom Submit Bar */}
-            <div className="fb-card" style={{ background: '#0C1D36', color: '#FFFFFF', border: 'none' }}>
-              <div className="fb-submit-bar">
-                <div>
-                  <div style={{ fontSize: 16, fontWeight: 800, color: '#FFFFFF', marginBottom: 2 }}>
-                    Ready to submit your feedback?
-                  </div>
-                  <div style={{ fontSize: 12.5, color: '#94A3B8' }}>
-                    🔒 WeGrow B School respects your time and confidentiality.
-                  </div>
-                </div>
-
-                <button type="submit" disabled={isSubmitting} className="fb-submit-btn">
-                  {isSubmitting ? (
-                    <>Submitting feedback…</>
-                  ) : (
-                    <>
-                      Submit Feedback <Send size={16} />
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
+              </>
+            )}
           </form>
         )}
 
