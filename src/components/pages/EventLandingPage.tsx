@@ -23,7 +23,8 @@ import {
   Menu,
   X,
   Award,
-  Briefcase
+  Briefcase,
+  Lock
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Footer from '../layout/Footer';
@@ -81,6 +82,12 @@ export const EventLandingPage: React.FC = () => {
   // Mobile menu toggle
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  // Registration Deadline: 17 November 2026, 06:00 PM IST (18:00:00+05:30)
+  const REGISTRATION_DEADLINE = new Date('2026-11-17T18:00:00+05:30').getTime();
+  const [isRegistrationClosed, setIsRegistrationClosed] = useState<boolean>(() => {
+    return Date.now() >= new Date('2026-11-17T18:00:00+05:30').getTime();
+  });
+
   // Live Countdown Timer to 19 November 2026, 09:30 AM IST
   const [timeLeft, setTimeLeft] = useState<{
     days: number;
@@ -94,6 +101,8 @@ export const EventLandingPage: React.FC = () => {
 
     const calculateCountdown = () => {
       const now = new Date().getTime();
+      setIsRegistrationClosed(now >= REGISTRATION_DEADLINE);
+
       const diff = targetDate - now;
 
       if (diff <= 0) {
@@ -195,6 +204,13 @@ export const EventLandingPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (Date.now() >= REGISTRATION_DEADLINE) {
+      setIsRegistrationClosed(true);
+      alert('Registrations for Leadership in Action closed on 17 November 2026 at 06:00 PM.');
+      return;
+    }
+
     if (!validateForm()) return;
 
     setIsSubmitting(true);
@@ -1979,7 +1995,11 @@ export const EventLandingPage: React.FC = () => {
                 <li><a href="#about" onClick={e => { e.preventDefault(); scrollTo('about'); }}>About WeGrow</a></li>
                 <li><a href="#carousel" onClick={e => { e.preventDefault(); scrollTo('carousel'); }}>Campus Moments</a></li>
                 <li><a href="#venue" onClick={e => { e.preventDefault(); scrollTo('venue'); }}>Venue & Timing</a></li>
-                <li><a href="#register" onClick={e => { e.preventDefault(); scrollTo('register'); }}>Register</a></li>
+                <li>
+                  <a href="#register" onClick={e => { e.preventDefault(); scrollTo('register'); }}>
+                    {isRegistrationClosed ? 'Registration Status' : 'Register'}
+                  </a>
+                </li>
                 <li><a href="/feedback-form" onClick={e => { e.preventDefault(); navigate('/feedback-form'); }}>Feedback Form</a></li>
               </ul>
             </nav>
@@ -1991,9 +2011,20 @@ export const EventLandingPage: React.FC = () => {
                 <span>+91 93443 37331</span>
               </a>
 
-              <button className="lp-btn-cta" onClick={() => scrollTo('register')}>
-                Register now <ArrowRight size={15} />
-              </button>
+              {isRegistrationClosed ? (
+                <button
+                  className="lp-btn-cta closed"
+                  onClick={() => scrollTo('register')}
+                  style={{ background: '#475569', boxShadow: 'none' }}
+                  title="Registrations closed on 17 Nov 6:00 PM"
+                >
+                  <Lock size={14} /> Closed
+                </button>
+              ) : (
+                <button className="lp-btn-cta" onClick={() => scrollTo('register')}>
+                  Register now <ArrowRight size={15} />
+                </button>
+              )}
 
               <button
                 type="button"
@@ -2086,9 +2117,21 @@ export const EventLandingPage: React.FC = () => {
               {/* Live Countdown Timer to 19 Nov 2026 9:30 AM */}
               <div className="lp-countdown-card">
                 <div className="lp-countdown-header">
-                  <Clock size={15} color="#FBD38D" />
-                  <span className="lp-countdown-tag">COUNTDOWN TO EVENT</span>
-                  <span className="lp-countdown-target">19 Nov 2026 • 9:30 AM</span>
+                  {isRegistrationClosed ? (
+                    <>
+                      <Lock size={15} color="#F87171" />
+                      <span className="lp-countdown-tag" style={{ background: '#DC2626', color: '#FFFFFF' }}>
+                        REGISTRATION CLOSED
+                      </span>
+                      <span className="lp-countdown-target">Event: 19 Nov • 9:30 AM</span>
+                    </>
+                  ) : (
+                    <>
+                      <Clock size={15} color="#FBD38D" />
+                      <span className="lp-countdown-tag">COUNTDOWN TO EVENT</span>
+                      <span className="lp-countdown-target">19 Nov 2026 • 9:30 AM</span>
+                    </>
+                  )}
                 </div>
                 <div className="lp-countdown-timer">
                   <div className="lp-countdown-item">
@@ -2115,11 +2158,21 @@ export const EventLandingPage: React.FC = () => {
 
               {/* Action Buttons */}
               <div className="lp-hero-actions-row">
-                <button className="lp-btn-cta" onClick={() => scrollTo('register')}>
-                  Register now <ArrowRight size={16} />
-                </button>
-                <button className="lp-btn-secondary" onClick={() => scrollTo('about')}>
-                  About WeGrow & Event
+                {isRegistrationClosed ? (
+                  <button
+                    className="lp-btn-cta closed"
+                    onClick={() => scrollTo('register')}
+                    style={{ background: '#475569', boxShadow: 'none' }}
+                  >
+                    <Lock size={16} /> Registrations Closed
+                  </button>
+                ) : (
+                  <button className="lp-btn-cta" onClick={() => scrollTo('register')}>
+                    Register now <ArrowRight size={16} />
+                  </button>
+                )}
+                <button className="lp-btn-secondary" onClick={() => scrollTo('venue')}>
+                  <MapPin size={15} /> Venue & Timing
                 </button>
               </div>
             </div>
@@ -2581,9 +2634,11 @@ export const EventLandingPage: React.FC = () => {
       <section id="register" className="lp-reg-section">
         <div className="lp-container">
           <div className="lp-reg-heading">
-            <h2>Reserve Your Programme Seat</h2>
+            <h2>{isRegistrationClosed ? 'Programme Seat Reservations' : 'Reserve Your Programme Seat'}</h2>
             <p>
-              Interactive middle-management leadership development programme structured around workplace scenarios.
+              {isRegistrationClosed
+                ? 'Online registrations for this session closed on 17 November 2026 at 06:00 PM.'
+                : 'Interactive middle-management leadership development programme structured around workplace scenarios.'}
             </p>
           </div>
 
@@ -2714,6 +2769,100 @@ export const EventLandingPage: React.FC = () => {
                   >
                     Register another participant
                   </button>
+                </div>
+              </div>
+            ) : isRegistrationClosed ? (
+              <div className="lp-closed-box" style={{ textAlign: 'center', padding: '36px 16px' }}>
+                <div
+                  style={{
+                    width: 72,
+                    height: 72,
+                    borderRadius: '50%',
+                    background: '#FEE2E2',
+                    color: '#DC2626',
+                    display: 'grid',
+                    placeItems: 'center',
+                    margin: '0 auto 18px',
+                    boxShadow: '0 4px 14px rgba(220, 38, 38, 0.12)'
+                  }}
+                >
+                  <Lock size={34} />
+                </div>
+
+                <div
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    background: '#FEE2E2',
+                    color: '#991B1B',
+                    padding: '4px 16px',
+                    borderRadius: 20,
+                    fontSize: 12,
+                    fontWeight: 800,
+                    letterSpacing: '0.04em',
+                    textTransform: 'uppercase',
+                    marginBottom: 14
+                  }}
+                >
+                  <Clock size={13} /> Registrations Closed
+                </div>
+
+                <h3 style={{ fontSize: 24, fontWeight: 800, color: '#0C1D36', margin: '0 0 10px' }}>
+                  Online Registrations Are Now Closed
+                </h3>
+
+                <p style={{ color: '#475569', fontSize: 15, lineHeight: 1.6, maxWidth: 540, margin: '0 auto 22px' }}>
+                  Seat reservation for <strong>Leadership in Action (TAG Group)</strong> closed on{' '}
+                  <strong>Tuesday, 17 November 2026 at 06:00 PM</strong>.
+                  All nominated participant seating and materials have been finalized.
+                </p>
+
+                <div
+                  style={{
+                    background: '#F8FAFC',
+                    border: '1.5px solid #E2E8F0',
+                    borderRadius: 14,
+                    padding: '16px 20px',
+                    maxWidth: 520,
+                    margin: '0 auto 24px',
+                    textAlign: 'left'
+                  }}
+                >
+                  <div style={{ fontWeight: 700, color: '#0C1D36', fontSize: 14, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <CheckCircle2 size={16} color="#16A34A" /> Already Registered?
+                  </div>
+                  <p style={{ margin: 0, fontSize: 13, color: '#475569', lineHeight: 1.5 }}>
+                    Your gate entry passcode (e.g. <code>WG-LDP-001</code>) has been dispatched to your WhatsApp number and Email. Please present this passcode at the reception gate.
+                  </p>
+                </div>
+
+                <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+                  <button
+                    type="button"
+                    className="lp-btn-secondary"
+                    onClick={() => scrollTo('venue')}
+                    style={{ padding: '12px 22px' }}
+                  >
+                    <MapPin size={15} /> View Venue & Schedule
+                  </button>
+                  <a
+                    href="https://wa.me/919344337331?text=Hello%20WeGrow%20Team%2C%20regarding%20Leadership%20in%20Action%20registration%3A"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="lp-form-submit-btn"
+                    style={{
+                      background: '#25D366',
+                      textDecoration: 'none',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      padding: '12px 22px',
+                      width: 'auto'
+                    }}
+                  >
+                    <MessageCircle size={17} /> Contact Coordinator
+                  </a>
                 </div>
               </div>
             ) : (
