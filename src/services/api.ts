@@ -410,10 +410,10 @@ export const api = {
     async register(nominee: {
       fullName: string;
       phone: string;
+      email: string;
       companyName?: string;
       designation: string;
       department?: string;
-      email?: string;
       experience?: string;
     }): Promise<{ success: boolean; message: string; attendee: any }> {
       return request('/attendance/register', {

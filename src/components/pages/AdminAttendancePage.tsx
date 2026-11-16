@@ -386,7 +386,7 @@ export const AdminAttendancePage: React.FC<{ isClientView?: boolean }> = ({ isCl
       `Hello ${a.fullName},\n` +
       `Here is your verified entry passcode for the Middle-Management Leadership Programme:\n\n` +
       `🎫 *YOUR ENTRY CODE:* ${a.passCode}\n` +
-      `📅 *Date:* 18 November 2026 | 9:30 AM to 5:30 PM\n` +
+      `📅 *Date:* 19 November 2026 | 9:30 AM to 5:30 PM\n` +
       `📍 *Venue:* TAG Group Conference Hall, Amathur\n\n` +
       `Please show this code at the reception gate for instant check-in. See you there!`
     );
@@ -407,7 +407,7 @@ export const AdminAttendancePage: React.FC<{ isClientView?: boolean }> = ({ isCl
       `We look forward to welcoming you to the Leadership in Action Programme organized for TAG Group.\n\n` +
       `Your verified entry passcode is: ${a.passCode}\n\n` +
       `Programme Schedule:\n` +
-      `Date: 18 November 2026 (9:30 AM – 5:30 PM)\n` +
+      `Date: 19 November 2026 (9:30 AM – 5:30 PM)\n` +
       `Venue: TAG Group Conference Hall, Amathur\n\n` +
       `Please present this passcode at the gate entrance for verified check-in.\n\n` +
       `Warm regards,\nWeGrow B School Leadership Team`
@@ -424,7 +424,7 @@ export const AdminAttendancePage: React.FC<{ isClientView?: boolean }> = ({ isCl
   // Add Attendee
   const handleAddAttendeeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newAttendee.fullName || !newAttendee.phone) return;
+    if (!newAttendee.fullName || !newAttendee.phone || !newAttendee.email) return;
 
     // Call Backend API to create attendee and get auto-generated WG-LDP-xxx passcode
     try {
@@ -2024,9 +2024,10 @@ export const AdminAttendancePage: React.FC<{ isClientView?: boolean }> = ({ isCl
                 </div>
 
                 <div className="att-form-group">
-                  <label className="att-form-label">Email Address</label>
+                  <label className="att-form-label">Email Address *</label>
                   <input
                     type="email"
+                    required
                     placeholder="e.g. ramachandran.s@taggroup.in"
                     value={newAttendee.email}
                     onChange={(e) => setNewAttendee({ ...newAttendee, email: e.target.value })}

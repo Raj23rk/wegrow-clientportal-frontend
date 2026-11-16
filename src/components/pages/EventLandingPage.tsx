@@ -33,6 +33,7 @@ interface RegistrationData {
   id: string;
   fullName: string;
   phone: string;
+  email: string;
   companyName: string;
   designation: string;
   department?: string;
@@ -80,7 +81,7 @@ export const EventLandingPage: React.FC = () => {
   // Mobile menu toggle
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Live Countdown Timer to 18 November 2026, 09:30 AM IST
+  // Live Countdown Timer to 19 November 2026, 09:30 AM IST
   const [timeLeft, setTimeLeft] = useState<{
     days: number;
     hours: number;
@@ -89,7 +90,7 @@ export const EventLandingPage: React.FC = () => {
   }>({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
   useEffect(() => {
-    const targetDate = new Date('2026-11-18T09:30:00+05:30').getTime();
+    const targetDate = new Date('2026-11-19T09:30:00+05:30').getTime();
 
     const calculateCountdown = () => {
       const now = new Date().getTime();
@@ -117,6 +118,7 @@ export const EventLandingPage: React.FC = () => {
   const [formData, setFormData] = useState({
     fullName: '',
     phone: '',
+    email: '',
     companyName: '',
     designation: '',
     department: 'Operations',
@@ -175,6 +177,11 @@ export const EventLandingPage: React.FC = () => {
     } else if (!/^[0-9+\-\s]{8,15}$/.test(formData.phone.trim())) {
       newErrors.phone = 'Please enter a valid phone number';
     }
+    if (!formData.email.trim()) {
+      newErrors.email = 'Please enter email address';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
+      newErrors.email = 'Please enter a valid email address';
+    }
     if (!formData.companyName.trim()) {
       newErrors.companyName = 'Please enter group / company vertical';
     }
@@ -198,6 +205,7 @@ export const EventLandingPage: React.FC = () => {
       const response = await api.attendance.register({
         fullName: formData.fullName,
         phone: formData.phone,
+        email: formData.email.trim().toLowerCase(),
         companyName: formData.companyName,
         designation: formData.designation,
         department: formData.department,
@@ -210,6 +218,7 @@ export const EventLandingPage: React.FC = () => {
           id: att.id || att._id || 'reg_' + Date.now(),
           fullName: att.fullName,
           phone: att.phone,
+          email: att.email || formData.email.trim().toLowerCase(),
           companyName: att.companyName,
           designation: att.designation,
           department: att.department,
@@ -265,6 +274,7 @@ export const EventLandingPage: React.FC = () => {
     setFormData({
       fullName: '',
       phone: '',
+      email: '',
       companyName: '',
       designation: '',
       department: 'Operations',
@@ -276,17 +286,18 @@ export const EventLandingPage: React.FC = () => {
   const getGoogleCalendarUrl = () => {
     const title = encodeURIComponent('Leadership in Action - TAG Group Programme');
     const details = encodeURIComponent(
-      'Practical Leadership Development Programme for TAG Group middle-management team.\nVenue: Eicher Trucks and Buses - Anamallais Agencies,Nagari, Madurai\nDate: 18 November 2026\nTiming: 9:30 AM – 5:30 PM\nContact: +91 93443 37331'
+      'Practical Leadership Development Programme for TAG Group middle-management team.\nVenue: Eicher Trucks and Buses - Anamallais Agencies,Nagari, Madurai\nDate: 19 November 2026\nTiming: 9:30 AM – 5:30 PM\nContact: +91 93443 37331'
     );
     const location = encodeURIComponent('Eicher Trucks and Buses - Anamallais Agencies, Madurai, Nagari');
-    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=20261118T040000Z/20261118T120000Z&details=${details}&location=${location}`;
+    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=20261119T040000Z/20261119T120000Z&details=${details}&location=${location}`;
   };
 
   const getWhatsAppMessageUrl = () => {
     const code = submittedData?.passCode ? `\nPasscode: ${submittedData.passCode}` : '';
+    const emailInfo = submittedData?.email || formData.email ? `\nEmail: ${submittedData?.email || formData.email}` : '';
     const exp = submittedData?.experience ? `\nExperience: ${submittedData.experience}` : (formData.experience ? `\nExperience: ${formData.experience}` : '');
     const message = encodeURIComponent(
-      `Hello WeGrow Team! I have registered for the Leadership in Action Programme (TAG Group) scheduled for 18 November 2026 at Eicher Trucks and Buses - Anamallais Agencies, Madurai, Nagari.\nName: ${submittedData?.fullName || formData.fullName}\nGroup: ${submittedData?.companyName || formData.companyName}\nDesignation: ${submittedData?.designation || formData.designation}${exp}${code}`
+      `Hello WeGrow Team! I have registered for the Leadership in Action Programme (TAG Group) scheduled for 19 November 2026 at Eicher Trucks and Buses - Anamallais Agencies, Madurai, Nagari.\nName: ${submittedData?.fullName || formData.fullName}${emailInfo}\nGroup: ${submittedData?.companyName || formData.companyName}\nDesignation: ${submittedData?.designation || formData.designation}${exp}${code}`
     );
     return `https://wa.me/919344337331?text=${message}`;
   };
@@ -1945,7 +1956,7 @@ export const EventLandingPage: React.FC = () => {
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 13, fontWeight: 700 }}>
               <Calendar size={13} color="#FBD38D" />
-              <span>18 November 2026</span>
+              <span>19 November 2026</span>
               <span style={{ opacity: 0.5 }}>•</span>
               <Clock size={13} color="#FBD38D" />
               <span>9:30 AM – 5:30 PM</span>
@@ -2070,12 +2081,12 @@ export const EventLandingPage: React.FC = () => {
                 structured around guided learning, workplace scenarios, peer discussions, and team-based activities.
               </p>
 
-              {/* Live Countdown Timer to 18 Nov 2026 9:30 AM */}
+              {/* Live Countdown Timer to 19 Nov 2026 9:30 AM */}
               <div className="lp-countdown-card">
                 <div className="lp-countdown-header">
                   <Clock size={15} color="#FBD38D" />
                   <span className="lp-countdown-tag">COUNTDOWN TO EVENT</span>
-                  <span className="lp-countdown-target">18 Nov 2026 • 9:30 AM</span>
+                  <span className="lp-countdown-target">19 Nov 2026 • 9:30 AM</span>
                 </div>
                 <div className="lp-countdown-timer">
                   <div className="lp-countdown-item">
@@ -2133,7 +2144,7 @@ export const EventLandingPage: React.FC = () => {
               </div>
               <div className="lp-sched-text">
                 <span className="lp-sched-label">DATE</span>
-                <span className="lp-sched-value">18 November 2026</span>
+                <span className="lp-sched-value">19 November 2026</span>
               </div>
             </div>
 
@@ -2475,8 +2486,8 @@ export const EventLandingPage: React.FC = () => {
                 <Calendar size={22} />
               </div>
               <span className="lp-venue-lbl">DATE</span>
-              <div className="lp-venue-val">18 November 2026</div>
-              <div className="lp-venue-sub">Wednesday • 1-Day Intensive Programme</div>
+              <div className="lp-venue-val">19 November 2026</div>
+              <div className="lp-venue-sub">Thursday • 1-Day Intensive Programme</div>
               <a
                 href={getGoogleCalendarUrl()}
                 target="_blank"
@@ -2629,6 +2640,12 @@ export const EventLandingPage: React.FC = () => {
                     <span className="label">Nominee Name</span>
                     <span className="val">{submittedData.fullName}</span>
                   </div>
+                  {submittedData.email && (
+                    <div className="lp-summary-row">
+                      <span className="label">Email Address</span>
+                      <span className="val">{submittedData.email}</span>
+                    </div>
+                  )}
                   <div className="lp-summary-row">
                     <span className="label">Group / Vertical</span>
                     <span className="val">{submittedData.companyName}</span>
@@ -2651,7 +2668,7 @@ export const EventLandingPage: React.FC = () => {
                   </div>
                   <div className="lp-summary-row">
                     <span className="label">Date & Timing</span>
-                    <span className="val">18 November 2026 • 9:30 AM – 5:30 PM</span>
+                    <span className="val">19 November 2026 • 9:30 AM – 5:30 PM</span>
                   </div>
                   <div className="lp-summary-row">
                     <span className="label">Venue</span>
@@ -2735,6 +2752,24 @@ export const EventLandingPage: React.FC = () => {
                     />
                     {errors.phone && (
                       <span style={{ color: '#DC2626', fontSize: 12.5, fontWeight: 600 }}>{errors.phone}</span>
+                    )}
+                  </div>
+
+                  {/* Field: Email Address */}
+                  <div className="lp-form-group">
+                    <label className="lp-form-label">
+                      Email Address <span className="req">*</span>
+                    </label>
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      placeholder="e.g. soundararajan@anamalais.com"
+                      className="lp-form-input"
+                    />
+                    {errors.email && (
+                      <span style={{ color: '#DC2626', fontSize: 12.5, fontWeight: 600 }}>{errors.email}</span>
                     )}
                   </div>
 
