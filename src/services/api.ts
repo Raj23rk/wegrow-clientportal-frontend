@@ -410,7 +410,7 @@ export const api = {
     async register(nominee: {
       fullName: string;
       phone: string;
-      email: string;
+      email?: string;
       companyName?: string;
       designation: string;
       department?: string;
@@ -459,6 +459,17 @@ export const api = {
       return request('/attendance/seed', {
         method: 'POST'
       });
+    },
+
+    async submitFeedbackForm(payload: any): Promise<{ success: boolean; message: string; feedback?: any }> {
+      return request('/attendance/feedback-form', {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      });
+    },
+
+    async getFeedbackForms(): Promise<{ success: boolean; count: number; feedbacks: any[] }> {
+      return request('/attendance/feedback-form');
     }
   },
 

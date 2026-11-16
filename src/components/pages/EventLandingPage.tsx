@@ -33,7 +33,7 @@ interface RegistrationData {
   id: string;
   fullName: string;
   phone: string;
-  email: string;
+  email?: string;
   companyName: string;
   designation: string;
   department?: string;
@@ -177,9 +177,7 @@ export const EventLandingPage: React.FC = () => {
     } else if (!/^[0-9+\-\s]{8,15}$/.test(formData.phone.trim())) {
       newErrors.phone = 'Please enter a valid phone number';
     }
-    if (!formData.email.trim()) {
-      newErrors.email = 'Please enter email address';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
+    if (formData.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
       newErrors.email = 'Please enter a valid email address';
     }
     if (!formData.companyName.trim()) {
@@ -205,7 +203,7 @@ export const EventLandingPage: React.FC = () => {
       const response = await api.attendance.register({
         fullName: formData.fullName,
         phone: formData.phone,
-        email: formData.email.trim().toLowerCase(),
+        email: formData.email.trim() ? formData.email.trim().toLowerCase() : undefined,
         companyName: formData.companyName,
         designation: formData.designation,
         department: formData.department,
@@ -218,7 +216,7 @@ export const EventLandingPage: React.FC = () => {
           id: att.id || att._id || 'reg_' + Date.now(),
           fullName: att.fullName,
           phone: att.phone,
-          email: att.email || formData.email.trim().toLowerCase(),
+          email: att.email || (formData.email.trim() ? formData.email.trim().toLowerCase() : undefined),
           companyName: att.companyName,
           designation: att.designation,
           department: att.department,
@@ -1982,6 +1980,7 @@ export const EventLandingPage: React.FC = () => {
                 <li><a href="#carousel" onClick={e => { e.preventDefault(); scrollTo('carousel'); }}>Campus Moments</a></li>
                 <li><a href="#venue" onClick={e => { e.preventDefault(); scrollTo('venue'); }}>Venue & Timing</a></li>
                 <li><a href="#register" onClick={e => { e.preventDefault(); scrollTo('register'); }}>Register</a></li>
+                <li><a href="/feedback-form" onClick={e => { e.preventDefault(); navigate('/feedback-form'); }}>Feedback Form</a></li>
               </ul>
             </nav>
 
@@ -2027,6 +2026,9 @@ export const EventLandingPage: React.FC = () => {
           <a href="#venue" onClick={e => { e.preventDefault(); scrollTo('venue'); }}>Venue & Timing</a>
           <a href="#register" onClick={e => { e.preventDefault(); scrollTo('register'); }} style={{ color: '#E86014', fontWeight: 800 }}>
             Register Seat Now →
+          </a>
+          <a href="/feedback-form" onClick={e => { e.preventDefault(); navigate('/feedback-form'); }} style={{ color: '#9333EA', fontWeight: 700 }}>
+            📝 Participant Feedback Form
           </a>
           <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: 12, paddingTop: 20 }}>
             <button
@@ -2755,10 +2757,10 @@ export const EventLandingPage: React.FC = () => {
                     )}
                   </div>
 
-                  {/* Field: Email Address */}
+                  {/* Field: Email Address (Optional) */}
                   <div className="lp-form-group">
                     <label className="lp-form-label">
-                      Email Address <span className="req">*</span>
+                      Email Address <span style={{ fontSize: 11, fontWeight: 500, color: '#718096', marginLeft: 4 }}>(Optional)</span>
                     </label>
                     <input
                       type="email"

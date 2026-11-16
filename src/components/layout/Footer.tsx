@@ -96,6 +96,10 @@ export const Footer: React.FC<FooterProps> = ({
       }
     },
     {
+      name: 'Participant Feedback Form 📝',
+      action: () => navigate('/feedback-form')
+    },
+    {
       name: 'WhatsApp Coordinator',
       action: () => window.open('https://wa.me/919344337331?text=Hello%20WeGrow%20Team!%20I%20have%20an%20inquiry%20regarding%20the%20Leadership%20in%20Action%20Programme.', '_blank')
     },

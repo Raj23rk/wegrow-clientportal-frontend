@@ -29,6 +29,7 @@ import {
 import { AdminAttendancePage } from './components/pages/AdminAttendancePage';
 import { EventLandingPage } from './components/pages/EventLandingPage';
 import { Lead360ViewerPage } from './components/pages/Lead360ViewerPage';
+import { Lead360FeedbackPage } from './components/pages/Lead360FeedbackPage';
 import {
   SessionModal,
   ActionModal,
@@ -107,6 +108,11 @@ export const App: React.FC = () => {
   // Direct Public Workbook Viewer routes (zero delay, direct display upon QR scan)
   if (['/lead-360', '/lead360', '/workbook', '/anaamalais-toyota'].includes(location.pathname)) {
     return <Lead360ViewerPage />;
+  }
+
+  // Direct Public Participant Feedback Form routes (zero delay, mobile scan & fill)
+  if (['/feedback-form', '/feedback/form', '/lead360-feedback'].includes(location.pathname)) {
+    return <Lead360FeedbackPage />;
   }
 
   if (loading && (!user || (user.role === 'client' && !client))) {
@@ -219,6 +225,9 @@ export const App: React.FC = () => {
         <Route path="/meetup" element={<EventLandingPage />} />
         <Route path="/orientation" element={<EventLandingPage />} />
         <Route path="/landing" element={<EventLandingPage />} />
+        <Route path="/feedback-form" element={<Lead360FeedbackPage />} />
+        <Route path="/lead360-feedback" element={<Lead360FeedbackPage />} />
+        <Route path="/feedback/form" element={<Lead360FeedbackPage />} />
         <Route
           path="/admin/attendance"
           element={

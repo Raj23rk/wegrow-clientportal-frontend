@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../services/api';
+import { FeedbackQrModal } from '../modals/FeedbackQrModal';
 
 export interface AttendeeRecord {
   id: string;
@@ -106,6 +107,7 @@ export const AdminAttendancePage: React.FC<{ isClientView?: boolean }> = ({ isCl
 
   // Modals state
   const [gateModalOpen, setGateModalOpen] = useState(false);
+  const [feedbackQrOpen, setFeedbackQrOpen] = useState(false);
   const [quickCheckInCode, setQuickCheckInCode] = useState('');
   const [quickCheckInResult, setQuickCheckInResult] = useState<{
     success: boolean;
@@ -1408,6 +1410,22 @@ export const AdminAttendancePage: React.FC<{ isClientView?: boolean }> = ({ isCl
             <RefreshCw size={17} style={{ animation: isRefreshing ? 'spin 0.8s linear infinite' : 'none' }} />
           </button>
 
+          {/* Feedback Form QR & URL Trigger */}
+          <button
+            type="button"
+            className="att-btn-gate-checkin"
+            style={{
+              background: 'linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%)',
+              borderColor: '#6D28D9',
+              boxShadow: '0 4px 12px rgba(109, 40, 217, 0.25)'
+            }}
+            onClick={() => setFeedbackQrOpen(true)}
+            title="Open Participant Feedback QR code and Web URL"
+          >
+            <QrCode size={18} />
+            <span>Feedback QR & URL</span>
+          </button>
+
           {/* Quick Gate Check-In Modal Trigger (Matching User's Reference Button) */}
           <button
             type="button"
@@ -2236,6 +2254,9 @@ export const AdminAttendancePage: React.FC<{ isClientView?: boolean }> = ({ isCl
           </div>
         </div>
       )}
+
+      {/* FEEDBACK QR & URL MODAL */}
+      {feedbackQrOpen && <FeedbackQrModal onClose={() => setFeedbackQrOpen(false)} />}
 
       {/* Live Action Toast Notification */}
       {toastMessage && (
