@@ -20,11 +20,11 @@ const SECTION_A_QUESTIONS = [
 ];
 
 const SECTION_B_QUESTIONS = [
-  { id: 'q1', num: '01', text: 'The trainer was knowledgeable about the subject.' },
-  { id: 'q2', num: '02', text: 'The trainer explained concepts clearly with examples.' },
-  { id: 'q3', num: '03', text: 'The trainer encouraged participation and discussion.' },
-  { id: 'q4', num: '04', text: 'The trainer answered questions effectively.' },
-  { id: 'q5', num: '05', text: 'The trainer managed time well.' }
+  { id: 'q1', num: '06', text: 'The trainer was knowledgeable about the subject.' },
+  { id: 'q2', num: '07', text: 'The trainer explained concepts clearly with examples.' },
+  { id: 'q3', num: '08', text: 'The trainer encouraged participation and discussion.' },
+  { id: 'q4', num: '09', text: 'The trainer answered questions effectively.' },
+  { id: 'q5', num: '10', text: 'The trainer managed time well.' }
 ];
 
 const SECTION_C_ACTIVITIES = [
@@ -68,11 +68,8 @@ const DURATION_OPTIONS = ['Short', 'Right', 'Long'];
 const RECOMMEND_OPTIONS = ['Yes', 'Maybe', 'No'];
 
 const STEPS = [
-  { id: 1, title: 'Content', label: 'Section A: Programme Content' },
-  { id: 2, title: 'Trainer', label: 'Section B: Trainer Evaluation' },
-  { id: 3, title: 'Activities', label: 'Section C: Activities & Case Studies' },
-  { id: 4, title: 'Application', label: 'Section D: Learning & Application' },
-  { id: 5, title: 'Overall', label: 'Section E–G: Logistics, Overall & Comments' }
+  { id: 1, title: 'Questions (10)', label: 'Step 1: Programme & Trainer Evaluation (10 Questions)' },
+  { id: 2, title: 'Overall', label: 'Step 2: Overall Ratings & Feedback' }
 ];
 
 export const Lead360FeedbackPage: React.FC = () => {
@@ -1139,181 +1136,58 @@ export const Lead360FeedbackPage: React.FC = () => {
                       </div>
                     </div>
                   ))}
+                </div>
+
+                {/* SECTION B: Trainer / facilitator */}
+                <div className="fb-card">
+                  <div className="fb-sec-header">
+                    <div className="fb-sec-title-wrap">
+                      <div className="fb-sec-badge">B</div>
+                      <h3 className="fb-sec-title">Trainer / facilitator</h3>
+                    </div>
+                    <span className="fb-sec-hint">TICK ONE OPTION PER ROW</span>
+                  </div>
+
+                  {SECTION_B_QUESTIONS.map((q) => (
+                    <div key={q.id} className="fb-row-item">
+                      <div className="fb-row-question">
+                        <span className="fb-num">{q.num}</span>
+                        <span className="fb-qtext">{q.text}</span>
+                      </div>
+                      <div className="fb-pills">
+                        {AGREE_OPTIONS.map((opt) => (
+                          <button
+                            key={opt}
+                            type="button"
+                            className={`fb-pill-btn ${sectionB[q.id] === opt ? 'active' : ''}`}
+                            onClick={() => setSectionB({ ...sectionB, [q.id]: opt })}
+                          >
+                            <span className="fb-pill-dot" />
+                            {opt}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
 
                   <div className="fb-step-actions">
                     <span style={{ fontSize: 13, color: '#64748B', fontWeight: 600 }}>
-                      Section A finished? Click Next to continue.
+                      Completed all 10 questions? Click Next for Overall Feedback.
                     </span>
                     <button
                       type="button"
                       onClick={() => handleNextStep(2)}
                       className="fb-nav-btn primary"
                     >
-                      Next: Trainer Evaluation (Section B) <ArrowRight size={16} />
+                      Next: Overall Feedback <ArrowRight size={16} />
                     </button>
                   </div>
                 </div>
               </>
             )}
 
-            {/* STEP 2: SECTION B (Trainer / facilitator) */}
+            {/* STEP 2: SECTION E, SECTION F, SECTION G & SUBMIT */}
             {currentStep === 2 && (
-              <div className="fb-card">
-                <div className="fb-sec-header">
-                  <div className="fb-sec-title-wrap">
-                    <div className="fb-sec-badge">B</div>
-                    <h3 className="fb-sec-title">Trainer / facilitator</h3>
-                  </div>
-                  <span className="fb-sec-hint">TICK ONE OPTION PER ROW</span>
-                </div>
-
-                {SECTION_B_QUESTIONS.map((q) => (
-                  <div key={q.id} className="fb-row-item">
-                    <div className="fb-row-question">
-                      <span className="fb-num">{q.num}</span>
-                      <span className="fb-qtext">{q.text}</span>
-                    </div>
-                    <div className="fb-pills">
-                      {AGREE_OPTIONS.map((opt) => (
-                        <button
-                          key={opt}
-                          type="button"
-                          className={`fb-pill-btn ${sectionB[q.id] === opt ? 'active' : ''}`}
-                          onClick={() => setSectionB({ ...sectionB, [q.id]: opt })}
-                        >
-                          <span className="fb-pill-dot" />
-                          {opt}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-
-                <div className="fb-step-actions">
-                  <button
-                    type="button"
-                    onClick={() => handlePrevStep(1)}
-                    className="fb-nav-btn secondary"
-                  >
-                    <ChevronLeft size={16} /> Back to Section A
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleNextStep(3)}
-                    className="fb-nav-btn primary"
-                  >
-                    Next: Activities (Section C) <ArrowRight size={16} />
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* STEP 3: SECTION C (Activities & case studies) */}
-            {currentStep === 3 && (
-              <div className="fb-card">
-                <div className="fb-sec-header">
-                  <div className="fb-sec-title-wrap">
-                    <div className="fb-sec-badge">C</div>
-                    <h3 className="fb-sec-title">Activities & case studies</h3>
-                  </div>
-                  <span className="fb-sec-hint">HOW USEFUL WAS EACH ACTIVITY?</span>
-                </div>
-
-                {SECTION_C_ACTIVITIES.map((act) => (
-                  <div key={act.id} className="fb-row-item">
-                    <div className="fb-row-question" style={{ alignItems: 'center' }}>
-                      <span className="fb-act-tag">{act.tag}</span>
-                      <span className="fb-qtext">{act.title}</span>
-                    </div>
-                    <div className="fb-pills">
-                      {RATING_5_OPTIONS.map((opt) => (
-                        <button
-                          key={opt}
-                          type="button"
-                          className={`fb-pill-btn ${sectionC[act.id] === opt ? 'active' : ''}`}
-                          onClick={() => setSectionC({ ...sectionC, [act.id]: opt })}
-                        >
-                          <span className="fb-pill-dot" />
-                          {opt}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-
-                <div className="fb-step-actions">
-                  <button
-                    type="button"
-                    onClick={() => handlePrevStep(2)}
-                    className="fb-nav-btn secondary"
-                  >
-                    <ChevronLeft size={16} /> Back to Section B
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleNextStep(4)}
-                    className="fb-nav-btn primary"
-                  >
-                    Next: Learning Application (Section D) <ArrowRight size={16} />
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* STEP 4: SECTION D (Learning & application) */}
-            {currentStep === 4 && (
-              <div className="fb-card">
-                <div className="fb-sec-header">
-                  <div className="fb-sec-title-wrap">
-                    <div className="fb-sec-badge">D</div>
-                    <h3 className="fb-sec-title">Learning & application</h3>
-                  </div>
-                  <span className="fb-sec-hint">TICK ONE OPTION PER ROW</span>
-                </div>
-
-                {SECTION_D_QUESTIONS.map((q) => (
-                  <div key={q.id} className="fb-row-item">
-                    <div className="fb-row-question">
-                      <span className="fb-num">{q.num}</span>
-                      <span className="fb-qtext">{q.text}</span>
-                    </div>
-                    <div className="fb-pills">
-                      {AGREE_OPTIONS.map((opt) => (
-                        <button
-                          key={opt}
-                          type="button"
-                          className={`fb-pill-btn ${sectionD[q.id] === opt ? 'active' : ''}`}
-                          onClick={() => setSectionD({ ...sectionD, [q.id]: opt })}
-                        >
-                          <span className="fb-pill-dot" />
-                          {opt}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-
-                <div className="fb-step-actions">
-                  <button
-                    type="button"
-                    onClick={() => handlePrevStep(3)}
-                    className="fb-nav-btn secondary"
-                  >
-                    <ChevronLeft size={16} /> Back to Section C
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleNextStep(5)}
-                    className="fb-nav-btn primary"
-                  >
-                    Next: Logistics & Overall (Section E–G) <ArrowRight size={16} />
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* STEP 5: SECTION E, SECTION F, SECTION G & SUBMIT */}
-            {currentStep === 5 && (
               <>
                 {/* SECTION E: Arrangements & logistics */}
                 <div className="fb-card">
@@ -1477,7 +1351,7 @@ export const Lead360FeedbackPage: React.FC = () => {
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                       <button
                         type="button"
-                        onClick={() => handlePrevStep(4)}
+                        onClick={() => handlePrevStep(1)}
                         style={{
                           background: 'rgba(255, 255, 255, 0.1)',
                           color: '#FFFFFF',
@@ -1492,7 +1366,7 @@ export const Lead360FeedbackPage: React.FC = () => {
                           gap: 6
                         }}
                       >
-                        <ChevronLeft size={16} /> Back to Section D
+                        <ChevronLeft size={16} /> Back to Questions
                       </button>
 
                       <button type="submit" disabled={isSubmitting} className="fb-submit-btn">
