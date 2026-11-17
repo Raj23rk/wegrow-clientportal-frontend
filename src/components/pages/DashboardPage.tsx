@@ -122,12 +122,6 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
     { k: 'Pending', v: pendingActions, c: 'var(--line-2)' }
   ];
 
-  const fillPct =
-    (client.months.findIndex((m) => m.key === currentMonthPlan.key) /
-      (client.months.length - 1)) *
-    100 *
-    (5 / 6);
-
   return (
     <>
       {pendingFeedbackList.length > 0 && (
@@ -165,7 +159,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
           </svg>
           <h1>{getGreeting()}, {user?.name || client.contact || client.company}</h1>
           <p>
-            Here is where {client.company} stands in month {currentMonthPlan.n} of 6 — {currentMonthPlan.theme.toLowerCase()}.
+            Here is where {client.company} stands in its business transformation journey.
           </p>
           <div className="meta">
             <div>
@@ -311,38 +305,6 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
           </div>
           <div className="k-sub">
             <span className="up">+{scoreNow - scorePrev}</span> since last month
-          </div>
-        </div>
-      </section>
-
-      <section className="card mt">
-        <div className="card-head">
-          <div>
-            <h3>6-month engagement roadmap</h3>
-            <div className="small muted">
-              {fmtS(client.start)} {D(client.start).getFullYear()} → {fmtS(client.end)} {D(client.end).getFullYear()}
-            </div>
-          </div>
-        </div>
-        <div className="tablewrap">
-          <div className="rail" style={{ minWidth: 520 }}>
-            <div className="fill" style={{ width: `${fillPct}%` }} />
-            {client.months.map((m) => {
-              const p = monthProgress(m.n);
-              const cls = m.key < currentMonthPlan.key ? 'done' : m.key === currentMonthPlan.key ? 'now' : '';
-              return (
-                <div
-                  key={m.n}
-                  className={`stop ${cls}`}
-                >
-                  <div className="node">
-                    {cls === 'done' ? <Icon name="check" /> : p ? `${p}%` : '—'}
-                  </div>
-                  <div className="mn">{m.name.slice(0, 3)}</div>
-                  <div className="th">{m.theme}</div>
-                </div>
-              );
-            })}
           </div>
         </div>
       </section>
