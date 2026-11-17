@@ -59,7 +59,7 @@ export const Lead360FeedbackPage: React.FC = () => {
 
   // Wizard Step State (1: Info + Section A, 2: B, 3: C, 4: D, 5: E, F, G)
   const [currentStep, setCurrentStep] = useState(1);
-  const [fieldErrors, setFieldErrors] = useState<{ name?: string; designation?: string }>({});
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   // Participant Metadata
   const [participant, setParticipant] = useState({
@@ -129,12 +129,35 @@ export const Lead360FeedbackPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!participant.name.trim() || !participant.designation.trim()) {
-      setFieldErrors({
-        name: !participant.name.trim() ? 'Participant Name is mandatory' : undefined,
-        designation: !participant.designation.trim() ? 'Designation is mandatory' : undefined
-      });
+    const errors: Record<string, string> = {};
+
+    if (!participant.name.trim()) {
+      errors.name = 'Participant Name is mandatory';
+    }
+    if (!participant.designation.trim()) {
+      errors.designation = 'Designation is mandatory';
+    }
+
+    if (errors.name || errors.designation) {
+      setFieldErrors(errors);
       setCurrentStep(1);
+      scrollToFormAnchor();
+      return;
+    }
+
+    // Mandatory comment fields
+    if (!comments.mostUseful.trim()) {
+      errors.mostUseful = 'This field is mandatory';
+    }
+    if (!comments.futureTopics.trim()) {
+      errors.futureTopics = 'This field is mandatory';
+    }
+    if (!comments.otherComments.trim()) {
+      errors.otherComments = 'Your heartful comment is mandatory';
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
       scrollToFormAnchor();
       return;
     }
@@ -1220,35 +1243,56 @@ export const Lead360FeedbackPage: React.FC = () => {
 
                   <div className="fb-comments-grid">
                     <div className="fb-field-group">
-                      <label className="fb-label">What did you find most useful?</label>
+                      <label className="fb-label">
+                        WHAT DID YOU FIND MOST USEFUL? *
+                        {fieldErrors.mostUseful && <span className="fb-error-text">({fieldErrors.mostUseful})</span>}
+                      </label>
                       <textarea
                         rows={3}
+                        required
                         placeholder="e.g. Practical case studies, delegation frameworks, peer discussions..."
                         value={comments.mostUseful}
-                        onChange={(e) => setComments({ ...comments, mostUseful: e.target.value })}
-                        className="fb-textarea"
+                        onChange={(e) => {
+                          setComments({ ...comments, mostUseful: e.target.value });
+                          if (fieldErrors.mostUseful) setFieldErrors({ ...fieldErrors, mostUseful: '' });
+                        }}
+                        className={`fb-textarea ${fieldErrors.mostUseful ? 'fb-input-error' : ''}`}
                       />
                     </div>
 
                     <div className="fb-field-group">
-                      <label className="fb-label">Topics you would like in future trainings</label>
+                      <label className="fb-label">
+                        TOPICS YOU WOULD LIKE IN FUTURE TRAININGS *
+                        {fieldErrors.futureTopics && <span className="fb-error-text">({fieldErrors.futureTopics})</span>}
+                      </label>
                       <textarea
                         rows={2}
+                        required
                         placeholder="e.g. Advanced conflict management, budgeting, cross-team accountability..."
                         value={comments.futureTopics}
-                        onChange={(e) => setComments({ ...comments, futureTopics: e.target.value })}
-                        className="fb-textarea"
+                        onChange={(e) => {
+                          setComments({ ...comments, futureTopics: e.target.value });
+                          if (fieldErrors.futureTopics) setFieldErrors({ ...fieldErrors, futureTopics: '' });
+                        }}
+                        className={`fb-textarea ${fieldErrors.futureTopics ? 'fb-input-error' : ''}`}
                       />
                     </div>
 
                     <div className="fb-field-group">
-                      <label className="fb-label">Any other comments</label>
+                      <label className="fb-label">
+                        YOUR HEARTFUL COMMENT *
+                        {fieldErrors.otherComments && <span className="fb-error-text">({fieldErrors.otherComments})</span>}
+                      </label>
                       <textarea
                         rows={2}
-                        placeholder="e.g. General impressions or remarks for the WeGrow team..."
+                        required
+                        placeholder="e.g. Share your heartfelt feedback, general impressions or remarks for the WeGrow team..."
                         value={comments.otherComments}
-                        onChange={(e) => setComments({ ...comments, otherComments: e.target.value })}
-                        className="fb-textarea"
+                        onChange={(e) => {
+                          setComments({ ...comments, otherComments: e.target.value });
+                          if (fieldErrors.otherComments) setFieldErrors({ ...fieldErrors, otherComments: '' });
+                        }}
+                        className={`fb-textarea ${fieldErrors.otherComments ? 'fb-input-error' : ''}`}
                       />
                     </div>
                   </div>
