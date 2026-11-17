@@ -41,8 +41,16 @@ export const PhotosPage: React.FC<PhotosPageProps> = ({ onOpenPhoto }) => {
       {feat ? (
         <>
           <div className="gal-feature">
-            <div className="photo big" onClick={() => onOpenPhoto(feat.id)}>
-              <PhotoArt hue={feat.hue} seed={feat.seed} w={800} h={500} />
+            <div className="photo big" onClick={() => onOpenPhoto(feat.id)} style={{ cursor: 'pointer', overflow: 'hidden' }}>
+              {feat.url || (feat as any).imageUrl ? (
+                <img
+                  src={feat.url || (feat as any).imageUrl}
+                  alt={feat.title}
+                  style={{ width: '100%', height: '100%', minHeight: 320, maxHeight: 450, objectFit: 'cover' }}
+                />
+              ) : (
+                <PhotoArt hue={feat.hue} seed={feat.seed} w={800} h={500} />
+              )}
               <div className="cap">
                 <b style={{ fontSize: 18 }}>{feat.title}</b>
                 {fmt(feat.date)} · {feat.desc}
@@ -50,8 +58,16 @@ export const PhotosPage: React.FC<PhotosPageProps> = ({ onOpenPhoto }) => {
             </div>
             <div style={{ display: 'grid', gap: 16 }}>
               {rest.slice(0, 2).map((p) => (
-                <div key={p.id} className="photo" onClick={() => onOpenPhoto(p.id)}>
-                  <PhotoArt hue={p.hue} seed={p.seed} />
+                <div key={p.id} className="photo" onClick={() => onOpenPhoto(p.id)} style={{ cursor: 'pointer', overflow: 'hidden' }}>
+                  {p.url || (p as any).imageUrl ? (
+                    <img
+                      src={p.url || (p as any).imageUrl}
+                      alt={p.title}
+                      style={{ width: '100%', height: 180, objectFit: 'cover' }}
+                    />
+                  ) : (
+                    <PhotoArt hue={p.hue} seed={p.seed} />
+                  )}
                   <div className="cap">
                     <b>{p.title}</b>
                     {fmt(p.date)}
@@ -63,8 +79,16 @@ export const PhotosPage: React.FC<PhotosPageProps> = ({ onOpenPhoto }) => {
 
           <div className="pgrid mt">
             {rest.slice(2).map((p) => (
-              <div key={p.id} className="photo" onClick={() => onOpenPhoto(p.id)}>
-                <PhotoArt hue={p.hue} seed={p.seed} />
+              <div key={p.id} className="photo" onClick={() => onOpenPhoto(p.id)} style={{ cursor: 'pointer', overflow: 'hidden' }}>
+                {p.url || (p as any).imageUrl ? (
+                  <img
+                    src={p.url || (p as any).imageUrl}
+                    alt={p.title}
+                    style={{ width: '100%', height: 200, objectFit: 'cover' }}
+                  />
+                ) : (
+                  <PhotoArt hue={p.hue} seed={p.seed} />
+                )}
                 <div className="cap">
                   <b>{p.title}</b>
                   {fmt(p.date)}
