@@ -326,7 +326,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
                   stroke={24}
                   centerLabel={
                     <div>
-                      <b style={{ fontSize: 30 }}>{Math.round((completedActions / totalActions) * 100)}%</b>
+                      <b style={{ fontSize: 30 }}>{totalActions > 0 ? Math.round((completedActions / totalActions) * 100) : 0}%</b>
                       <span>items done</span>
                     </div>
                   }
@@ -429,7 +429,15 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
             <div className="card">
               <div className="card-head">
                 <h3>Upcoming session</h3>
-                <span className="badge b-brand">in {daysBetween(TODAY, nextSession.date)} days</span>
+                <span className="badge b-brand">
+                  {daysBetween(TODAY, nextSession.date) === 0
+                    ? 'Today'
+                    : daysBetween(TODAY, nextSession.date) === 1
+                    ? 'Tomorrow'
+                    : daysBetween(TODAY, nextSession.date) > 1
+                    ? `in ${daysBetween(TODAY, nextSession.date)} days`
+                    : fmt(nextSession.date)}
+                </span>
               </div>
               <div className="sess" style={{ border: 0, padding: 0 }}>
                 <div className="date">
