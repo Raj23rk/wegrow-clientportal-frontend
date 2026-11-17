@@ -11,41 +11,22 @@ import {
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { api } from '../../services/api';
 
-const SECTION_A_QUESTIONS = [
+const EVALUATION_QUESTIONS = [
+  // From Section A: Programme content (3 questions)
   { id: 'q1', num: '01', text: 'The programme objectives were clearly explained.' },
-  { id: 'q2', num: '02', text: 'The objectives of the programme were met.' },
-  { id: 'q3', num: '03', text: 'The content was relevant to my job role.' },
-  { id: 'q4', num: '04', text: 'The topics were well organised and easy to follow.' },
-  { id: 'q5', num: '05', text: 'The level of the content was appropriate for me.' }
-];
+  { id: 'q2', num: '02', text: 'The content was relevant to my job role.' },
+  { id: 'q3', num: '03', text: 'The topics were well organised and easy to follow.' },
 
-const SECTION_B_QUESTIONS = [
-  { id: 'q1', num: '06', text: 'The trainer was knowledgeable about the subject.' },
-  { id: 'q2', num: '07', text: 'The trainer explained concepts clearly with examples.' },
-  { id: 'q3', num: '08', text: 'The trainer encouraged participation and discussion.' },
-  { id: 'q4', num: '09', text: 'The trainer answered questions effectively.' },
-  { id: 'q5', num: '10', text: 'The trainer managed time well.' }
-];
+  // From Section B: Trainer & facilitator (3 questions)
+  { id: 'q4', num: '04', text: 'The trainer was knowledgeable about the subject.' },
+  { id: 'q5', num: '05', text: 'The trainer explained concepts clearly with examples.' },
+  { id: 'q6', num: '06', text: 'The trainer encouraged participation and discussion.' },
 
-const SECTION_C_ACTIVITIES = [
-  { id: 'selfAwareness', tag: 'QUESTIONNAIRE', title: 'Leadership Self-Awareness Questionnaire' },
-  { id: 'leadershipStyle', tag: 'QUESTIONNAIRE', title: 'Leadership Style Questionnaire' },
-  { id: 'situationalLeadership', tag: 'CASE STUDY', title: 'Situational Leadership' },
-  { id: 'workplaceChallenge', tag: 'CASE STUDY', title: 'Workplace Challenge' }
-];
-
-const SECTION_D_QUESTIONS = [
-  { id: 'q1', num: '01', text: 'I gained new knowledge and skills from this programme.' },
-  { id: 'q2', num: '02', text: 'I can apply what I learned in my day-to-day work.' },
-  { id: 'q3', num: '03', text: 'I feel more confident in leading my team.' },
-  { id: 'q4', num: '04', text: 'I have a clear idea of what I will do differently at work.' }
-];
-
-const SECTION_E_AREAS = [
-  { id: 'venueSeating', num: '01', title: 'Venue and seating arrangements' },
-  { id: 'audioVisual', num: '02', title: 'Audio-visual and presentation materials' },
-  { id: 'foodRefreshments', num: '03', title: 'Food and refreshments' },
-  { id: 'scheduleBreaks', num: '04', title: 'Session schedule and breaks' }
+  // From Section D: Learning & application (4 questions)
+  { id: 'q7', num: '07', text: 'I gained new knowledge and skills from this programme.' },
+  { id: 'q8', num: '08', text: 'I can apply what I learned in my day-to-day work.' },
+  { id: 'q9', num: '09', text: 'I feel more confident in leading my team.' },
+  { id: 'q10', num: '10', text: 'I have a clear idea of what I will do differently at work.' }
 ];
 
 const AGREE_OPTIONS = [
@@ -68,7 +49,7 @@ const DURATION_OPTIONS = ['Short', 'Right', 'Long'];
 const RECOMMEND_OPTIONS = ['Yes', 'Maybe', 'No'];
 
 const STEPS = [
-  { id: 1, title: 'Questions (10)', label: 'Step 1: Programme & Trainer Evaluation (10 Questions)' },
+  { id: 1, title: 'Questions (10)', label: 'Step 1: Programme Evaluation (10 Questions)' },
   { id: 2, title: 'Overall', label: 'Step 2: Overall Ratings & Feedback' }
 ];
 
@@ -89,12 +70,8 @@ export const Lead360FeedbackPage: React.FC = () => {
     trainer: 'WeGrow B School Lead Trainer'
   });
 
-  // Section Responses (empty initially so user actively selects their answers)
-  const [sectionA, setSectionA] = useState<Record<string, string>>({});
-  const [sectionB, setSectionB] = useState<Record<string, string>>({});
-  const [sectionC, setSectionC] = useState<Record<string, string>>({});
-  const [sectionD, setSectionD] = useState<Record<string, string>>({});
-  const [sectionE, setSectionE] = useState<Record<string, string>>({});
+  // Evaluation Responses for the 10 questions (empty initially so participant selects actively)
+  const [responses, setResponses] = useState<Record<string, string>>({});
 
   const [overallRating, setOverallRating] = useState('');
   const [programmeDuration, setProgrammeDuration] = useState('');
@@ -176,11 +153,25 @@ export const Lead360FeedbackPage: React.FC = () => {
     const payload = {
       ...participant,
       programmeTitle: 'Leadership in Action',
-      programmeContent: sectionA,
-      trainerFacilitator: sectionB,
-      activities: sectionC,
-      learningApplication: sectionD,
-      arrangementsLogistics: sectionE,
+      programmeContent: {
+        q1: responses['q1'] || '',
+        q2: responses['q2'] || '',
+        q3: responses['q3'] || ''
+      },
+      trainerFacilitator: {
+        q1: responses['q4'] || '',
+        q2: responses['q5'] || '',
+        q3: responses['q6'] || ''
+      },
+      activities: {},
+      learningApplication: {
+        q1: responses['q7'] || '',
+        q2: responses['q8'] || '',
+        q3: responses['q9'] || '',
+        q4: responses['q10'] || ''
+      },
+      arrangementsLogistics: {},
+      evaluations: responses,
       overallRating: overallRating || 'Excellent',
       rating: numericRating,
       programmeDuration: programmeDuration || 'Right',
@@ -225,11 +216,7 @@ export const Lead360FeedbackPage: React.FC = () => {
       date: '2026-11-19',
       trainer: 'WeGrow B School Lead Trainer'
     });
-    setSectionA({});
-    setSectionB({});
-    setSectionC({});
-    setSectionD({});
-    setSectionE({});
+    setResponses({});
     setOverallRating('');
     setProgrammeDuration('');
     setRecommend('');
@@ -1105,17 +1092,16 @@ export const Lead360FeedbackPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* SECTION A: Programme content */}
+                {/* 10 Evaluation Questions (from A, B & D combined) */}
                 <div className="fb-card">
                   <div className="fb-sec-header">
                     <div className="fb-sec-title-wrap">
-                      <div className="fb-sec-badge">A</div>
-                      <h3 className="fb-sec-title">Programme content</h3>
+                      <h3 className="fb-sec-title">Programme Evaluation</h3>
                     </div>
                     <span className="fb-sec-hint">TICK ONE OPTION PER ROW</span>
                   </div>
 
-                  {SECTION_A_QUESTIONS.map((q) => (
+                  {EVALUATION_QUESTIONS.map((q) => (
                     <div key={q.id} className="fb-row-item">
                       <div className="fb-row-question">
                         <span className="fb-num">{q.num}</span>
@@ -1126,41 +1112,8 @@ export const Lead360FeedbackPage: React.FC = () => {
                           <button
                             key={opt}
                             type="button"
-                            className={`fb-pill-btn ${sectionA[q.id] === opt ? 'active' : ''}`}
-                            onClick={() => setSectionA({ ...sectionA, [q.id]: opt })}
-                          >
-                            <span className="fb-pill-dot" />
-                            {opt}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* SECTION B: Trainer / facilitator */}
-                <div className="fb-card">
-                  <div className="fb-sec-header">
-                    <div className="fb-sec-title-wrap">
-                      <div className="fb-sec-badge">B</div>
-                      <h3 className="fb-sec-title">Trainer / facilitator</h3>
-                    </div>
-                    <span className="fb-sec-hint">TICK ONE OPTION PER ROW</span>
-                  </div>
-
-                  {SECTION_B_QUESTIONS.map((q) => (
-                    <div key={q.id} className="fb-row-item">
-                      <div className="fb-row-question">
-                        <span className="fb-num">{q.num}</span>
-                        <span className="fb-qtext">{q.text}</span>
-                      </div>
-                      <div className="fb-pills">
-                        {AGREE_OPTIONS.map((opt) => (
-                          <button
-                            key={opt}
-                            type="button"
-                            className={`fb-pill-btn ${sectionB[q.id] === opt ? 'active' : ''}`}
-                            onClick={() => setSectionB({ ...sectionB, [q.id]: opt })}
+                            className={`fb-pill-btn ${responses[q.id] === opt ? 'active' : ''}`}
+                            onClick={() => setResponses({ ...responses, [q.id]: opt })}
                           >
                             <span className="fb-pill-dot" />
                             {opt}
@@ -1186,48 +1139,14 @@ export const Lead360FeedbackPage: React.FC = () => {
               </>
             )}
 
-            {/* STEP 2: SECTION E, SECTION F, SECTION G & SUBMIT */}
+            {/* STEP 2: OVERALL FEEDBACK (3 QUESTIONS), COMMENTS & SUBMIT */}
             {currentStep === 2 && (
               <>
-                {/* SECTION E: Arrangements & logistics */}
+                {/* Overall (3 Questions - Image 2) */}
                 <div className="fb-card">
                   <div className="fb-sec-header">
                     <div className="fb-sec-title-wrap">
-                      <div className="fb-sec-badge">E</div>
-                      <h3 className="fb-sec-title">Arrangements & logistics</h3>
-                    </div>
-                    <span className="fb-sec-hint">RATE EACH FACILITY AREA</span>
-                  </div>
-
-                  {SECTION_E_AREAS.map((area) => (
-                    <div key={area.id} className="fb-row-item">
-                      <div className="fb-row-question">
-                        <span className="fb-num">{area.num}</span>
-                        <span className="fb-qtext">{area.title}</span>
-                      </div>
-                      <div className="fb-pills">
-                        {RATING_5_OPTIONS.map((opt) => (
-                          <button
-                            key={opt}
-                            type="button"
-                            className={`fb-pill-btn ${sectionE[area.id] === opt ? 'active' : ''}`}
-                            onClick={() => setSectionE({ ...sectionE, [area.id]: opt })}
-                          >
-                            <span className="fb-pill-dot" />
-                            {opt}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* SECTION F: Overall */}
-                <div className="fb-card">
-                  <div className="fb-sec-header">
-                    <div className="fb-sec-title-wrap">
-                      <div className="fb-sec-badge">F</div>
-                      <h3 className="fb-sec-title">Overall</h3>
+                      <h3 className="fb-sec-title">Overall Feedback</h3>
                     </div>
                   </div>
 
@@ -1291,11 +1210,10 @@ export const Lead360FeedbackPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* SECTION G: Your comments */}
+                {/* Participant Comments */}
                 <div className="fb-card">
                   <div className="fb-sec-header">
                     <div className="fb-sec-title-wrap">
-                      <div className="fb-sec-badge">G</div>
                       <h3 className="fb-sec-title">Your comments</h3>
                     </div>
                   </div>
