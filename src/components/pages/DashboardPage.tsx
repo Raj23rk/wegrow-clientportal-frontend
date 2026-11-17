@@ -108,12 +108,29 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
   const latestUpdate = [...client.updates].sort((a, b) => b.date.localeCompare(a.date))[0];
   const recommendationUpdate = client.updates.find((u) => u.type === 'Recommendation') || latestUpdate;
 
-  const scoreNow = client.scoreHistory?.length
+  // Session Progress (2 sessions per month = 50% per completed session)
+  const completedSessionsCount = client.sessions.filter((s) => s.status === 'Completed').length;
+  const targetMonthlySessions = 2;
+  const sessionScorePct = Math.min(100, Math.round((completedSessionsCount / targetMonthlySessions) * 100));
+
+  // Feedback Satisfaction Rating (1 to 5 Stars converted to %)
+  const feedbackList = client.feedback || [];
+  const avgFeedbackStars = feedbackList.length
+    ? feedbackList.reduce((acc, f) => acc + (f.rating || 5), 0) / feedbackList.length
+    : 5;
+  const feedbackScorePct = Math.round((avgFeedbackStars / 5) * 100);
+
+  // Dynamic Transformation Score (Baseline 40 + Session 50% contribution + Feedback + Action Items)
+  const baseline = (client.scoreHistory && client.scoreHistory[0]?.v) || 40;
+  const sessionPoints = Math.round((sessionScorePct / 100) * 30);
+  const feedbackPoints = feedbackList.length ? Math.round((feedbackScorePct / 100) * 15) : 5;
+  const actionPoints = totalActions > 0 ? Math.round((completedActions / totalActions) * 15) : 5;
+  const calculatedScore = Math.min(100, baseline + sessionPoints + feedbackPoints + actionPoints);
+
+  const scoreNow = client.scoreHistory?.length && client.scoreHistory[client.scoreHistory.length - 1].v > baseline
     ? client.scoreHistory[client.scoreHistory.length - 1].v
-    : 0;
-  const scorePrev = client.scoreHistory?.length && client.scoreHistory.length > 1
-    ? client.scoreHistory[client.scoreHistory.length - 2].v
-    : scoreNow;
+    : calculatedScore;
+  const scorePrev = baseline;
 
   const donutParts = [
     { k: 'Completed', v: completedActions, c: 'var(--brand)' },

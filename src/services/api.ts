@@ -318,6 +318,23 @@ export const api = {
         method: 'POST',
         body: JSON.stringify(notif)
       });
+    },
+
+    async addPhoto(clientId: string, photo: any): Promise<any> {
+      return request(`/admin/clients/${clientId}/photos`, {
+        method: 'POST',
+        body: JSON.stringify(photo)
+      });
+    },
+
+    async getPhotos(clientId: string): Promise<any> {
+      return request(`/admin/clients/${clientId}/photos`);
+    },
+
+    async deletePhoto(clientId: string, photoId: string): Promise<any> {
+      return request(`/admin/clients/${clientId}/photos/${photoId}`, {
+        method: 'DELETE'
+      });
     }
   },
 

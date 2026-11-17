@@ -1258,6 +1258,7 @@ export const UploadModal: React.FC<{
   const [pages, setPages] = useState<number>(10);
   const [fileUrl, setFileUrl] = useState('');
   const [fileName, setFileName] = useState('');
+  const [fileSizeLabel, setFileSizeLabel] = useState('1.4 MB');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -1265,6 +1266,10 @@ export const UploadModal: React.FC<{
     const file = e.target.files?.[0];
     if (!file) return;
     setFileName(file.name);
+    if (file.size) {
+      const mb = (file.size / (1024 * 1024)).toFixed(1);
+      setFileSizeLabel(`${mb} MB`);
+    }
     if (!name) setName(file.name.replace(/\.[^/.]+$/, ''));
     const reader = new FileReader();
     reader.onload = () => {
@@ -1295,7 +1300,7 @@ export const UploadModal: React.FC<{
           desc: desc.trim() || 'Comprehensive transformation and business report',
           pages: Number(pages) || 12,
           date: TODAY,
-          file: fileUrl ? { name: fileName, url: fileUrl } : undefined
+          fileUrl: fileUrl || undefined
         });
         showToast('Report uploaded');
       } else if (uploadType === 'document') {
@@ -1303,20 +1308,21 @@ export const UploadModal: React.FC<{
           name: name.trim(),
           cat: category,
           by: 'Dr. Thavabalan',
-          type: fileName.split('.').pop() || 'pdf',
-          size: '1.4 MB',
+          type: (fileName.split('.').pop() || 'pdf').toUpperCase(),
+          size: fileSizeLabel,
           date: TODAY,
-          url: fileUrl || undefined
+          storagePath: fileUrl || undefined
         });
         showToast('Document uploaded');
       } else {
-        await api.admin.addDocument(cid, {
-          name: name.trim(),
-          cat: 'Photos',
-          by: 'Dr. Thavabalan',
-          type: 'image',
+        await api.admin.addPhoto(cid, {
+          title: name.trim(),
+          cat: category || 'Workshops',
+          desc: desc.trim() || 'Leadership in Action workshop moments',
           date: TODAY,
-          url: fileUrl || undefined
+          imageUrl: fileUrl || undefined,
+          hue: 210,
+          seed: Math.floor(Math.random() * 100) + 1
         });
         showToast('Photo uploaded');
       }
@@ -1466,12 +1472,28 @@ export const UploadModal: React.FC<{
           )}
 
           <div className="field full">
-            <label>Choose file</label>
+            <label>
+              Choose {uploadType === 'photo' ? 'Photo (JPG, PNG, JPEG)' : 'Document (PDF)'}
+            </label>
             <label className="filedrop" htmlFor="up_file">
               <Icon name="paperclip" />
-              <span>{fileName || 'Choose PDF, DOCX, or Image file'}</span>
-              <input type="file" id="up_file" onChange={handleFileUpload} />
+              <span>{fileName || (uploadType === 'photo' ? 'Choose JPG, PNG, or JPEG image' : 'Choose PDF document')}</span>
+              <input
+                type="file"
+                id="up_file"
+                accept={uploadType === 'photo' ? '.jpg,.jpeg,.png,image/jpeg,image/png' : '.pdf,.docx,application/pdf'}
+                onChange={handleFileUpload}
+              />
             </label>
+            {fileUrl && uploadType === 'photo' && (
+              <div style={{ marginTop: 10, textAlign: 'center' }}>
+                <img
+                  src={fileUrl}
+                  alt="Preview"
+                  style={{ maxHeight: 160, borderRadius: 8, objectFit: 'contain', border: '1px solid var(--line-2)' }}
+                />
+              </div>
+            )}
           </div>
 
           <div className="field full">
