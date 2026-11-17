@@ -67,6 +67,21 @@ const DUMMY_SEED_NAMES = new Set([
   'D. Saravanan'
 ]);
 
+// IST Time Formatters (Indian Standard Time Asia/Kolkata)
+const formatISTTime = (d: Date = new Date()): string =>
+  d.toLocaleTimeString('en-US', {
+    timeZone: 'Asia/Kolkata',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  });
+
+const formatISTDateTime = (d: Date = new Date()): string => {
+  const datePart = d.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+  const timePart = formatISTTime(d);
+  return `${datePart} ${timePart}`;
+};
+
 export const AdminAttendancePage: React.FC<{ isClientView?: boolean }> = ({ isClientView = false }) => {
   const navigate = useNavigate();
 
@@ -295,7 +310,7 @@ export const AdminAttendancePage: React.FC<{ isClientView?: boolean }> = ({ isCl
 
   // Toggle Check-In status - Mark Check-In button click increases Checked In value
   const handleToggleCheckIn = async (id: string) => {
-    const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const timeNow = formatISTTime();
     let willBeChecked = false;
 
     // 1. Optimistic instant UI update (immediately increases CHECKED IN count!)
@@ -418,7 +433,7 @@ export const AdminAttendancePage: React.FC<{ isClientView?: boolean }> = ({ isCl
     }
 
     // Mark Checked In locally
-    const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const timeNow = formatISTTime();
     setAttendees((prev) =>
       prev.map((a) => (a.id === found.id ? { ...a, isCheckedIn: true, checkInTime: timeNow } : a))
     );
@@ -526,7 +541,7 @@ export const AdminAttendancePage: React.FC<{ isClientView?: boolean }> = ({ isCl
       companyName: newAttendee.companyName || 'TAG Group',
       designation: newAttendee.designation || 'Middle Manager',
       department: newAttendee.department || 'Operations',
-      registeredAt: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      registeredAt: formatISTDateTime(),
       codeSentWhatsApp: false,
       codeSentEmail: false,
       isCheckedIn: false,

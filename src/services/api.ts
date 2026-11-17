@@ -50,7 +50,8 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
 
   const primaryBase = resolveApiBase();
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 12000);
+  // 45s timeout to allow for Render cold-starts without premature client cancellation
+  const timeoutId = setTimeout(() => controller.abort(), 45000);
 
   try {
     const response = await fetch(`${primaryBase}${endpoint}`, {
