@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { usePortal } from '../../context/PortalContext';
 import { fmt } from '../../utils/date';
 import { api } from '../../services/api';
-import { FeedbackQrModal } from '../modals/FeedbackQrModal';
-import { Sparkles, QrCode, ExternalLink, Star } from 'lucide-react';
+import { Sparkles, Star } from 'lucide-react';
 
 interface FeedbackPageProps {
   onGiveFeedback: (sessionId: string) => void;
@@ -12,7 +11,6 @@ interface FeedbackPageProps {
 export const FeedbackPage: React.FC<FeedbackPageProps> = ({ onGiveFeedback }) => {
   const { client } = usePortal();
   const [eventFeedbacks, setEventFeedbacks] = useState<any[]>([]);
-  const [showQrModal, setShowQrModal] = useState(false);
   const [expandedFeedbackId, setExpandedFeedbackId] = useState<string | null>(null);
 
   const loadFeedbacks = async () => {
@@ -134,93 +132,6 @@ export const FeedbackPage: React.FC<FeedbackPageProps> = ({ onGiveFeedback }) =>
         <div>
           <h1>Programme & session feedback</h1>
           <p>Your team's ratings and reviews shape future sessions. Only your WeGrow team sees them.</p>
-        </div>
-      </div>
-
-      {/* Leadership in Action Action Card */}
-      <div
-        className="card"
-        style={{
-          marginBottom: 20,
-          background: 'linear-gradient(135deg, #0C1D36 0%, #162947 100%)',
-          color: '#FFFFFF',
-          padding: '20px 24px',
-          borderRadius: 16,
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: 16
-        }}
-      >
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-            <span
-              style={{
-                fontSize: 10,
-                fontWeight: 800,
-                backgroundColor: '#E86014',
-                color: '#FFFFFF',
-                padding: '2px 8px',
-                borderRadius: 4,
-                textTransform: 'uppercase',
-                letterSpacing: 0.5
-              }}
-            >
-              Live Feedback Form
-            </span>
-            <span style={{ fontSize: 13, color: 'rgba(255, 255, 255, 0.7)' }}>
-              Leadership in Action
-            </span>
-          </div>
-          <h3 style={{ fontSize: 18, fontWeight: 700, margin: '0 0 4px', color: '#FFFFFF' }}>
-            Participant Feedback Collection
-          </h3>
-          <p style={{ margin: 0, fontSize: 13, color: 'rgba(255, 255, 255, 0.8)' }}>
-            Share the evaluation form or QR code with your middle-management participants to submit feedback.
-          </p>
-        </div>
-
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-          <button
-            onClick={() => setShowQrModal(true)}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 6,
-              padding: '8px 14px',
-              borderRadius: 8,
-              fontSize: 13,
-              fontWeight: 600,
-              backgroundColor: 'rgba(255, 255, 255, 0.12)',
-              color: '#FFFFFF',
-              border: '1px solid rgba(255, 255, 255, 0.2)',
-              cursor: 'pointer'
-            }}
-          >
-            <QrCode size={15} /> Show QR Code
-          </button>
-          <a
-            href="/feedback-form"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 6,
-              padding: '8px 14px',
-              borderRadius: 8,
-              fontSize: 13,
-              fontWeight: 600,
-              backgroundColor: '#E86014',
-              color: '#FFFFFF',
-              border: 'none',
-              textDecoration: 'none',
-              cursor: 'pointer'
-            }}
-          >
-            <ExternalLink size={15} /> Open Feedback Form
-          </a>
         </div>
       </div>
 
@@ -414,8 +325,6 @@ export const FeedbackPage: React.FC<FeedbackPageProps> = ({ onGiveFeedback }) =>
           </div>
         )}
       </div>
-
-      {showQrModal && <FeedbackQrModal onClose={() => setShowQrModal(false)} />}
     </>
   );
 };
