@@ -3,6 +3,7 @@ import { usePortal } from '../../context/PortalContext';
 import { Icon, ClientLogo, WeGrowLogo } from '../common/Icons';
 import { PhotoArt, BannerArt } from '../common/Charts';
 import { fmt, fmtL, TODAY } from '../../utils/date';
+import { isPdfVisual } from '../../utils/file';
 import { SessionFeedback } from '../../types';
 
 interface ModalContainerProps {
@@ -62,13 +63,69 @@ export const SessionModal: React.FC<{
 
       <div className="mb">
         {s.image && (
-          <div style={{ marginBottom: 18, borderRadius: 10, overflow: 'hidden', border: '1px solid var(--line-2)' }}>
-            <img
-              src={s.image}
-              alt={s.title}
-              style={{ width: '100%', height: 'auto', objectFit: 'contain', display: 'block' }}
-            />
-          </div>
+          isPdfVisual(s.image) ? (
+            <div
+              style={{
+                marginBottom: 18,
+                padding: '14px 16px',
+                borderRadius: 10,
+                border: '1px solid #FECACA',
+                background: '#FEF2F2',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 12
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
+                <div
+                  style={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: 8,
+                    background: '#DC2626',
+                    color: '#FFFFFF',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 800,
+                    fontSize: 10,
+                    flexShrink: 0
+                  }}
+                >
+                  <Icon name="pdf" size={18} />
+                  <span style={{ fontSize: 9, lineHeight: 1 }}>PDF</span>
+                </div>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontWeight: 600, fontSize: 13, color: '#111827' }}>
+                    Session Document / Visual Deck
+                  </div>
+                  <div className="tiny" style={{ color: '#6B7280' }}>
+                    PDF attachment
+                  </div>
+                </div>
+              </div>
+              <a
+                href={s.image}
+                target="_blank"
+                rel="noopener noreferrer"
+                download={`${s.title || 'session'}-visual.pdf`}
+                className="btn sm"
+                style={{ background: '#DC2626', color: '#fff', border: 'none', textDecoration: 'none', flexShrink: 0 }}
+              >
+                Open PDF
+              </a>
+            </div>
+          ) : (
+            <div style={{ marginBottom: 18, borderRadius: 10, overflow: 'hidden', border: '1px solid var(--line-2)' }}>
+              <img
+                src={s.image}
+                alt={s.title}
+                style={{ width: '100%', height: 'auto', objectFit: 'contain', display: 'block' }}
+              />
+            </div>
+          )
         )}
 
         <dl className="kv">

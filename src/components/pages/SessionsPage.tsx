@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { usePortal } from '../../context/PortalContext';
 import { Icon } from '../common/Icons';
 import { fmt, fmtL, D } from '../../utils/date';
+import { isPdfVisual } from '../../utils/file';
 
 interface SessionsPageProps {
   onOpenSession: (id: string) => void;
@@ -73,9 +74,64 @@ export const SessionsPage: React.FC<SessionsPageProps> = ({ onOpenSession, onGiv
               </div>
 
               {s.image && (
-                <div style={{ margin: '12px 0 8px', borderRadius: 8, overflow: 'hidden', border: '1px solid var(--line-2)' }}>
-                  <img src={s.image} alt={s.title} style={{ width: '100%', height: 'auto', objectFit: 'contain', display: 'block' }} />
-                </div>
+                isPdfVisual(s.image) ? (
+                  <div
+                    style={{
+                      margin: '12px 0 8px',
+                      padding: '12px 14px',
+                      borderRadius: 8,
+                      border: '1px solid #FECACA',
+                      background: '#FEF2F2',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: 12
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+                      <div
+                        style={{
+                          width: 38,
+                          height: 38,
+                          borderRadius: 6,
+                          background: '#DC2626',
+                          color: '#FFFFFF',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontWeight: 800,
+                          fontSize: 9,
+                          flexShrink: 0
+                        }}
+                      >
+                        <Icon name="pdf" size={16} />
+                        <span style={{ fontSize: 8, lineHeight: 1 }}>PDF</span>
+                      </div>
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontWeight: 600, fontSize: 13, color: '#111827' }}>
+                          Session Document / Visual
+                        </div>
+                        <div className="tiny" style={{ color: '#6B7280' }}>
+                          Attached PDF
+                        </div>
+                      </div>
+                    </div>
+                    <a
+                      href={s.image}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn sm"
+                      style={{ background: '#DC2626', color: '#fff', border: 'none', textDecoration: 'none', flexShrink: 0 }}
+                    >
+                      View PDF
+                    </a>
+                  </div>
+                ) : (
+                  <div style={{ margin: '12px 0 8px', borderRadius: 8, overflow: 'hidden', border: '1px solid var(--line-2)' }}>
+                    <img src={s.image} alt={s.title} style={{ width: '100%', height: 'auto', objectFit: 'contain', display: 'block' }} />
+                  </div>
+                )
               )}
 
               <div

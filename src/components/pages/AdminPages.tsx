@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { usePortal } from '../../context/PortalContext';
 import { Icon, ClientLogo } from '../common/Icons';
 import { fmt, fmtS, fmtL, TODAY, D, MON, addDays } from '../../utils/date';
+import { isPdfVisual } from '../../utils/file';
 import { ClientData, ActionStatus, ActionPriority, BusinessUpdate } from '../../types';
 import { HorizontalBars, LineChart } from '../common/Charts';
 import { api } from '../../services/api';
@@ -1580,11 +1581,34 @@ export const AdminSessionsPage: React.FC<{
               upcoming.map(({ c, s }) => (
                 <div key={s.id} className="li">
                   {s.image ? (
-                    <img
-                      src={s.image}
-                      alt={s.title}
-                      style={{ width: 44, height: 44, objectFit: 'cover', borderRadius: 8, flexShrink: 0 }}
-                    />
+                    isPdfVisual(s.image) ? (
+                      <div
+                        style={{
+                          width: 44,
+                          height: 44,
+                          borderRadius: 8,
+                          background: '#DC2626',
+                          color: '#FFFFFF',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontWeight: 800,
+                          fontSize: 9,
+                          flexShrink: 0
+                        }}
+                        title="Attached PDF document"
+                      >
+                        <Icon name="pdf" size={16} />
+                        <span style={{ fontSize: 8, lineHeight: 1 }}>PDF</span>
+                      </div>
+                    ) : (
+                      <img
+                        src={s.image}
+                        alt={s.title}
+                        style={{ width: 44, height: 44, objectFit: 'cover', borderRadius: 8, flexShrink: 0 }}
+                      />
+                    )
                   ) : (
                     <div className="datebox">
                       <b>{D(s.date).getDate()}</b>
@@ -1618,11 +1642,34 @@ export const AdminSessionsPage: React.FC<{
               recentlySummarised.map(({ c, s }) => (
                 <div key={s.id} className="li">
                   {s.image ? (
-                    <img
-                      src={s.image}
-                      alt={s.title}
-                      style={{ width: 44, height: 44, objectFit: 'cover', borderRadius: 8, flexShrink: 0 }}
-                    />
+                    isPdfVisual(s.image) ? (
+                      <div
+                        style={{
+                          width: 44,
+                          height: 44,
+                          borderRadius: 8,
+                          background: '#DC2626',
+                          color: '#FFFFFF',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontWeight: 800,
+                          fontSize: 9,
+                          flexShrink: 0
+                        }}
+                        title="Attached PDF document"
+                      >
+                        <Icon name="pdf" size={16} />
+                        <span style={{ fontSize: 8, lineHeight: 1 }}>PDF</span>
+                      </div>
+                    ) : (
+                      <img
+                        src={s.image}
+                        alt={s.title}
+                        style={{ width: 44, height: 44, objectFit: 'cover', borderRadius: 8, flexShrink: 0 }}
+                      />
+                    )
                   ) : (
                     <div className="datebox">
                       <b>{D(s.date).getDate()}</b>
@@ -1666,11 +1713,34 @@ export const AdminSessionsPage: React.FC<{
             needSummary.map(({ c, s }) => (
               <div key={s.id} className="li">
                 {s.image ? (
-                  <img
-                    src={s.image}
-                    alt={s.title}
-                    style={{ width: 44, height: 44, objectFit: 'cover', borderRadius: 8, flexShrink: 0 }}
-                  />
+                  isPdfVisual(s.image) ? (
+                    <div
+                      style={{
+                        width: 44,
+                        height: 44,
+                        borderRadius: 8,
+                        background: '#DC2626',
+                        color: '#FFFFFF',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontWeight: 800,
+                        fontSize: 9,
+                        flexShrink: 0
+                      }}
+                      title="Attached PDF document"
+                    >
+                      <Icon name="pdf" size={16} />
+                      <span style={{ fontSize: 8, lineHeight: 1 }}>PDF</span>
+                    </div>
+                  ) : (
+                    <img
+                      src={s.image}
+                      alt={s.title}
+                      style={{ width: 44, height: 44, objectFit: 'cover', borderRadius: 8, flexShrink: 0 }}
+                    />
+                  )
                 ) : (
                   <div className="datebox">
                     <b>{D(s.date).getDate()}</b>

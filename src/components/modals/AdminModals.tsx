@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { usePortal } from '../../context/PortalContext';
 import { Icon } from '../common/Icons';
 import { TODAY, addDays, fmtS, fmt, D, MON } from '../../utils/date';
+import { isPdfVisual } from '../../utils/file';
 import { ActionPriority, ActionStatus, Session, ClientData, SessionSummary, MonthPlan, ScoreHistoryPoint, DeptPerformance } from '../../types';
 import { api } from '../../services/api';
 
@@ -733,6 +734,17 @@ export const ScheduleSessionModal: React.FC<{
     const file = e.target.files?.[0];
     if (!file) return;
     setSessionImageName(file.name);
+
+    // If PDF document
+    if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+      const reader = new FileReader();
+      reader.onload = (loadEvt) => {
+        setSessionImage(loadEvt.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+      return;
+    }
+
     const reader = new FileReader();
     reader.onload = (loadEvt) => {
       const img = new Image();
@@ -881,11 +893,11 @@ export const ScheduleSessionModal: React.FC<{
             />
           </div>
 
-          {/* Prominently Placed Session Photo / Image Upload */}
+          {/* Prominently Placed Session Photo / Image or PDF Visual Upload */}
           <div className="field full" style={{ margin: '2px 0 6px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
               <label htmlFor="ss_image_file" style={{ fontWeight: 600, fontSize: 13, margin: 0, cursor: 'pointer' }}>
-                Session Cover Image / Visual <span className="tiny muted">(Optional)</span>
+                Session Cover Image / PDF Visual <span className="tiny muted">(Optional)</span>
               </label>
               {sessionImage && (
                 <button
@@ -897,59 +909,126 @@ export const ScheduleSessionModal: React.FC<{
                     setSessionImageName('');
                   }}
                 >
-                  ✕ Remove image
+                  ✕ Remove {isPdfVisual(sessionImage) ? 'PDF' : 'image'}
                 </button>
               )}
             </div>
 
             {sessionImage ? (
-              <div
-                style={{
-                  position: 'relative',
-                  borderRadius: 10,
-                  overflow: 'hidden',
-                  border: '1px solid var(--line-2)',
-                  maxHeight: 180,
-                  background: '#0B0F19'
-                }}
-              >
-                <img
-                  src={sessionImage}
-                  alt="Session Visual"
-                  style={{ width: '100%', maxHeight: 180, objectFit: 'cover', display: 'block' }}
-                />
+              isPdfVisual(sessionImage) ? (
                 <div
                   style={{
-                    position: 'absolute',
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    padding: '8px 12px',
-                    background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 100%)',
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'space-between'
+                    justifyContent: 'space-between',
+                    padding: '14px 16px',
+                    borderRadius: 10,
+                    border: '1px solid #FECACA',
+                    background: '#FEF2F2',
+                    gap: 12
                   }}
                 >
-                  <span style={{ color: '#fff', fontSize: 12, fontWeight: 600 }}>
-                    {sessionImageName || 'Cover image attached'}
-                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
+                    <div
+                      style={{
+                        width: 44,
+                        height: 44,
+                        borderRadius: 8,
+                        background: '#DC2626',
+                        color: '#FFFFFF',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontWeight: 800,
+                        fontSize: 10,
+                        letterSpacing: 0.5,
+                        flexShrink: 0
+                      }}
+                    >
+                      <Icon name="pdf" size={18} />
+                      <span style={{ fontSize: 9, lineHeight: 1 }}>PDF</span>
+                    </div>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontWeight: 600, fontSize: 13, color: '#111827', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {sessionImageName || 'Attached PDF Visual / Document'}
+                      </div>
+                      <div className="tiny" style={{ color: '#4B5563', marginTop: 2 }}>
+                        PDF document attached as session visual ·{' '}
+                        <a
+                          href={sessionImage}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ color: '#DC2626', fontWeight: 600, textDecoration: 'underline' }}
+                        >
+                          View PDF
+                        </a>
+                      </div>
+                    </div>
+                  </div>
                   <label
                     htmlFor="ss_image_file"
                     className="btn sm ghost"
                     style={{
-                      background: 'rgba(255,255,255,0.2)',
-                      color: '#fff',
-                      fontSize: 11,
-                      padding: '3px 10px',
                       cursor: 'pointer',
+                      flexShrink: 0,
+                      fontSize: 11,
+                      padding: '4px 10px',
                       borderRadius: 6
                     }}
                   >
-                    Change photo
+                    Change PDF
                   </label>
                 </div>
-              </div>
+              ) : (
+                <div
+                  style={{
+                    position: 'relative',
+                    borderRadius: 10,
+                    overflow: 'hidden',
+                    border: '1px solid var(--line-2)',
+                    maxHeight: 180,
+                    background: '#0B0F19'
+                  }}
+                >
+                  <img
+                    src={sessionImage}
+                    alt="Session Visual"
+                    style={{ width: '100%', maxHeight: 180, objectFit: 'cover', display: 'block' }}
+                  />
+                  <div
+                    style={{
+                      position: 'absolute',
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      padding: '8px 12px',
+                      background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 100%)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between'
+                    }}
+                  >
+                    <span style={{ color: '#fff', fontSize: 12, fontWeight: 600 }}>
+                      {sessionImageName || 'Cover image attached'}
+                    </span>
+                    <label
+                      htmlFor="ss_image_file"
+                      className="btn sm ghost"
+                      style={{
+                        background: 'rgba(255,255,255,0.2)',
+                        color: '#fff',
+                        fontSize: 11,
+                        padding: '3px 10px',
+                        cursor: 'pointer',
+                        borderRadius: 6
+                      }}
+                    >
+                      Change photo
+                    </label>
+                  </div>
+                </div>
+              )
             ) : (
               <label
                 className="filedrop"
@@ -984,10 +1063,10 @@ export const ScheduleSessionModal: React.FC<{
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                   <span style={{ fontWeight: 600, fontSize: 13, color: 'var(--ink)' }}>
-                    Upload session cover image
+                    Upload session cover image or PDF
                   </span>
                   <span className="tiny muted">
-                    PNG, JPG, or WebP. Auto-compressed for crisp display.
+                    PNG, JPG, WebP, or PDF document / slide visual
                   </span>
                 </div>
               </label>
@@ -996,7 +1075,7 @@ export const ScheduleSessionModal: React.FC<{
             <input
               type="file"
               id="ss_image_file"
-              accept="image/*"
+              accept="image/*,application/pdf,.pdf"
               style={{ display: 'none' }}
               onChange={handleImageUpload}
             />

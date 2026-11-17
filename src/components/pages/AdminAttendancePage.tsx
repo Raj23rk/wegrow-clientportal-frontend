@@ -25,6 +25,7 @@ import {
   X
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { usePortal } from '../../context/PortalContext';
 import { api } from '../../services/api';
 import { FeedbackQrModal } from '../modals/FeedbackQrModal';
 
@@ -84,6 +85,8 @@ const formatISTDateTime = (d: Date = new Date()): string => {
 
 export const AdminAttendancePage: React.FC<{ isClientView?: boolean }> = ({ isClientView = false }) => {
   const navigate = useNavigate();
+  const { user, previewAs } = usePortal();
+  const isClient = isClientView || user?.role === 'client' || Boolean(previewAs);
 
   // Clean initial state (no static dummy attendees)
   const [attendees, setAttendees] = useState<AttendeeRecord[]>(() => {
@@ -310,6 +313,7 @@ export const AdminAttendancePage: React.FC<{ isClientView?: boolean }> = ({ isCl
 
   // Toggle Check-In status - Mark Check-In button click increases Checked In value
   const handleToggleCheckIn = async (id: string) => {
+    if (isClient) return;
     const timeNow = formatISTTime();
     let willBeChecked = false;
 
@@ -374,6 +378,7 @@ export const AdminAttendancePage: React.FC<{ isClientView?: boolean }> = ({ isCl
   // Quick Gate Check-In by Code
   const handleQuickCheckInSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isClient) return;
     const cleanCode = quickCheckInCode.trim().toUpperCase();
     if (!cleanCode) return;
 
@@ -1486,13 +1491,17 @@ export const AdminAttendancePage: React.FC<{ isClientView?: boolean }> = ({ isCl
           <button
             type="button"
             className="att-btn-gate-checkin"
+            disabled={isClient}
             style={{
-              background: 'linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%)',
-              borderColor: '#6D28D9',
-              boxShadow: '0 4px 12px rgba(109, 40, 217, 0.25)'
+              background: isClient ? '#F1F5F9' : 'linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%)',
+              borderColor: isClient ? '#CBD5E1' : '#6D28D9',
+              color: isClient ? '#94A3B8' : '#FFFFFF',
+              opacity: isClient ? 0.6 : 1,
+              cursor: isClient ? 'not-allowed' : 'pointer',
+              boxShadow: isClient ? 'none' : '0 4px 12px rgba(109, 40, 217, 0.25)'
             }}
-            onClick={() => setFeedbackQrOpen(true)}
-            title="Open Participant Feedback QR code and Web URL"
+            onClick={() => !isClient && setFeedbackQrOpen(true)}
+            title={isClient ? 'Disabled in Client View (Admin action only)' : 'Open Participant Feedback QR code and Web URL'}
           >
             <QrCode size={18} />
             <span>Feedback QR & URL</span>
@@ -1502,11 +1511,26 @@ export const AdminAttendancePage: React.FC<{ isClientView?: boolean }> = ({ isCl
           <button
             type="button"
             className="att-btn-gate-checkin"
+            disabled={isClient}
+            style={
+              isClient
+                ? {
+                    background: '#F1F5F9',
+                    borderColor: '#CBD5E1',
+                    color: '#94A3B8',
+                    opacity: 0.6,
+                    cursor: 'not-allowed',
+                    boxShadow: 'none'
+                  }
+                : undefined
+            }
             onClick={() => {
+              if (isClient) return;
               setQuickCheckInResult(null);
               setQuickCheckInCode('');
               setGateModalOpen(true);
             }}
+            title={isClient ? 'Gate Check-In is managed by WeGrow Admin (Disabled for Client View)' : 'Gate Entrance Check-In by Passcode'}
           >
             <QrCode size={18} />
             <span>Gate Check-In</span>
@@ -1516,7 +1540,24 @@ export const AdminAttendancePage: React.FC<{ isClientView?: boolean }> = ({ isCl
           <button
             type="button"
             className="att-btn-add"
-            onClick={() => setAddModalOpen(true)}
+            disabled={isClient}
+            style={
+              isClient
+                ? {
+                    background: '#F1F5F9',
+                    borderColor: '#CBD5E1',
+                    color: '#94A3B8',
+                    opacity: 0.6,
+                    cursor: 'not-allowed',
+                    boxShadow: 'none'
+                  }
+                : undefined
+            }
+            onClick={() => {
+              if (isClient) return;
+              setAddModalOpen(true);
+            }}
+            title={isClient ? 'Adding attendees is managed by WeGrow Admin (Disabled for Client View)' : 'Register a new attendee'}
           >
             <UserPlus size={17} />
             <span>+ Add Attendee</span>
@@ -1730,25 +1771,27 @@ export const AdminAttendancePage: React.FC<{ isClientView?: boolean }> = ({ isCl
                       </span>
                       {attendees.length === 0 ? (
                         <div style={{ display: 'flex', gap: 12, marginTop: 6 }}>
-                          <button
-                            type="button"
-                            onClick={() => setAddModalOpen(true)}
-                            style={{
-                              background: '#0C1D36',
-                              color: '#FFFFFF',
-                              border: 'none',
-                              padding: '9px 18px',
-                              borderRadius: 10,
-                              fontWeight: 700,
-                              fontSize: 13,
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: 6
-                            }}
-                          >
-                            <UserPlus size={15} /> Add Attendee
-                          </button>
+                          {!isClient && (
+                            <button
+                              type="button"
+                              onClick={() => setAddModalOpen(true)}
+                              style={{
+                                background: '#0C1D36',
+                                color: '#FFFFFF',
+                                border: 'none',
+                                padding: '9px 18px',
+                                borderRadius: 10,
+                                fontWeight: 700,
+                                fontSize: 13,
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 6
+                              }}
+                            >
+                              <UserPlus size={15} /> Add Attendee
+                            </button>
+                          )}
                           <button
                             type="button"
                             onClick={() => window.open('/landing#register', '_blank')}
@@ -1837,8 +1880,10 @@ export const AdminAttendancePage: React.FC<{ isClientView?: boolean }> = ({ isCl
                           <button
                             type="button"
                             className="att-send-btn wa"
-                            onClick={() => handleSendWhatsApp(a)}
-                            title="Send passcode via WhatsApp"
+                            disabled={isClient}
+                            onClick={() => !isClient && handleSendWhatsApp(a)}
+                            title={isClient ? 'Passcode dispatch is managed by Admin (Disabled for Client View)' : 'Send passcode via WhatsApp'}
+                            style={isClient ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}
                           >
                             <MessageCircle size={10} />
                             <span>{a.codeSentWhatsApp ? 'Resend' : 'Send'} WA</span>
@@ -1846,8 +1891,10 @@ export const AdminAttendancePage: React.FC<{ isClientView?: boolean }> = ({ isCl
                           <button
                             type="button"
                             className="att-send-btn mail"
-                            onClick={() => handleSendEmail(a)}
-                            title="Send passcode via Email"
+                            disabled={isClient}
+                            onClick={() => !isClient && handleSendEmail(a)}
+                            title={isClient ? 'Passcode dispatch is managed by Admin (Disabled for Client View)' : 'Send passcode via Email'}
+                            style={isClient ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}
                           >
                             <Mail size={10} />
                             <span>Mail</span>
@@ -1883,14 +1930,16 @@ export const AdminAttendancePage: React.FC<{ isClientView?: boolean }> = ({ isCl
                       )}
                     </td>
 
-                    {/* Gate Check-In Action Button */}
+                    {/* Gate Check-In Action Button (Image 3 - Disabled on Client Side) */}
                     <td style={{ textAlign: 'center' }}>
                       {a.isCheckedIn ? (
                         <button
                           type="button"
                           className="att-btn-checkin-action done"
-                          onClick={() => handleToggleCheckIn(a.id)}
-                          title="Click to undo check-in if marked by mistake"
+                          disabled={isClient}
+                          onClick={() => !isClient && handleToggleCheckIn(a.id)}
+                          title={isClient ? `Verified and checked in at ${a.checkInTime || '09:30 AM'}` : 'Click to undo check-in if marked by mistake'}
+                          style={isClient ? { cursor: 'default' } : undefined}
                         >
                           <Check size={12} />
                           <span>{a.checkInTime || '09:30 AM'}</span>
@@ -1899,8 +1948,10 @@ export const AdminAttendancePage: React.FC<{ isClientView?: boolean }> = ({ isCl
                         <button
                           type="button"
                           className="att-btn-checkin-action mark"
-                          onClick={() => handleToggleCheckIn(a.id)}
-                          title="Verify and check-in attendee at the gate"
+                          disabled={isClient}
+                          onClick={() => !isClient && handleToggleCheckIn(a.id)}
+                          title={isClient ? 'Gate check-in is managed by WeGrow Admin (Disabled for Client View)' : 'Verify and check-in attendee at the gate'}
+                          style={isClient ? { opacity: 0.45, cursor: 'not-allowed', background: '#94A3B8', borderColor: '#94A3B8' } : undefined}
                         >
                           <span>Mark Check-In</span>
                         </button>
