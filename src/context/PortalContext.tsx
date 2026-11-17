@@ -76,9 +76,9 @@ export const PortalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const [theme, setThemeState] = useState<'light' | 'dark' | 'system'>(() => {
     try {
-      return (sessionStorage.getItem('wg:theme') as any) || 'system';
+      return (sessionStorage.getItem('wg:theme') as any) || 'light';
     } catch (e) {
-      return 'system';
+      return 'light';
     }
   });
 

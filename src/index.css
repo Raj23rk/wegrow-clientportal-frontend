@@ -34,35 +34,7 @@
   --sans: "Manrope", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #12111A;
-    --surface: #1B1A26;
-    --surface-2: #232132;
-    --line: #2E2C40;
-    --line-2: #3A3850;
-    --ink: #EDEBF5;
-    --ink-2: #BDB9D0;
-    --ink-3: #8E8AA6;
-    --brand: #9C85E8;
-    --brand-2: #B7A5F0;
-    --brand-soft: #2A2345;
-    --brand-ink: #15121F;
-    --teal: #3CC3BF;
-    --teal-soft: #16302F;
-    --ok: #4CC37F;
-    --ok-soft: #173022;
-    --warn: #E3AE4F;
-    --warn-soft: #352A15;
-    --bad: #EE7B6E;
-    --bad-soft: #3A1D1B;
-    --info: #6FA3F0;
-    --info-soft: #18263D;
-    --client-soft: #3A2418;
-    --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px -10px rgba(0, 0, 0, .5);
-  }
-}
-
+/* Only activate dark theme when explicitly toggled on data-theme="dark" */
 :root[data-theme="dark"] {
   --bg: #12111A;
   --surface: #1B1A26;
