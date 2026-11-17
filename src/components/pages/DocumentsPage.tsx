@@ -97,7 +97,19 @@ export const DocumentsPage: React.FC<DocumentsPageProps> = ({ onViewDoc }) => {
                     <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
                       <button
                         className="btn sm ghost"
-                        onClick={() => onViewDoc(d.name)}
+                        onClick={() => {
+                          const fileTarget = (d as any).url || (d as any).storagePath;
+                          if (fileTarget && fileTarget.startsWith('data:')) {
+                            const win = window.open();
+                            if (win) {
+                              win.document.write(`<iframe src="${fileTarget}" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>`);
+                            }
+                          } else if (fileTarget) {
+                            window.open(fileTarget, '_blank');
+                          } else {
+                            onViewDoc(d.name);
+                          }
+                        }}
                         title="View preview"
                       >
                         <Icon name="eye" />
@@ -105,7 +117,18 @@ export const DocumentsPage: React.FC<DocumentsPageProps> = ({ onViewDoc }) => {
                       </button>
                       <button
                         className="btn sm ghost"
-                        onClick={() => showToast(`Downloading ${d.name}`)}
+                        onClick={() => {
+                          const fileTarget = (d as any).url || (d as any).storagePath;
+                          if (fileTarget) {
+                            const a = document.createElement('a');
+                            a.href = fileTarget;
+                            a.download = d.name.endsWith('.pdf') ? d.name : `${d.name}.pdf`;
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                          }
+                          showToast(`Downloading ${d.name}`);
+                        }}
                         title="Download file"
                       >
                         <Icon name="download" />

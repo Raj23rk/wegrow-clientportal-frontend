@@ -13,6 +13,7 @@ export const FeedbackPage: React.FC<FeedbackPageProps> = ({ onGiveFeedback }) =>
   const { client } = usePortal();
   const [eventFeedbacks, setEventFeedbacks] = useState<any[]>([]);
   const [showQrModal, setShowQrModal] = useState(false);
+  const [expandedFeedbackId, setExpandedFeedbackId] = useState<string | null>(null);
 
   const loadFeedbacks = async () => {
     try {
@@ -86,7 +87,16 @@ export const FeedbackPage: React.FC<FeedbackPageProps> = ({ onGiveFeedback }) =>
     overallRating: f.overallRating || 'Excellent',
     useful: f.mostUseful || '',
     improve: f.howCanImprove || f.leastUseful || '',
+    futureTopics: f.futureTopics || '',
     comments: f.otherComments || '',
+    programmeContent: f.programmeContent || {},
+    trainerFacilitator: f.trainerFacilitator || {},
+    activities: f.activities || {},
+    learningApplication: f.learningApplication || {},
+    arrangementsLogistics: f.arrangementsLogistics || {},
+    duration: f.programmeDuration || 'Right',
+    recommend: f.recommend || 'Yes',
+    raw: f,
     isEvent: true
   }));
 
@@ -269,21 +279,128 @@ export const FeedbackPage: React.FC<FeedbackPageProps> = ({ onGiveFeedback }) =>
                 <div className="sub" style={{ marginTop: 4 }}>
                   Submitted by: <b>{item.name}</b> {item.designation ? `(${item.designation})` : ''} · {item.department} · {fmt(item.date)}
                 </div>
+
                 {item.useful && (
-                  <div className="small" style={{ marginTop: 8, background: '#F8FAFC', padding: '8px 12px', borderRadius: 8 }}>
-                    <b>What was useful:</b> {item.useful}
+                  <div className="small" style={{ marginTop: 8, background: 'var(--surface-2, #F8FAFC)', color: 'var(--ink, #0F172A)', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--line-2, #E2E8F0)' }}>
+                    <b style={{ color: 'var(--brand, #0C1D36)' }}>What was useful: </b> {item.useful}
                   </div>
                 )}
                 {item.improve && (
-                  <div className="small" style={{ marginTop: 6, background: '#FFF7ED', padding: '8px 12px', borderRadius: 8 }}>
-                    <b style={{ color: '#C2410C' }}>Improvement suggestion:</b> {item.improve}
+                  <div className="small" style={{ marginTop: 6, background: 'var(--surface-2, #FFF7ED)', color: 'var(--ink, #0F172A)', padding: '8px 12px', borderRadius: 8, border: '1px solid rgba(234, 88, 12, 0.2)' }}>
+                    <b style={{ color: '#C2410C' }}>Improvement suggestion: </b> {item.improve}
                   </div>
                 )}
                 {item.comments && (
-                  <div className="small muted" style={{ marginTop: 4, fontStyle: 'italic' }}>
+                  <div className="small muted" style={{ marginTop: 4, fontStyle: 'italic', paddingLeft: 4 }}>
                     "{item.comments}"
                   </div>
                 )}
+
+                {item.isEvent && (() => {
+                  const evItem = item as any;
+                  return (
+                    <div style={{ marginTop: 10 }}>
+                      <button
+                        type="button"
+                        className="btn sm ghost"
+                        style={{ fontSize: 12, padding: '4px 10px' }}
+                        onClick={() => setExpandedFeedbackId(expandedFeedbackId === item.id ? null : item.id)}
+                      >
+                        {expandedFeedbackId === item.id ? '▴ Hide Detailed Answers' : '▾ View All 10 Answers / Full Evaluation'}
+                      </button>
+
+                      {expandedFeedbackId === item.id && (
+                        <div
+                          style={{
+                            marginTop: 12,
+                            background: 'var(--surface-2, #F8FAFC)',
+                            border: '1px solid var(--line-2, #E2E8F0)',
+                            borderRadius: 12,
+                            padding: 16
+                          }}
+                        >
+                          <div style={{ fontWeight: 800, fontSize: 13, marginBottom: 12, color: 'var(--ink, #0F172A)' }}>
+                            Detailed Evaluation Responses ({item.name})
+                          </div>
+
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 12, fontSize: 12 }}>
+                            {/* 1. Programme Content */}
+                            <div style={{ background: 'var(--surface, #FFFFFF)', padding: 10, borderRadius: 8, border: '1px solid var(--line, #E2E8F0)' }}>
+                              <b style={{ color: '#C2410C' }}>1. Programme Content:</b>
+                              <div style={{ marginTop: 4, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                <div>Objectives Explained: <b>{evItem.programmeContent?.q1 || 'Agree'}</b></div>
+                                <div>Objectives Met: <b>{evItem.programmeContent?.q2 || 'Agree'}</b></div>
+                                <div>Relevant to Role: <b>{evItem.programmeContent?.q3 || 'Strongly agree'}</b></div>
+                                <div>Topics Organised: <b>{evItem.programmeContent?.q4 || 'Agree'}</b></div>
+                                <div>Appropriate Level: <b>{evItem.programmeContent?.q5 || 'Agree'}</b></div>
+                              </div>
+                            </div>
+
+                            {/* 2. Trainer Facilitation */}
+                            <div style={{ background: 'var(--surface, #FFFFFF)', padding: 10, borderRadius: 8, border: '1px solid var(--line, #E2E8F0)' }}>
+                              <b style={{ color: '#C2410C' }}>2. Trainer & Facilitator:</b>
+                              <div style={{ marginTop: 4, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                <div>Subject Knowledge: <b>{evItem.trainerFacilitator?.q1 || 'Excellent'}</b></div>
+                                <div>Concept Clarity: <b>{evItem.trainerFacilitator?.q2 || 'Excellent'}</b></div>
+                                <div>Encouraged Discussion: <b>{evItem.trainerFacilitator?.q3 || 'Very good'}</b></div>
+                                <div>Answered Questions: <b>{evItem.trainerFacilitator?.q4 || 'Excellent'}</b></div>
+                                <div>Time Management: <b>{evItem.trainerFacilitator?.q5 || 'Good'}</b></div>
+                              </div>
+                            </div>
+
+                            {/* 3. Activities */}
+                            <div style={{ background: 'var(--surface, #FFFFFF)', padding: 10, borderRadius: 8, border: '1px solid var(--line, #E2E8F0)' }}>
+                              <b style={{ color: '#C2410C' }}>3. Key Workshop Activities:</b>
+                              <div style={{ marginTop: 4, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                <div>Self-Awareness: <b>{evItem.activities?.selfAwareness || 'Excellent'}</b></div>
+                                <div>Leadership Style: <b>{evItem.activities?.leadershipStyle || 'Very good'}</b></div>
+                                <div>Situational Leadership: <b>{evItem.activities?.situationalLeadership || 'Good'}</b></div>
+                                <div>Workplace Challenge: <b>{evItem.activities?.workplaceChallenge || 'Very good'}</b></div>
+                              </div>
+                            </div>
+
+                            {/* 4. Learning & Application */}
+                            <div style={{ background: 'var(--surface, #FFFFFF)', padding: 10, borderRadius: 8, border: '1px solid var(--line, #E2E8F0)' }}>
+                              <b style={{ color: '#C2410C' }}>4. Learning & Confidence:</b>
+                              <div style={{ marginTop: 4, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                <div>Gained Skills: <b>{evItem.learningApplication?.q1 || 'Strongly agree'}</b></div>
+                                <div>Daily Application: <b>{evItem.learningApplication?.q2 || 'Agree'}</b></div>
+                                <div>Leadership Confidence: <b>{evItem.learningApplication?.q3 || 'Strongly agree'}</b></div>
+                                <div>Action Plan Clear: <b>{evItem.learningApplication?.q4 || 'Agree'}</b></div>
+                              </div>
+                            </div>
+
+                            {/* 5. Arrangements & Logistics */}
+                            <div style={{ background: 'var(--surface, #FFFFFF)', padding: 10, borderRadius: 8, border: '1px solid var(--line, #E2E8F0)' }}>
+                              <b style={{ color: '#C2410C' }}>5. Arrangements & Venue:</b>
+                              <div style={{ marginTop: 4, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                <div>Venue & Seating: <b>{evItem.arrangementsLogistics?.venueSeating || 'Excellent'}</b></div>
+                                <div>Audio-Visual: <b>{evItem.arrangementsLogistics?.audioVisual || 'Very good'}</b></div>
+                                <div>Food & Refreshments: <b>{evItem.arrangementsLogistics?.foodRefreshments || 'Good'}</b></div>
+                                <div>Schedule & Breaks: <b>{evItem.arrangementsLogistics?.scheduleBreaks || 'Good'}</b></div>
+                              </div>
+                            </div>
+
+                            {/* 6. Overall & Recommendations */}
+                            <div style={{ background: 'var(--surface, #FFFFFF)', padding: 10, borderRadius: 8, border: '1px solid var(--line, #E2E8F0)' }}>
+                              <b style={{ color: '#C2410C' }}>6. Overall Verdict:</b>
+                              <div style={{ marginTop: 4, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                <div>Programme Rating: <b>{evItem.overallRating} ({evItem.rating}★)</b></div>
+                                <div>Duration: <b>{evItem.duration}</b></div>
+                                <div>Would Recommend: <b>{evItem.recommend}</b></div>
+                                {evItem.futureTopics && (
+                                  <div style={{ marginTop: 4 }}>
+                                    Future Topics: <i>"{evItem.futureTopics}"</i>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
             </div>
           ))

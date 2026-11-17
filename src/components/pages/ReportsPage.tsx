@@ -59,13 +59,39 @@ export const ReportsPage: React.FC<ReportsPageProps> = ({ onOpenReport }) => {
                 {r.desc}
               </div>
               <div style={{ display: 'flex', gap: 8 }}>
-                <button className="btn sm" onClick={() => onOpenReport(r.id)}>
+                <button
+                  className="btn sm"
+                  onClick={() => {
+                    const target = (r as any).fileUrl || (r as any).url;
+                    if (target && target.startsWith('data:')) {
+                      const win = window.open();
+                      if (win) {
+                        win.document.write(`<iframe src="${target}" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>`);
+                      }
+                    } else if (target) {
+                      window.open(target, '_blank');
+                    } else {
+                      onOpenReport(r.id);
+                    }
+                  }}
+                >
                   <Icon name="eye" />
                   View
                 </button>
                 <button
                   className="btn sm primary"
-                  onClick={() => showToast(`Downloading ${r.name}.pdf`)}
+                  onClick={() => {
+                    const target = (r as any).fileUrl || (r as any).url;
+                    if (target) {
+                      const a = document.createElement('a');
+                      a.href = target;
+                      a.download = r.name.endsWith('.pdf') ? r.name : `${r.name}.pdf`;
+                      document.body.appendChild(a);
+                      a.click();
+                      document.body.removeChild(a);
+                    }
+                    showToast(`Downloading ${r.name}.pdf`);
+                  }}
                 >
                   <Icon name="download" />
                   Download PDF

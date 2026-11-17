@@ -649,8 +649,16 @@ export const PhotoModal: React.FC<{
       </div>
 
       <div className="mb">
-        <div className="photo big" style={{ cursor: 'default' }}>
-          <PhotoArt hue={p.hue} seed={p.seed} w={800} h={500} />
+        <div className="photo big" style={{ cursor: 'default', overflow: 'hidden' }}>
+          {p.url || (p as any).imageUrl ? (
+            <img
+              src={p.url || (p as any).imageUrl}
+              alt={p.title}
+              style={{ width: '100%', maxHeight: 520, objectFit: 'contain', borderRadius: 12 }}
+            />
+          ) : (
+            <PhotoArt hue={p.hue} seed={p.seed} w={800} h={500} />
+          )}
         </div>
         <dl className="kv" style={{ marginTop: 16 }}>
           <dt>Date</dt>
@@ -664,11 +672,21 @@ export const PhotoModal: React.FC<{
 
       <div className="mf">
         <button
-          className="btn"
-          onClick={() => showToast(`Downloading ${p.title.replace(/\W+/g, '_')}.jpg`)}
+          className="btn primary"
+          onClick={() => {
+            if (p.url || (p as any).imageUrl) {
+              const link = document.createElement('a');
+              link.href = p.url || (p as any).imageUrl || '#';
+              link.download = `${p.title.replace(/\W+/g, '_')}.jpg`;
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+            }
+            showToast(`Downloading ${p.title.replace(/\W+/g, '_')}.jpg`);
+          }}
         >
           <Icon name="download" />
-          Download
+          Download Photo
         </button>
       </div>
     </ModalContainer>
