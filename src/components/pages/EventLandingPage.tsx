@@ -82,10 +82,10 @@ export const EventLandingPage: React.FC = () => {
   // Mobile menu toggle
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Registration Deadline: 17 November 2026, 07:00 PM IST (19:00:00+05:30)
-  const REGISTRATION_DEADLINE = new Date('2026-11-17T19:00:00+05:30').getTime();
+  // Registration Deadline: 17 November 2026, 08:00 PM IST (20:00:00+05:30)
+  const REGISTRATION_DEADLINE = new Date('2026-11-17T20:00:00+05:30').getTime();
   const [isRegistrationClosed, setIsRegistrationClosed] = useState<boolean>(() => {
-    return Date.now() >= new Date('2026-11-17T19:00:00+05:30').getTime();
+    return Date.now() >= new Date('2026-11-17T20:00:00+05:30').getTime();
   });
 
   // Live Countdown Timer to 19 November 2026, 09:30 AM IST
@@ -207,7 +207,7 @@ export const EventLandingPage: React.FC = () => {
 
     if (Date.now() >= REGISTRATION_DEADLINE) {
       setIsRegistrationClosed(true);
-      alert('Registrations for Leadership in Action closed on 17 November 2026 at 07:00 PM.');
+      alert('Registrations for Leadership in Action closed on 17 November 2026 at 08:00 PM.');
       return;
     }
 
@@ -2015,7 +2015,7 @@ export const EventLandingPage: React.FC = () => {
                   className="lp-btn-cta closed"
                   onClick={() => scrollTo('register')}
                   style={{ background: '#475569', boxShadow: 'none' }}
-                  title="Registrations closed on 17 Nov 7:00 PM"
+                  title="Registrations closed on 17 Nov 8:00 PM"
                 >
                   <Lock size={14} /> Closed
                 </button>
@@ -2633,7 +2633,7 @@ export const EventLandingPage: React.FC = () => {
             <h2>{isRegistrationClosed ? 'Programme Seat Reservations' : 'Reserve Your Programme Seat'}</h2>
             <p>
               {isRegistrationClosed
-                ? 'Online registrations for this session closed on 17 November 2026 at 07:00 PM.'
+                ? 'Online registrations for this session closed on 17 November 2026 at 08:00 PM.'
                 : 'Interactive middle-management leadership development programme structured around workplace scenarios.'}
             </p>
           </div>
@@ -2810,7 +2810,7 @@ export const EventLandingPage: React.FC = () => {
 
                 <p style={{ color: '#475569', fontSize: 15, lineHeight: 1.6, maxWidth: 540, margin: '0 auto 22px' }}>
                   Seat reservation for <strong>Leadership in Action (TAG Group)</strong> closed on{' '}
-                  <strong>Tuesday, 17 November 2026 at 07:00 PM</strong>.
+                  <strong>Tuesday, 17 November 2026 at 08:00 PM</strong>.
                   All nominated participant seating and materials have been finalized.
                 </p>
 
