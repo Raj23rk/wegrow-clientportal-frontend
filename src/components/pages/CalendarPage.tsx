@@ -35,8 +35,8 @@ export const CalendarPage: React.FC<CalendarPageProps> = ({
 }) => {
   const { client } = usePortal();
   const [view, setView] = useState<'month' | 'week' | 'agenda'>('month');
-  const [calCursor, setCalCursor] = useState('2026-12-01');
-  const [weekCursor, setWeekCursor] = useState('2026-12-13');
+  const [calCursor, setCalCursor] = useState(() => TODAY.slice(0, 7) + '-01');
+  const [weekCursor, setWeekCursor] = useState(() => TODAY);
 
   if (!client) return null;
 

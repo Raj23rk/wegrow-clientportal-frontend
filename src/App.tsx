@@ -52,6 +52,307 @@ import {
   EditMonthModal
 } from './components/modals/AdminModals';
 
+const PortalLoadingScreen: React.FC<{ user: any }> = ({ user }) => {
+  const [statusText, setStatusText] = useState(
+    user ? 'Loading your transformation dossier' : 'Connecting to database'
+  );
+
+  useEffect(() => {
+    const list = user
+      ? [
+          'Loading your transformation dossier',
+          'Fetching client milestones & sessions',
+          'Synchronizing attendance & analytics',
+          'Almost ready'
+        ]
+      : [
+          'Connecting to database',
+          'Establishing secure connection',
+          'Synchronizing portal services',
+          'Preparing workspace'
+        ];
+    let idx = 0;
+    const interval = setInterval(() => {
+      idx = (idx + 1) % list.length;
+      setStatusText(list[idx]);
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [user]);
+
+  return (
+    <div
+      style={{
+        display: 'grid',
+        placeItems: 'center',
+        minHeight: '100vh',
+        background: 'radial-gradient(circle at 50% 30%, rgba(232, 96, 20, 0.08), transparent 60%), var(--bg, #F8F9FA)',
+        padding: 24,
+        position: 'relative',
+        overflow: 'hidden',
+      }}
+    >
+      <style>{`
+        @keyframes wgSpin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        @keyframes wgSpinReverse {
+          0% { transform: rotate(360deg); }
+          100% { transform: rotate(0deg); }
+        }
+        @keyframes wgPulseGlow {
+          0%, 100% {
+            transform: scale(0.92);
+            box-shadow: 0 0 14px rgba(232, 96, 20, 0.35);
+          }
+          50% {
+            transform: scale(1.08);
+            box-shadow: 0 0 26px rgba(232, 96, 20, 0.7);
+          }
+        }
+        @keyframes wgCardFloat {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-6px); }
+        }
+        @keyframes wgBarFlow {
+          0% {
+            left: -35%;
+            width: 35%;
+          }
+          50% {
+            width: 55%;
+          }
+          100% {
+            left: 100%;
+            width: 35%;
+          }
+        }
+        @keyframes wgGlowSweep {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(350%); }
+        }
+        @keyframes wgDotWave {
+          0%, 20% { opacity: 0.2; transform: translateY(0); }
+          50% { opacity: 1; transform: translateY(-3px); }
+          80%, 100% { opacity: 0.2; transform: translateY(0); }
+        }
+        @keyframes wgOrbDrift {
+          0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.35; }
+          50% { transform: translate(25px, -20px) scale(1.15); opacity: 0.55; }
+        }
+        @keyframes wgFadeInScale {
+          from { opacity: 0; transform: scale(0.94) translateY(12px); }
+          to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+      `}</style>
+
+      {/* Ambient glowing background orbs */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          top: '25%',
+          left: '30%',
+          width: 320,
+          height: 320,
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(232, 96, 20, 0.18) 0%, transparent 70%)',
+          filter: 'blur(50px)',
+          animation: 'wgOrbDrift 7s ease-in-out infinite',
+          pointerEvents: 'none',
+        }}
+      />
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          bottom: '25%',
+          right: '30%',
+          width: 340,
+          height: 340,
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(12, 29, 54, 0.12) 0%, transparent 70%)',
+          filter: 'blur(55px)',
+          animation: 'wgOrbDrift 8s ease-in-out infinite reverse',
+          pointerEvents: 'none',
+        }}
+      />
+
+      {/* Main Loading Card */}
+      <div
+        style={{
+          position: 'relative',
+          zIndex: 1,
+          textAlign: 'center',
+          background: 'var(--surface, #ffffff)',
+          border: '1.5px solid rgba(12, 29, 54, 0.08)',
+          borderRadius: 24,
+          padding: '40px 48px',
+          boxShadow: '0 20px 50px rgba(12, 29, 54, 0.1), 0 1px 3px rgba(0, 0, 0, 0.04)',
+          maxWidth: 430,
+          width: '100%',
+          animation: 'wgFadeInScale 0.4s ease-out, wgCardFloat 4s ease-in-out 0.4s infinite',
+        }}
+      >
+        {/* Animated Double-Ring Orbital Spinner */}
+        <div
+          style={{
+            position: 'relative',
+            width: 68,
+            height: 68,
+            margin: '0 auto 20px',
+            display: 'grid',
+            placeItems: 'center',
+          }}
+        >
+          {/* Outer glowing orbit track */}
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              borderRadius: '50%',
+              border: '3px solid rgba(232, 96, 20, 0.14)',
+            }}
+          />
+          {/* Outer spinning gradient arc with glow */}
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              borderRadius: '50%',
+              border: '3px solid transparent',
+              borderTopColor: '#E86014',
+              borderRightColor: '#E86014',
+              animation: 'wgSpin 1s cubic-bezier(0.55, 0.15, 0.45, 0.85) infinite',
+              filter: 'drop-shadow(0 0 6px rgba(232, 96, 20, 0.55))',
+            }}
+          />
+          {/* Inner counter-spinning secondary arc */}
+          <div
+            style={{
+              position: 'absolute',
+              inset: 7,
+              borderRadius: '50%',
+              border: '2px solid transparent',
+              borderBottomColor: '#3CC3BF',
+              borderLeftColor: '#3CC3BF',
+              animation: 'wgSpinReverse 1.5s linear infinite',
+            }}
+          />
+          {/* Center Pulsing Luminous Core */}
+          <div
+            style={{
+              width: 28,
+              height: 28,
+              borderRadius: '50%',
+              background: 'radial-gradient(circle at 35% 35%, #FF8A3D 0%, #E86014 50%, #0C1D36 100%)',
+              animation: 'wgPulseGlow 1.8s ease-in-out infinite',
+              display: 'grid',
+              placeItems: 'center',
+            }}
+          >
+            {/* Center sparkle star */}
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="#FFFFFF"
+              style={{
+                filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))',
+              }}
+            >
+              <path d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z" />
+            </svg>
+          </div>
+        </div>
+
+        {/* Title */}
+        <div
+          className="serif"
+          style={{
+            fontSize: 26,
+            fontWeight: 800,
+            color: 'var(--ink, #0C1D36)',
+            marginBottom: 6,
+            letterSpacing: '-0.3px',
+          }}
+        >
+          WeGrow Client Portal
+        </div>
+
+        {/* Status Text with Animated Bouncing Wave Dots */}
+        <div
+          className="small muted"
+          style={{
+            marginBottom: 22,
+            fontSize: 13.5,
+            color: 'var(--ink-2, #64748B)',
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minHeight: 22,
+          }}
+        >
+          <span>{statusText}</span>
+          <span style={{ display: 'inline-flex', gap: 2, marginLeft: 2, color: '#E86014' }}>
+            <span style={{ animation: 'wgDotWave 1.3s infinite', animationDelay: '0s', fontWeight: 800 }}>.</span>
+            <span style={{ animation: 'wgDotWave 1.3s infinite', animationDelay: '0.22s', fontWeight: 800 }}>.</span>
+            <span style={{ animation: 'wgDotWave 1.3s infinite', animationDelay: '0.44s', fontWeight: 800 }}>.</span>
+          </span>
+        </div>
+
+        {/* Dynamic Glowing Flow Progress Bar */}
+        <div
+          style={{
+            height: 6,
+            borderRadius: 999,
+            background: 'rgba(12, 29, 54, 0.08)',
+            overflow: 'hidden',
+            position: 'relative',
+            boxShadow: 'inset 0 1px 2px rgba(0, 0, 0, 0.06)',
+          }}
+        >
+          {/* Subtle base track fill */}
+          <div
+            style={{
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              bottom: 0,
+              width: '100%',
+              background: 'linear-gradient(90deg, #0C1D36 0%, #E86014 50%, #3CC3BF 100%)',
+              opacity: 0.12,
+            }}
+          />
+          {/* Active sweeping luminous progress beam */}
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              bottom: 0,
+              borderRadius: 999,
+              background: 'linear-gradient(90deg, transparent 0%, #0C1D36 25%, #E86014 65%, #FF8A3D 90%, #FFFFFF 100%)',
+              boxShadow: '0 0 12px rgba(232, 96, 20, 0.65)',
+              animation: 'wgBarFlow 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite',
+            }}
+          />
+          {/* High-speed light flare reflection */}
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              bottom: 0,
+              width: 50,
+              background: 'linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.75), transparent)',
+              animation: 'wgGlowSweep 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite',
+            }}
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export const App: React.FC = () => {
   const { user, client, previewAs, loading, safeNavigate } = usePortal();
   const navigate = useNavigate();
@@ -116,100 +417,7 @@ export const App: React.FC = () => {
   }
 
   if (loading && (!user || (user.role === 'client' && !client))) {
-    return (
-      <div
-        style={{
-          display: 'grid',
-          placeItems: 'center',
-          minHeight: '100vh',
-          background: 'radial-gradient(circle at top, rgba(232, 96, 20, 0.08), transparent 55%), var(--bg)',
-          padding: 24,
-        }}
-      >
-        <style>{`
-          @keyframes wgSpin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-          @keyframes wgPulse {
-            0%, 100% { opacity: 0.55; transform: scale(0.96); }
-            50% { opacity: 1; transform: scale(1.04); }
-          }
-          @keyframes wgShimmer {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(220%); }
-          }
-        `}</style>
-        <div
-          style={{
-            textAlign: 'center',
-            background: 'var(--surface, #ffffff)',
-            border: '1px solid var(--border, rgba(12, 29, 54, 0.1))',
-            borderRadius: 20,
-            padding: '36px 44px',
-            boxShadow: '0 18px 45px rgba(12, 29, 54, 0.08)',
-            maxWidth: 420,
-            width: '100%',
-          }}
-        >
-          <div
-            style={{
-              position: 'relative',
-              width: 56,
-              height: 56,
-              margin: '0 auto 18px',
-              display: 'grid',
-              placeItems: 'center',
-            }}
-          >
-            <div
-              style={{
-                position: 'absolute',
-                inset: 0,
-                borderRadius: '50%',
-                border: '3px solid rgba(232, 96, 20, 0.18)',
-                borderTopColor: '#E86014',
-                animation: 'wgSpin 0.9s linear infinite',
-              }}
-            />
-            <div
-              style={{
-                width: 22,
-                height: 22,
-                borderRadius: '50%',
-                background: 'linear-gradient(135deg, #0C1D36, #E86014)',
-                animation: 'wgPulse 1.4s ease-in-out infinite',
-              }}
-            />
-          </div>
-          <div className="serif" style={{ fontSize: 25, fontWeight: 700, marginBottom: 6 }}>
-            WeGrow Client Portal
-          </div>
-          <div className="small muted" style={{ marginBottom: 18 }}>
-            {user ? 'Loading your transformation dossier…' : 'Connecting to database…'}
-          </div>
-          <div
-            style={{
-              height: 5,
-              borderRadius: 999,
-              background: 'rgba(12, 29, 54, 0.08)',
-              overflow: 'hidden',
-              position: 'relative',
-            }}
-          >
-            <div
-              style={{
-                width: '45%',
-                height: '100%',
-                borderRadius: 999,
-                background: 'linear-gradient(90deg, #0C1D36, #E86014)',
-                animation: 'wgShimmer 1.3s ease-in-out infinite',
-              }}
-            />
-          </div>
-        </div>
-      </div>
-    );
+    return <PortalLoadingScreen user={user} />;
   }
 
   // Public Event Landing Page routes (accessible whether logged in or out)
