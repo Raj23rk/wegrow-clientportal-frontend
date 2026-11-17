@@ -299,12 +299,7 @@ export const App: React.FC = () => {
           />
           <Route
             path="/action-plan"
-            element={
-              <ActionPlanPage
-                onOpenAction={(id) => setActiveActionId(id)}
-                onNavigate={navigateTo}
-              />
-            }
+            element={<Navigate to="/dashboard" replace />}
           />
           <Route
             path="/sessions"

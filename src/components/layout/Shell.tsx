@@ -15,7 +15,6 @@ interface ShellProps {
 
 const NAV_ITEMS = [
   { path: '/dashboard', label: 'Dashboard', icon: 'dashboard' },
-  { path: '/action-plan', label: 'Action Plan', icon: 'plan' },
   { path: '/sessions', label: 'Sessions', icon: 'sessions' },
   { path: '/attendance', label: 'Attendance', icon: 'check' },
   { path: '/reports', label: 'Reports & Summaries', icon: 'reports' },
@@ -88,9 +87,9 @@ export const Shell: React.FC<ShellProps> = ({
       return null;
     }
     if (idx === 0) return null;
-    if (idx === 2) return <div className="nav-group">Engagement</div>;
-    if (idx === 7) return <div className="nav-group">Schedule &amp; media</div>;
-    if (idx === 12) return <div className="nav-group">Account</div>;
+    if (idx === 1) return <div className="nav-group">Engagement</div>;
+    if (idx === 6) return <div className="nav-group">Schedule &amp; media</div>;
+    if (idx === 11) return <div className="nav-group">Account</div>;
     return null;
   };
 
@@ -429,8 +428,8 @@ export const Shell: React.FC<ShellProps> = ({
         <nav className="bottomnav" aria-label="Quick navigation">
           {[
             { path: '/dashboard', label: 'Home', icon: 'dashboard' },
-            { path: '/action-plan', label: 'Plan', icon: 'plan' },
             { path: '/sessions', label: 'Sessions', icon: 'sessions' },
+            { path: '/attendance', label: 'Attendance', icon: 'check' },
             { path: '/calendar', label: 'Calendar', icon: 'calendar' },
             { path: '/notifications', label: 'Alerts', icon: 'bell' }
           ].map((item) => (

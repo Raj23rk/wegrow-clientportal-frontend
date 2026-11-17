@@ -318,14 +318,11 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
       <section className="card mt">
         <div className="card-head">
           <div>
-            <h3>6-month action plan</h3>
+            <h3>6-month engagement roadmap</h3>
             <div className="small muted">
-              {fmtS(client.start)} {D(client.start).getFullYear()} → {fmtS(client.end)} {D(client.end).getFullYear()} · select a month to open it
+              {fmtS(client.start)} {D(client.start).getFullYear()} → {fmtS(client.end)} {D(client.end).getFullYear()}
             </div>
           </div>
-          <button className="btn sm" onClick={() => onNavigate('action-plan')}>
-            View full action plan
-          </button>
         </div>
         <div className="tablewrap">
           <div className="rail" style={{ minWidth: 520 }}>
@@ -334,17 +331,16 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
               const p = monthProgress(m.n);
               const cls = m.key < currentMonthPlan.key ? 'done' : m.key === currentMonthPlan.key ? 'now' : '';
               return (
-                <button
+                <div
                   key={m.n}
                   className={`stop ${cls}`}
-                  onClick={() => onNavigate('action-plan')}
                 >
                   <div className="node">
                     {cls === 'done' ? <Icon name="check" /> : p ? `${p}%` : '—'}
                   </div>
                   <div className="mn">{m.name.slice(0, 3)}</div>
                   <div className="th">{m.theme}</div>
-                </button>
+                </div>
               );
             })}
           </div>
@@ -387,9 +383,6 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
           <div className="card">
             <div className="card-head">
               <h3>Open action items</h3>
-              <button className="btn sm ghost" onClick={() => onNavigate('action-plan')}>
-                All items
-              </button>
             </div>
             {openActionsList.slice(0, 5).map((a) => (
               <div
